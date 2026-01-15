@@ -4,33 +4,26 @@
   </a>
 </div>
 
-# Aztec Starter
+# ZK KYC by Galactica on Aztec
+
+This repo provides a zero-knowledge solution for know-your-customer checks, in short ZK KYC.
+
+The ZK KYC system enables users to prove compliance (e.g., Age ≥ 18, non-sanctioned status) and selectively disclose identity data to third parties (institutions/issuers) without revealing raw identity documents on-chain. It focuses on legally required KYC with guardians and uses Aztec/Noir for on-chain verification and private state management. Shamir’s Secret Sharing is used for conditional, threshold-based data disclosure.
+
+A key feature are Guardians for KYC record keeping and auditing. This should satisfy regulatory requirements that mandate off-chain audit trails.
+
+The repo also provides common components developed for this system, particularly the cryptographic primitives for secret sharing and KYC guardian integration.
+
+This repo is based on the [Aztec starter](https://github.com/AztecProtocol/aztec-starter).
 
 ## Local Network
 
-This repo is meant to be a starting point for learning to write Aztec contracts and tests on the Aztec local network (local development environment). It includes an example contract, useful commands in `package.json` and helpful scripts in `./scripts`.
 
-You can find the **Pod Racing Game contract** in `./src/main.nr`. A simple integration test is in `./src/test/e2e/index.test.ts`.
-
-The Pod Racing contract is a two-player competitive game where players allocate points across 5 tracks over multiple rounds. The game demonstrates Aztec's private state capabilities - round choices remain private until players reveal their final scores.
 
 ## Devnet
 
 This repo connects to a locally running Aztec local network by default, but can be configured to connect to the devnet by specifying `AZTEC_ENV=devnet` in a `.env` file or by prefixing a command e.g. `AZTEC_ENV=devnet yarn deploy`.
 
-<div align="center">
-
-[![GitHub Repo stars](https://img.shields.io/github/stars/AztecProtocol/aztec-starter?logo=github&color=yellow)](https://github.com/AztecProtocol/aztec-starter/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/AztecProtocol/aztec-starter?logo=github&color=blue)](https://github.com/AztecProtocol/aztec-starter/network/members)
-[![Build](https://github.com/AztecProtocol/aztec-starter/actions/workflows/update.yaml/badge.svg)](https://github.com/AztecProtocol/aztec-starter/actions)
-[![GitHub last commit](https://img.shields.io/github/last-commit/AztecProtocol/aztec-starter?logo=git)](https://github.com/AztecProtocol/aztec-starter/commits/main)
-[![License](https://img.shields.io/github/license/AztecProtocol/aztec-starter)](https://github.com/AztecProtocol/aztec-starter/blob/main/LICENSE)
-[![Discord](https://img.shields.io/badge/discord-join%20chat-5B5EA6)](https://discord.gg/aztec)
-[![Twitter Follow](https://img.shields.io/twitter/follow/aztecnetwork?style=flat&logo=twitter)](https://x.com/aztecnetwork)
-
-</div>
-
----
 
 ## 🚀 **Getting Started**
 
