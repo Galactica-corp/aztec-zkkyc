@@ -129,3 +129,33 @@ unconstrained fn test_whitelisted_guardian_issue_certificate() {
         env.simulate_utility(CertificateRegistry::at(contract_address).get_certificate_count(user));
     assert_eq(certificates_count, 1);
 }
+
+// ============================================================================
+// CERTIFICATE PROOF OF EXISTENCE TESTS
+// ============================================================================
+
+// Test: User can proof that their certificate exists
+#[test]
+unconstrained fn test_user_proof_certificate_existence() {
+    let (mut env, contract_address, admin) = utils::setup_certificate_registry();
+    let guardian = env.create_light_account();
+    let user = env.create_light_account();
+    let unique_id = Field::from(1);
+
+    env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
+    env.call_private(
+        guardian,
+        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id),
+    );
+
+    env.call_private(user, CertificateRegistry::at(contract_address).check_certificate());
+}
+
+// Test: User cannot proof that their certificate does not exist
+#[test(should_fail)]
+unconstrained fn test_fail_user_proof_certificate_non_existence() {
+    let (mut env, contract_address, _) = utils::setup_certificate_registry();
+    let user = env.create_light_account();
+
+    env.call_private(user, CertificateRegistry::at(contract_address).check_certificate());
+}

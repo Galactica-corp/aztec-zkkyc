@@ -112,4 +112,22 @@ pub contract CertificateRegistry {
             self.storage.certificates.at(owner).view_notes(NoteViewerOptions::new());
         owned_certificates.len()
     }
+
+    /**
+     * Check if a user has a valid certificate.
+     */
+    #[external("private")]
+    fn check_certificate() {
+        let user = self.context.msg_sender().unwrap();
+
+        let mut options = NoteGetterOptions::new().set_limit(1);
+
+        // TODO: Add non revocation filter/check
+
+        let notes = self.storage.certificates.at(user).get_notes(options);
+        assert(notes.len() > 0, "No certificate found");
+
+        // ensure that the issuing guardian is still whitelisted
+        self.enqueue_self._check_guardian_whitelisted(notes.get(0).note.guardian);
+    }
 }
