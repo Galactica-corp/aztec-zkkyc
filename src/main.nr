@@ -98,7 +98,10 @@ pub contract CertificateRegistry {
     #[external("public")]
     #[only_self]
     fn _check_guardian_whitelisted(guardian: AztecAddress) {
-        assert(self.storage.guardian_whitelist.at(guardian).read(), "Guardian not whitelisted");
+        assert(
+            self.storage.guardian_whitelist.at(guardian).read().eq(true),
+            "Guardian not whitelisted",
+        );
     }
 
     /**

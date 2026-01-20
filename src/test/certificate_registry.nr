@@ -159,3 +159,24 @@ unconstrained fn test_fail_user_proof_certificate_non_existence() {
 
     env.call_private(user, CertificateRegistry::at(contract_address).check_certificate());
 }
+
+// Test: User cannot proof certificate existence after the guardian is removed from the whitelist
+#[test(should_fail)]
+unconstrained fn test_fail_user_proof_certificate_existence_after_guardian_removal() {
+    let (mut env, contract_address, admin) = utils::setup_certificate_registry();
+    let guardian = env.create_light_account();
+    let user = env.create_light_account();
+    let unique_id = Field::from(1);
+
+    env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
+    env.call_private(
+        guardian,
+        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id),
+    );
+    env.call_public(
+        admin,
+        CertificateRegistry::at(contract_address).remove_guardian_from_whitelist(guardian),
+    );
+
+    env.call_private(user, CertificateRegistry::at(contract_address).check_certificate());
+}
