@@ -1,7 +1,7 @@
-use crate::certificate_note::CertificateNote;
 use crate::CertificateRegistry;
 use crate::test::utils;
 use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
+use dep::aztec::protocol_types::traits::Hash;
 
 // ============================================================================
 // INITIALIZATION TESTS
@@ -102,10 +102,15 @@ unconstrained fn test_fail_non_whitelisted_guardian_issue_certificate() {
     let guardian = env.create_light_account();
     let user = env.create_light_account();
     let unique_id = Field::from(1);
+    let revocation_nullifier = Field::from(2);
 
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id),
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_nullifier,
+        ),
     );
 }
 
@@ -116,13 +121,18 @@ unconstrained fn test_whitelisted_guardian_issue_certificate() {
     let guardian = env.create_light_account();
     let user = env.create_light_account();
     let unique_id = Field::from(1);
+    let revocation_nullifier = Field::from(2);
 
     // Whitelist the guardian
     env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
 
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id),
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_nullifier,
+        ),
     );
 
     let certificates_count =
@@ -141,11 +151,16 @@ unconstrained fn test_user_proof_certificate_existence() {
     let guardian = env.create_light_account();
     let user = env.create_light_account();
     let unique_id = Field::from(1);
+    let revocation_nullifier = Field::from(1234561);
 
     env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id),
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_nullifier,
+        ),
     );
 
     env.call_private(user, CertificateRegistry::at(contract_address).check_certificate());
@@ -167,16 +182,83 @@ unconstrained fn test_fail_user_proof_certificate_existence_after_guardian_remov
     let guardian = env.create_light_account();
     let user = env.create_light_account();
     let unique_id = Field::from(1);
+    let revocation_nullifier = Field::from(1234561);
 
     env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id),
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_nullifier,
+        ),
     );
     env.call_public(
         admin,
         CertificateRegistry::at(contract_address).remove_guardian_from_whitelist(guardian),
     );
+
+    env.call_private(user, CertificateRegistry::at(contract_address).check_certificate());
+}
+
+// ============================================================================
+// CERTIFICATE REVOCATION TESTS
+// ============================================================================
+
+// Test: Guardian can revoke a certificate
+#[test]
+unconstrained fn test_guardian_revoke_certificate() {
+    let (mut env, contract_address, admin) = utils::setup_certificate_registry();
+    let guardian = env.create_light_account();
+    let user = env.create_light_account();
+    let unique_id = Field::from(1);
+    let revocation_nullifier = Field::from(1234561);
+
+    env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
+    env.call_private(
+        guardian,
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_nullifier,
+        ),
+    );
+
+    env.call_private(
+        guardian,
+        CertificateRegistry::at(contract_address).revoke_certificate(revocation_nullifier),
+    );
+
+    // check that the nullifier is now in the nullifier set
+    env.public_context(|context| {
+        assert(context.nullifier_exists(revocation_nullifier, contract_address));
+    });
+}
+
+// Test: User cannot use a certificate after revocation
+#[test(should_fail)]
+unconstrained fn test_fail_user_use_certificate_after_revocation() {
+    let (mut env, contract_address, admin) = utils::setup_certificate_registry();
+    let guardian = env.create_light_account();
+    let user = env.create_light_account();
+    let unique_id = Field::from(1);
+    let revocation_nullifier = Field::from(1234561);
+
+    env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
+    env.call_private(
+        guardian,
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_nullifier,
+        ),
+    );
+    env.call_private(
+        guardian,
+        CertificateRegistry::at(contract_address).revoke_certificate(revocation_nullifier),
+    );
+
+    env.mine_block();
 
     env.call_private(user, CertificateRegistry::at(contract_address).check_certificate());
 }

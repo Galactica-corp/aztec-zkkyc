@@ -21,9 +21,14 @@ mod test;
 #[aztec]
 pub contract CertificateRegistry {
     use dep::aztec::{
+        history::nullifier_non_inclusion::ProveNullifierNonInclusion,
         macros::{functions::{external, initializer, only_self}, storage::storage},
         messages::message_delivery::MessageDelivery,
-        note::{note_getter_options::NoteGetterOptions, note_viewer_options::NoteViewerOptions},
+        note::{
+            note_getter_options::NoteGetterOptions, note_interface::NoteProperties,
+            note_viewer_options::NoteViewerOptions,
+        },
+        utils::comparison::Comparator,
     };
     use dep::aztec::protocol_types::address::AztecAddress;
     use dep::aztec::state_vars::{Map, Owned, PrivateSet, PublicMutable};
@@ -44,6 +49,9 @@ pub contract CertificateRegistry {
         // Public disclosures (optional, the certificates can also be used privately only)
         // User address -> public KYC ok flag
         public_disclosures: Map<AztecAddress, PublicMutable<bool, Context>, Context>,
+
+        // Copy of issued certificates for the guardian
+        guardian_certificates_copies: Owned<PrivateSet<CertificateNote, Context>, Context>,
     }
 
     #[external("public")]
@@ -78,17 +86,24 @@ pub contract CertificateRegistry {
      * @param certificate - The certificate to issue
      */
     #[external("private")]
-    fn issue_certificate(user: AztecAddress, unique_id: Field) {
+    fn issue_certificate(user: AztecAddress, unique_id: Field, revocation_nullifier: Field) {
         let guardian = self.context.msg_sender().unwrap();
 
         self.enqueue_self._check_guardian_whitelisted(guardian);
 
-        self
-            .storage
-            .certificates
-            .at(user)
-            .insert(CertificateNote::new(user, guardian, unique_id))
-            .deliver(MessageDelivery.CONSTRAINED_ONCHAIN);
+        let certificate = CertificateNote::new(user, guardian, unique_id, revocation_nullifier);
+        self.storage.certificates.at(user).insert(certificate).deliver(
+            MessageDelivery.CONSTRAINED_ONCHAIN,
+        );
+
+        // Ensure that the revocation-nullifier is not already used
+        let header = self.context.get_anchor_block_header();
+        header.prove_nullifier_non_inclusion(revocation_nullifier);
+
+        // Give the guardian a copy of the certificate note to remember the revocation-nullifier
+        self.storage.guardian_certificates_copies.at(guardian).insert(certificate).deliver(
+            MessageDelivery.CONSTRAINED_ONCHAIN,
+        );
     }
 
     /**
@@ -102,6 +117,30 @@ pub contract CertificateRegistry {
             self.storage.guardian_whitelist.at(guardian).read().eq(true),
             "Guardian not whitelisted",
         );
+    }
+
+    /**
+     * Revoke a certificate by providing the revocation-nullifier.
+     * @dev This function does not need to check if the sender is a whitelisted guardian, because only the guardian and the owner know the revocation-nullifier.
+     * @param revocation_nullifier - The revocation-nullifier to revoke the certificate with
+     */
+    #[external("private")]
+    fn revoke_certificate(revocation_nullifier: Field) {
+        let guardian = self.context.msg_sender().unwrap();
+
+        let options = NoteGetterOptions::new()
+            .select(
+                CertificateNote::properties().revocation_nullifier,
+                Comparator.EQ,
+                revocation_nullifier,
+            )
+            .set_limit(1);
+        let certificate = self.storage.guardian_certificates_copies.at(guardian).pop_notes(options);
+        assert(certificate.len() > 0, "No certificate found");
+
+        // Add the revocation-nullifier to the Aztec nullifier set
+        // Afterwards, the certificate can no longer be used because the usage checks for the non-existence of this nullifier
+        self.context.push_nullifier(revocation_nullifier);
     }
 
     /**
@@ -125,13 +164,15 @@ pub contract CertificateRegistry {
 
         let mut options = NoteGetterOptions::new().set_limit(1);
 
-        // TODO: Add non revocation filter/check
-
         let notes = self.storage.certificates.at(user).pop_notes(options);
         assert(notes.len() > 0, "No certificate found");
 
         // ensure that the issuing guardian is still whitelisted
         self.enqueue_self._check_guardian_whitelisted(notes.get(0).guardian);
+
+        // Check that the note has not been revoked
+        let header = self.context.get_anchor_block_header();
+        header.prove_nullifier_non_inclusion(notes.get(0).revocation_nullifier);
 
         // Put the certificate back into the storage to be used again
         self.storage.certificates.at(user).insert(notes.get(0)).deliver(
