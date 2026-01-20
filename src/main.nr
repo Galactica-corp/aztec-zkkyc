@@ -127,10 +127,15 @@ pub contract CertificateRegistry {
 
         // TODO: Add non revocation filter/check
 
-        let notes = self.storage.certificates.at(user).get_notes(options);
+        let notes = self.storage.certificates.at(user).pop_notes(options);
         assert(notes.len() > 0, "No certificate found");
 
         // ensure that the issuing guardian is still whitelisted
-        self.enqueue_self._check_guardian_whitelisted(notes.get(0).note.guardian);
+        self.enqueue_self._check_guardian_whitelisted(notes.get(0).guardian);
+
+        // Put the certificate back into the storage to be used again
+        self.storage.certificates.at(user).insert(notes.get(0)).deliver(
+            MessageDelivery.CONSTRAINED_ONCHAIN,
+        );
     }
 }
