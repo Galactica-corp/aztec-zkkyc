@@ -1,7 +1,6 @@
 use crate::CertificateRegistry;
 use crate::test::utils;
 use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
-use dep::aztec::protocol_types::traits::Hash;
 
 // ============================================================================
 // INITIALIZATION TESTS
@@ -166,7 +165,7 @@ unconstrained fn test_user_proof_certificate_existence() {
     env.call_private(user, CertificateRegistry::at(contract_address).check_certificate());
 }
 
-// Test: User cannot proof that their certificate does not exist
+// Test: User cannot pass the check when the certificate is missing
 #[test(should_fail)]
 unconstrained fn test_fail_user_proof_certificate_non_existence() {
     let (mut env, contract_address, _) = utils::setup_certificate_registry();
