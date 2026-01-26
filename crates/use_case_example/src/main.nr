@@ -10,18 +10,19 @@ mod test;
 pub contract UseCaseExample {
     use dep::aztec::macros::{functions::{external, initializer}, storage::storage};
     use dep::aztec::protocol_types::address::AztecAddress;
-    use dep::aztec::state_vars::PublicMutable;
+    use dep::aztec::state_vars::PublicImmutable;
+    use dep::zk_certificate::CertificateRegistry;
 
     #[storage]
     struct Storage<Context> {
         // Address of the ZK Certificate Registry contract where ZK KYC records proving compliance can be checked
-        zk_certificate_registry: PublicMutable<AztecAddress, Context>,
+        zk_certificate_registry: PublicImmutable<AztecAddress, Context>,
     }
 
     #[external("public")]
     #[initializer]
     fn constructor(zk_certificate_registry: AztecAddress) {
-        self.storage.zk_certificate_registry.write(zk_certificate_registry);
+        self.storage.zk_certificate_registry.initialize(zk_certificate_registry);
     }
 
     /**
@@ -29,7 +30,9 @@ pub contract UseCaseExample {
      */
     #[external("private")]
     fn use_privately() {
-        let user = self.context.msg_sender().unwrap();
+        // call the ZK Certificate Registry to check compliance
+        self.call(CertificateRegistry::at(self.storage.zk_certificate_registry.read())
+            .check_certificate());
 
         // Custom use case logic would go here
     }
