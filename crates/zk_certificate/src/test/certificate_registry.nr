@@ -121,7 +121,7 @@ unconstrained fn test_whitelisted_guardian_issue_certificate() {
     let guardian = env.create_light_account();
     let user = env.create_light_account();
     let unique_id = Field::from(1);
-    let revocation_nullifier = Field::from(2);
+    let revocation_nullifier = Field::from(1234562);
 
     // Whitelist the guardian
     env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
