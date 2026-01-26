@@ -259,6 +259,7 @@ unconstrained fn test_fail_user_use_certificate_after_revocation() {
     );
 
     env.mine_block();
+    env.mine_block_at(env.last_block_timestamp() + 24 * 60 * 60); // 24 hours from now
 
     env.call_private(user, CertificateRegistry::at(contract_address).check_certificate());
 }
