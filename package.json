@@ -13,7 +13,7 @@
     "clean": "rm -rf ./artifacts ./target",
     "clear-store": "rm -rf ./store",
     "codegen": "aztec codegen target --outdir artifacts",
-    "compile": "aztec compile",
+    "compile": "aztec compile --workspace",
     "deploy": "NODE_NO_WARNINGS=1 node --loader ts-node/esm scripts/deploy_contract.ts",
     "deploy::devnet": "NODE_NO_WARNINGS=1 AZTEC_ENV=devnet node --loader ts-node/esm scripts/deploy_contract.ts",
     "deploy-account": "NODE_NO_WARNINGS=1 node --loader ts-node/esm scripts/deploy_account.ts",
@@ -29,7 +29,7 @@
     "test": "yarn test:js && yarn test:nr",
     "test::devnet": "AZTEC_ENV=devnet yarn test:js",
     "test:js": "rm -rf store/pxe && NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json",
-    "test:nr": "aztec test",
+    "test:nr": "aztec test --workspace",
     "update-readme-version": "node ./.github/scripts/update-readme-version.js"
   },
   "dependencies": {

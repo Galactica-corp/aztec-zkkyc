@@ -1,3 +1,2 @@
 [workspace]
-members = ["crates/zk_certificate"]
-default-member = "crates/zk_certificate"
+members = ["crates/zk_certificate","crates/use_case_example"]
