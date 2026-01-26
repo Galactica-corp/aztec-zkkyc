@@ -1,6 +1,6 @@
 node_modules
 target/
-src/artifacts/
+zk_certificate/src/artifacts/
 log/
 .vscode
 .DS_Store
