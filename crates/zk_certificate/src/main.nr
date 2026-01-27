@@ -172,7 +172,12 @@ pub contract CertificateRegistry {
 
         // Check that the note has not been revoked
         let header = self.context.get_anchor_block_header();
-        header.prove_nullifier_non_inclusion(notes.get(0).revocation_nullifier);
+        // We need to check for the siloed nullifier because the nullifier set is hashed with the contract address emitting it.
+        let siloed_nullifier = aztec::protocol_types::hash::compute_siloed_nullifier(
+            self.address,
+            notes.get(0).revocation_nullifier,
+        );
+        header.prove_nullifier_non_inclusion(siloed_nullifier);
 
         // Put the certificate back into the storage to be used again
         self.storage.certificates.at(user).insert(notes.get(0)).deliver(
