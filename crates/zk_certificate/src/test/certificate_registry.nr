@@ -1,6 +1,7 @@
 use crate::CertificateRegistry;
 use crate::test::utils;
 use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
+use dep::aztec::test::helpers::authwit::add_private_authwit_from_call;
 
 // ============================================================================
 // INITIALIZATION TESTS
@@ -150,7 +151,10 @@ unconstrained fn test_user_proof_certificate_existence() {
         CertificateRegistry::at(contract_address).issue_certificate(user, unique_id, revocation_id),
     );
 
-    env.call_private(user, CertificateRegistry::at(contract_address).check_certificate());
+    let check_certificate_call =
+        CertificateRegistry::at(contract_address).check_certificate(user, 0);
+    add_private_authwit_from_call(env, user, user, check_certificate_call);
+    env.call_private(user, check_certificate_call);
 }
 
 // Test: User cannot pass the check when the certificate is missing
@@ -159,7 +163,10 @@ unconstrained fn test_fail_user_proof_certificate_non_existence() {
     let (mut env, contract_address, _) = utils::setup_certificate_registry();
     let user = env.create_light_account();
 
-    env.call_private(user, CertificateRegistry::at(contract_address).check_certificate());
+    let check_certificate_call =
+        CertificateRegistry::at(contract_address).check_certificate(user, 0);
+    add_private_authwit_from_call(env, user, user, check_certificate_call);
+    env.call_private(user, check_certificate_call);
 }
 
 // Test: User cannot proof certificate existence after the guardian is removed from the whitelist
@@ -181,7 +188,10 @@ unconstrained fn test_fail_user_proof_certificate_existence_after_guardian_remov
         CertificateRegistry::at(contract_address).remove_guardian_from_whitelist(guardian),
     );
 
-    env.call_private(user, CertificateRegistry::at(contract_address).check_certificate());
+    let check_certificate_call =
+        CertificateRegistry::at(contract_address).check_certificate(user, 0);
+    add_private_authwit_from_call(env, user, user, check_certificate_call);
+    env.call_private(user, check_certificate_call);
 }
 
 // ============================================================================
@@ -233,5 +243,8 @@ unconstrained fn test_fail_user_use_certificate_after_revocation() {
     env.mine_block();
     env.mine_block_at(env.last_block_timestamp() + 24 * 60 * 60); // 24 hours from now to pass the delay
 
-    env.call_private(user, CertificateRegistry::at(contract_address).check_certificate());
+    let check_certificate_call =
+        CertificateRegistry::at(contract_address).check_certificate(user, 0);
+    add_private_authwit_from_call(env, user, user, check_certificate_call);
+    env.call_private(user, check_certificate_call);
 }

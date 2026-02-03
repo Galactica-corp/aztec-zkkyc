@@ -8,9 +8,11 @@ mod test;
 
 #[aztec]
 pub contract UseCaseExample {
-    use dep::aztec::macros::{functions::{external, initializer}, storage::storage};
-    use dep::aztec::protocol_types::address::AztecAddress;
-    use dep::aztec::state_vars::PublicImmutable;
+    use dep::aztec::{
+        macros::{functions::{external, initializer}, storage::storage},
+        protocol_types::address::AztecAddress,
+        state_vars::PublicImmutable,
+    };
     use dep::zk_certificate::CertificateRegistry;
 
     #[storage]
@@ -27,12 +29,15 @@ pub contract UseCaseExample {
 
     /**
      * Private usage that is checking compliance with a ZK Certificate Registry.
+     * @param authwit_nonce The nonce of the private authentication witness of checking the certificate.
      */
     #[external("private")]
-    fn use_privately() {
+    fn use_privately(authwit_nonce: Field) {
+        let user = self.context.msg_sender().unwrap();
+
         // call the ZK Certificate Registry to check compliance
         self.call(CertificateRegistry::at(self.storage.zk_certificate_registry.read())
-            .check_certificate());
+            .check_certificate(user, authwit_nonce));
 
         // Custom use case logic would go here
     }

@@ -1,5 +1,6 @@
 use crate::test::utils;
 use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
+use dep::aztec::test::helpers::authwit::add_private_authwit_from_call;
 
 use dep::zk_certificate::CertificateRegistry;
 
@@ -49,7 +50,13 @@ unconstrained fn test_zk_certificate_integration() {
         ),
     );
 
-    env.call_private(user, UseCaseExample::at(use_case_example_address).use_privately());
+    // prepare authwit for checking the certificate
+    let authwit_nonce = Field::from(456789);
+    let check_certificate_call = CertificateRegistry::at(zk_certificate_registry_address)
+        .check_certificate(user, authwit_nonce);
+    add_private_authwit_from_call(env, user, use_case_example_address, check_certificate_call);
+
+    env.call_private(user, UseCaseExample::at(use_case_example_address).use_privately(authwit_nonce));
 }
 
 // // Test: User cannot proof that their certificate does not exist

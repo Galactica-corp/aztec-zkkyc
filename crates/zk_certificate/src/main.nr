@@ -21,7 +21,8 @@ mod test;
 #[aztec]
 pub contract CertificateRegistry {
     use dep::aztec::{
-        macros::{functions::{external, initializer, only_self}, storage::storage},
+        authwit::auth::compute_authwit_nullifier,
+        macros::{functions::{authorize_once, external, initializer, only_self}, storage::storage},
         messages::message_delivery::MessageDelivery,
         note::{
             note_getter_options::NoteGetterOptions, note_interface::NoteProperties,
@@ -174,13 +175,12 @@ pub contract CertificateRegistry {
     /**
      * Check if a user has a valid certificate.
      */
+    #[authorize_once("from", "authwit_nonce")]
     #[external("private")]
-    fn check_certificate() {
-        let user = self.context.msg_sender().unwrap();
-
+    fn check_certificate(from: AztecAddress, authwit_nonce: Field) {
         let mut options = NoteGetterOptions::new().set_limit(1);
 
-        let notes = self.storage.certificates.at(user).pop_notes(options);
+        let notes = self.storage.certificates.at(from).pop_notes(options);
         assert(notes.len() > 0, "No certificate found");
 
         // ensure that the issuing guardian is still whitelisted
@@ -194,8 +194,20 @@ pub contract CertificateRegistry {
         );
 
         // Put the certificate back into the storage to be used again
-        self.storage.certificates.at(user).insert(notes.get(0)).deliver(
+        self.storage.certificates.at(from).insert(notes.get(0)).deliver(
             MessageDelivery.CONSTRAINED_ONCHAIN,
         );
+    }
+
+    /**
+     * Cancel a private authentication witness for checking a certificate.
+     * From https://docs.aztec.network/developers/docs/aztec-nr/framework-description/how_to_use_authwit
+     * @param inner_hash The inner hash of the authwit to cancel.
+     */
+    #[external("private")]
+    fn cancel_authwit(inner_hash: Field) {
+        let on_behalf_of = self.msg_sender().unwrap();
+        let nullifier = compute_authwit_nullifier(on_behalf_of, inner_hash);
+        self.context.push_nullifier(nullifier);
     }
 }
