@@ -101,15 +101,11 @@ unconstrained fn test_fail_non_whitelisted_guardian_issue_certificate() {
     let guardian = env.create_light_account();
     let user = env.create_light_account();
     let unique_id = Field::from(1);
-    let revocation_nullifier = Field::from(2);
+    let revocation_id = Field::from(2);
 
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(
-            user,
-            unique_id,
-            revocation_nullifier,
-        ),
+        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id, revocation_id),
     );
 }
 
@@ -120,18 +116,14 @@ unconstrained fn test_whitelisted_guardian_issue_certificate() {
     let guardian = env.create_light_account();
     let user = env.create_light_account();
     let unique_id = Field::from(1);
-    let revocation_nullifier = Field::from(1234562);
+    let revocation_id = Field::from(1234562);
 
     // Whitelist the guardian
     env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
 
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(
-            user,
-            unique_id,
-            revocation_nullifier,
-        ),
+        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id, revocation_id),
     );
 
     let certificates_count =
@@ -150,16 +142,12 @@ unconstrained fn test_user_proof_certificate_existence() {
     let guardian = env.create_light_account();
     let user = env.create_light_account();
     let unique_id = Field::from(1);
-    let revocation_nullifier = Field::from(1234561);
+    let revocation_id = Field::from(1234561);
 
     env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(
-            user,
-            unique_id,
-            revocation_nullifier,
-        ),
+        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id, revocation_id),
     );
 
     env.call_private(user, CertificateRegistry::at(contract_address).check_certificate());
@@ -181,16 +169,12 @@ unconstrained fn test_fail_user_proof_certificate_existence_after_guardian_remov
     let guardian = env.create_light_account();
     let user = env.create_light_account();
     let unique_id = Field::from(1);
-    let revocation_nullifier = Field::from(1234561);
+    let revocation_id = Field::from(1234561);
 
     env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(
-            user,
-            unique_id,
-            revocation_nullifier,
-        ),
+        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id, revocation_id),
     );
     env.call_public(
         admin,
@@ -211,27 +195,20 @@ unconstrained fn test_guardian_revoke_certificate() {
     let guardian = env.create_light_account();
     let user = env.create_light_account();
     let unique_id = Field::from(1);
-    let revocation_nullifier = Field::from(1234561);
+    let revocation_id = Field::from(1234561);
 
     env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(
-            user,
-            unique_id,
-            revocation_nullifier,
-        ),
+        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id, revocation_id),
     );
 
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).revoke_certificate(revocation_nullifier),
+        CertificateRegistry::at(contract_address).revoke_certificate(revocation_id),
     );
 
-    // check that the nullifier is now in the nullifier set
-    env.public_context(|context| {
-        assert(context.nullifier_exists(revocation_nullifier, contract_address));
-    });
+    // TODO: Check revocation status (not sure how to get the scheduled storage value for a delayed public mutable)
 }
 
 // Test: User cannot use a certificate after revocation
@@ -241,24 +218,20 @@ unconstrained fn test_fail_user_use_certificate_after_revocation() {
     let guardian = env.create_light_account();
     let user = env.create_light_account();
     let unique_id = Field::from(1);
-    let revocation_nullifier = Field::from(1234561);
+    let revocation_id = Field::from(1234561);
 
     env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(
-            user,
-            unique_id,
-            revocation_nullifier,
-        ),
+        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id, revocation_id),
     );
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).revoke_certificate(revocation_nullifier),
+        CertificateRegistry::at(contract_address).revoke_certificate(revocation_id),
     );
 
     env.mine_block();
-    env.mine_block_at(env.last_block_timestamp() + 24 * 60 * 60); // 24 hours from now
+    env.mine_block_at(env.last_block_timestamp() + 24 * 60 * 60); // 24 hours from now to pass the delay
 
     env.call_private(user, CertificateRegistry::at(contract_address).check_certificate());
 }

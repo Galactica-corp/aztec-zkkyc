@@ -21,7 +21,6 @@ mod test;
 #[aztec]
 pub contract CertificateRegistry {
     use dep::aztec::{
-        history::nullifier_non_inclusion::ProveNullifierNonInclusion,
         macros::{functions::{external, initializer, only_self}, storage::storage},
         messages::message_delivery::MessageDelivery,
         note::{
@@ -31,9 +30,13 @@ pub contract CertificateRegistry {
         utils::comparison::Comparator,
     };
     use dep::aztec::protocol_types::address::AztecAddress;
-    use dep::aztec::state_vars::{Map, Owned, PrivateSet, PublicMutable};
+    use dep::aztec::state_vars::{
+        delayed_public_mutable::DelayedPublicMutable, Map, Owned, PrivateSet, PublicMutable,
+    };
 
     use crate::certificate_note::CertificateNote;
+
+    global REVOCATION_DELAY: u64 = 12 * 60 * 60; // 12 hours
 
     #[storage]
     struct Storage<Context> {
@@ -50,8 +53,11 @@ pub contract CertificateRegistry {
         // User address -> public KYC ok flag
         public_disclosures: Map<AztecAddress, PublicMutable<bool, Context>, Context>,
 
-        // Copy of issued certificates for the guardian
+        // Copy of issued certificates for the guardian, so that the guardian keep track of existing certificates in private.
         guardian_certificates_copies: Owned<PrivateSet<CertificateNote, Context>, Context>,
+
+        // Revocation map (delayed to be accessed in private transactions, true if revoked, false if not)
+        revocation_list: Map<Field, DelayedPublicMutable<bool, REVOCATION_DELAY, Context>, Context>,
     }
 
     #[external("public")]
@@ -86,19 +92,22 @@ pub contract CertificateRegistry {
      * @param certificate - The certificate to issue
      */
     #[external("private")]
-    fn issue_certificate(user: AztecAddress, unique_id: Field, revocation_nullifier: Field) {
+    fn issue_certificate(user: AztecAddress, unique_id: Field, revocation_id: Field) {
         let guardian = self.context.msg_sender().unwrap();
 
         self.enqueue_self._check_guardian_whitelisted(guardian);
 
-        let certificate = CertificateNote::new(user, guardian, unique_id, revocation_nullifier);
+        let certificate = CertificateNote::new(user, guardian, unique_id, revocation_id);
         self.storage.certificates.at(user).insert(certificate).deliver(
             MessageDelivery.CONSTRAINED_ONCHAIN,
         );
 
-        // Ensure that the revocation-nullifier is not already used
-        let header = self.context.get_anchor_block_header();
-        header.prove_nullifier_non_inclusion(revocation_nullifier);
+        // Test that the certificate has not been revoked already. This check might miss duplicates in the rare case due to the delay.
+        assert_eq(
+            self.storage.revocation_list.at(revocation_id).get_current_value(),
+            false,
+            "Revocation id already used",
+        );
 
         // Give the guardian a copy of the certificate note to remember the revocation-nullifier
         self.storage.guardian_certificates_copies.at(guardian).insert(certificate).deliver(
@@ -120,27 +129,34 @@ pub contract CertificateRegistry {
     }
 
     /**
-     * Revoke a certificate by providing the revocation-nullifier.
-     * @dev This function does not need to check if the sender is a whitelisted guardian, because only the guardian and the owner know the revocation-nullifier.
-     * @param revocation_nullifier - The revocation-nullifier to revoke the certificate with
+     * Revoke a certificate by setting the revocation flag to true.
+     * @dev The revocation is delayed so that it can be checked in private transactions.
+     * @param revocation_id - The revocation-id to revoke the certificate with
      */
     #[external("private")]
-    fn revoke_certificate(revocation_nullifier: Field) {
+    fn revoke_certificate(revocation_id: Field) {
         let guardian = self.context.msg_sender().unwrap();
+        self.enqueue_self._check_guardian_whitelisted(guardian);
 
         let options = NoteGetterOptions::new()
-            .select(
-                CertificateNote::properties().revocation_nullifier,
-                Comparator.EQ,
-                revocation_nullifier,
-            )
+            .select(CertificateNote::properties().revocation_id, Comparator.EQ, revocation_id)
             .set_limit(1);
         let certificate = self.storage.guardian_certificates_copies.at(guardian).pop_notes(options);
         assert(certificate.len() > 0, "No certificate found");
 
-        // Add the revocation-nullifier to the Aztec nullifier set
-        // Afterwards, the certificate can no longer be used because the usage checks for the non-existence of this nullifier
-        self.context.push_nullifier(revocation_nullifier);
+        // Set the revocation status to true
+        self.enqueue_self._set_revocation_status(revocation_id, true);
+    }
+
+    /**
+     * Set the revocation status for a given revocation-id.
+     * @param revocation_id - The revocation-id to set the status for
+     * @param status - The status to set (true if revoked, false if not)
+     */
+    #[external("public")]
+    #[only_self]
+    fn _set_revocation_status(revocation_id: Field, status: bool) {
+        self.storage.revocation_list.at(revocation_id).schedule_value_change(status);
     }
 
     /**
@@ -171,13 +187,11 @@ pub contract CertificateRegistry {
         self.enqueue_self._check_guardian_whitelisted(notes.get(0).guardian);
 
         // Check that the note has not been revoked
-        let header = self.context.get_anchor_block_header();
-        // We need to check for the siloed nullifier because the nullifier set is hashed with the contract address emitting it.
-        let siloed_nullifier = aztec::protocol_types::hash::compute_siloed_nullifier(
-            self.address,
-            notes.get(0).revocation_nullifier,
+        assert_eq(
+            self.storage.revocation_list.at(notes.get(0).revocation_id).get_current_value(),
+            false,
+            "Certificate revoked",
         );
-        header.prove_nullifier_non_inclusion(siloed_nullifier);
 
         // Put the certificate back into the storage to be used again
         self.storage.certificates.at(user).insert(notes.get(0)).deliver(

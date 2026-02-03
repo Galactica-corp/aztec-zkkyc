@@ -15,8 +15,8 @@ pub struct CertificateNote {
     // The certificate data
     pub unique_id: Field,
 
-    // A secret that can be used by the guardian or the owner to revoke the certificate
-    pub revocation_nullifier: Field,
+    // A random id that can be used to revoke the certificate, assumed to be unique
+    pub revocation_id: Field,
     // We omit a generic expiration date. Guardians can revoke the certificate if needed, so we keep it simple for the user.
 }
 
@@ -26,9 +26,9 @@ impl CertificateNote {
         owner: AztecAddress,
         guardian: AztecAddress,
         unique_id: Field,
-        revocation_nullifier: Field,
+        revocation_id: Field,
     ) -> Self {
-        Self { owner, guardian, unique_id, revocation_nullifier }
+        Self { owner, guardian, unique_id, revocation_id }
     }
 
     // Helper method to access the note data
@@ -37,7 +37,7 @@ impl CertificateNote {
             owner: self.owner,
             guardian: self.guardian,
             unique_id: self.unique_id,
-            revocation_nullifier: self.revocation_nullifier,
+            revocation_id: self.revocation_id,
         }
     }
 }
