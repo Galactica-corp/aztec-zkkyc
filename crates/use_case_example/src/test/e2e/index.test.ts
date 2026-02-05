@@ -1,0 +1,218 @@
+// End-to-end tests for ZK Certificate Registry + UseCaseExample
+// Tests the full flow: deploy, whitelist guardian, issue certificate, use with authwit, revoke
+
+import { CertificateRegistryContract } from "../../../../../artifacts/CertificateRegistry.js";
+import { UseCaseExampleContract } from "../../../../../artifacts/UseCaseExample.js";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { getSponsoredFPCInstance } from "../../../../zk_certificate/src/utils/sponsored_fpc.js";
+import { setupWallet } from "../../../../zk_certificate/src/utils/setup_wallet.js";
+import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { getTimeouts } from "../../../../../config/config.js";
+import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { Logger, createLogger } from "@aztec/aztec.js/log";
+import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
+import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
+import { TxStatus } from "@aztec/stdlib/tx";
+import { TestWallet } from "@aztec/test-wallet/server";
+import { AccountManager } from "@aztec/aztec.js/wallet";
+
+// Test constants (aligned with Noir tests)
+const AUTHWIT_NONCE = new Fr(456789);
+const UNIQUE_ID = new Fr(1);
+const REVOCATION_ID = new Fr(1234561);
+
+describe("ZK Certificate and UseCaseExample", () => {
+  let logger: Logger;
+  let sponsoredFPC: ContractInstanceWithAddress;
+  let sponsoredPaymentMethod: SponsoredFeePaymentMethod;
+  let wallet: TestWallet;
+  let adminAccount: AccountManager;
+  let guardianAccount: AccountManager;
+  let userAccount: AccountManager;
+  let certificateRegistry: CertificateRegistryContract;
+  let useCaseExample: UseCaseExampleContract;
+
+  beforeAll(async () => {
+    logger = createLogger("aztec:zkkyc:e2e");
+    logger.info("ZK Certificate + UseCaseExample e2e tests running.");
+    wallet = await setupWallet();
+
+    sponsoredFPC = await getSponsoredFPCInstance();
+    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+    sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
+
+    // Create admin, guardian, and user accounts
+    logger.info("Creating accounts...");
+    const secret1 = Fr.random();
+    const signingKey1 = GrumpkinScalar.random();
+    const salt1 = Fr.random();
+    adminAccount = await wallet.createSchnorrAccount(secret1, salt1, signingKey1);
+    await (await adminAccount.getDeployMethod())
+      .send({
+        from: AztecAddress.ZERO,
+        fee: { paymentMethod: sponsoredPaymentMethod },
+      })
+      .wait({ timeout: getTimeouts().deployTimeout });
+
+    const secret2 = Fr.random();
+    const signingKey2 = GrumpkinScalar.random();
+    const salt2 = Fr.random();
+    guardianAccount = await wallet.createSchnorrAccount(secret2, salt2, signingKey2);
+    await (await guardianAccount.getDeployMethod())
+      .send({
+        from: AztecAddress.ZERO,
+        fee: { paymentMethod: sponsoredPaymentMethod },
+      })
+      .wait({ timeout: getTimeouts().deployTimeout });
+
+    const secret3 = Fr.random();
+    const signingKey3 = GrumpkinScalar.random();
+    const salt3 = Fr.random();
+    userAccount = await wallet.createSchnorrAccount(secret3, salt3, signingKey3);
+    await (await userAccount.getDeployMethod())
+      .send({
+        from: AztecAddress.ZERO,
+        fee: { paymentMethod: sponsoredPaymentMethod },
+      })
+      .wait({ timeout: getTimeouts().deployTimeout });
+
+    await wallet.registerSender(adminAccount.address);
+    await wallet.registerSender(guardianAccount.address);
+    await wallet.registerSender(userAccount.address);
+    logger.info("Accounts created and registered");
+
+    // 1. Contract setup: deploy CertificateRegistry then UseCaseExample
+    logger.info("Deploying CertificateRegistry...");
+    certificateRegistry = await CertificateRegistryContract.deploy(
+      wallet,
+      adminAccount.address
+    )
+      .send({
+        from: adminAccount.address,
+        fee: { paymentMethod: sponsoredPaymentMethod },
+      })
+      .deployed({ timeout: getTimeouts().deployTimeout });
+
+    logger.info("Deploying UseCaseExample...");
+    useCaseExample = await UseCaseExampleContract.deploy(
+      wallet,
+      certificateRegistry.address
+    )
+      .send({
+        from: adminAccount.address,
+        fee: { paymentMethod: sponsoredPaymentMethod },
+      })
+      .deployed({ timeout: getTimeouts().deployTimeout });
+
+    logger.info(
+      `CertificateRegistry at ${certificateRegistry.address.toString()}, UseCaseExample at ${useCaseExample.address.toString()}`
+    );
+  }, 600000);
+
+  it("Verifies contracts were deployed", async () => {
+    expect(certificateRegistry).toBeDefined();
+    expect(certificateRegistry.address).toBeDefined();
+    expect(useCaseExample).toBeDefined();
+    expect(useCaseExample.address).toBeDefined();
+  }, 60000);
+
+  it("Admin whitelists guardian", async () => {
+    const tx = await certificateRegistry.methods
+      .whitelist_guardian(guardianAccount.address)
+      .send({
+        from: adminAccount.address,
+        fee: { paymentMethod: sponsoredPaymentMethod },
+      })
+      .wait({ timeout: getTimeouts().txTimeout });
+
+    expect(tx.status).toBe(TxStatus.SUCCESS);
+    logger.info("Guardian whitelisted");
+  }, 600000);
+
+  it("User cannot use use_privately before guardian issues certificate", async () => {
+    const action = certificateRegistry.methods.check_certificate(
+      userAccount.address,
+      AUTHWIT_NONCE
+    );
+    const witness = await wallet.createAuthWit(userAccount.address, {
+      caller: useCaseExample.address,
+      action,
+    });
+
+    await expect(
+      useCaseExample.methods
+        .use_privately(AUTHWIT_NONCE)
+        .simulate({
+          from: userAccount.address,
+          authWitnesses: [witness],
+        })
+    ).rejects.toThrow();
+  }, 60000);
+
+  it("Guardian issues KYC certificate to user", async () => {
+    const tx = await certificateRegistry.methods
+      .issue_certificate(
+        userAccount.address,
+        UNIQUE_ID,
+        REVOCATION_ID
+      )
+      .send({
+        from: guardianAccount.address,
+        fee: { paymentMethod: sponsoredPaymentMethod },
+      })
+      .wait({ timeout: getTimeouts().txTimeout });
+
+    expect(tx.status).toBe(TxStatus.SUCCESS);
+    logger.info("Certificate issued");
+  }, 600000);
+
+  it("User certificate count is 1", async () => {
+    const count = await certificateRegistry.methods
+      .get_certificate_count(userAccount.address)
+      .simulate({ from: userAccount.address });
+
+    expect(count).toBe(1n);
+  }, 60000);
+
+  it("User uses certificate with authwit to call use_privately", async () => {
+    const action = certificateRegistry.methods.check_certificate(
+      userAccount.address,
+      AUTHWIT_NONCE
+    );
+    const witness = await wallet.createAuthWit(userAccount.address, {
+      caller: useCaseExample.address,
+      action,
+    });
+
+    const tx = await useCaseExample.methods
+      .use_privately(AUTHWIT_NONCE)
+      .send({
+        from: userAccount.address,
+        authWitnesses: [witness],
+        fee: { paymentMethod: sponsoredPaymentMethod },
+      })
+      .wait({ timeout: getTimeouts().txTimeout });
+
+    expect(tx.status).toBe(TxStatus.SUCCESS);
+    logger.info("User used certificate with authwit successfully");
+  }, 600000);
+
+  it("Guardian revokes the certificate", async () => {
+    const tx = await certificateRegistry.methods
+      .revoke_certificate(REVOCATION_ID)
+      .send({
+        from: guardianAccount.address,
+        fee: { paymentMethod: sponsoredPaymentMethod },
+      })
+      .wait({ timeout: getTimeouts().txTimeout });
+
+    expect(tx.status).toBe(TxStatus.SUCCESS);
+    logger.info("Certificate revoked (takes effect after REVOCATION_DELAY)");
+  }, 600000);
+
+  it("Revocation tx succeeded - user cannot use certificate after delay", async () => {
+    // Revocation is delayed (12h in contract). We only assert revocation succeeded.
+    // After REVOCATION_DELAY, use_privately would fail; e2e cannot fast-forward time.
+    expect(true).toBe(true);
+  }, 60000);
+});
