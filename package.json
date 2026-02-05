@@ -6,6 +6,9 @@
   "author": "Galactica Network <info@galactica.com>",
   "license": "MIT",
   "private": true,
+  "workspaces": [
+    "apps/demo"
+  ],
   "type": "module",
   "scripts": {
     "fees": "NODE_NO_WARNINGS=1 node --loader ts-node/esm scripts/fees.ts",

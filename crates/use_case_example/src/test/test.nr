@@ -1,5 +1,4 @@
 use crate::test::utils;
-use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
 use dep::aztec::test::helpers::authwit::add_private_authwit_from_call;
 
 use dep::zk_certificate::CertificateRegistry;
