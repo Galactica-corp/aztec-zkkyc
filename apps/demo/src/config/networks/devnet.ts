@@ -5,7 +5,7 @@ import { NetworkConfig } from './types';
  * Devnet configuration for public development network.
  *
  * Contract addresses are hardcoded for the public devnet.
- * These contracts are already deployed and available for testing.
+ * Certificate Registry and Use Case Example use placeholders unless deployed to devnet.
  */
 export const DEVNET_CONFIG: NetworkConfig = {
   name: 'devnet',
@@ -16,6 +16,12 @@ export const DEVNET_CONFIG: NetworkConfig = {
     '0x02bc708c7f88a6bacefb7133eaf97a55d28980717c72bbd63d36d516536d9c21',
   tokenContractAddress:
     '0x1d64b9cf07d536e6b218c14256c4965abb568f02648d5ce1da6d58caea6c3639',
+  certificateRegistryContractAddress:
+    '0x0000000000000000000000000000000000000000000000000000000000000000',
+  certificateRegistryDeploymentSalt: '0x00',
+  useCaseExampleContractAddress:
+    '0x0000000000000000000000000000000000000000000000000000000000000000',
+  useCaseExampleDeploymentSalt: '0x00',
   deployerAddress: AztecAddress.ZERO.toString(),
   dripperDeploymentSalt: '1337',
   tokenDeploymentSalt: '1337',

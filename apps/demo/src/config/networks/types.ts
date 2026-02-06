@@ -28,6 +28,10 @@ export interface NetworkConfig {
   dripperDeploymentSalt: string;
   tokenContractAddress: string;
   tokenDeploymentSalt: string;
+  certificateRegistryContractAddress: string;
+  certificateRegistryDeploymentSalt: string;
+  useCaseExampleContractAddress: string;
+  useCaseExampleDeploymentSalt: string;
   proverEnabled: boolean;
   isTestnet: boolean;
   /** Fee payment contracts configuration (keyed by contract name, e.g., 'metered') */

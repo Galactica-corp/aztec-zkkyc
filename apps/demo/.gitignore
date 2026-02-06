@@ -28,6 +28,7 @@ tsconfig.tsbuildinfo
 scripts/.store*
 ./deployed-contract.json
 ./wallet-info.json
+.deploy-output.json
 
 contracts/target
 codegenCache.json

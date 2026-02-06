@@ -13,13 +13,18 @@ export interface ContractDeployment {
 }
 
 /**
- * Full deployment configuration for a network
+ * Full deployment configuration for a network.
+ * certificateRegistryContract and useCaseExampleContract are populated by scripts/deploy_contract.ts (root).
  */
 export interface DeploymentConfig {
   network: NetworkType;
   nodeUrl: string;
   dripperContract: ContractDeployment;
   tokenContract: ContractDeployment;
+  /** Set by root yarn deploy (scripts/deploy_contract.ts) */
+  certificateRegistryContract?: ContractDeployment;
+  /** Set by root yarn deploy (scripts/deploy_contract.ts) */
+  useCaseExampleContract?: ContractDeployment;
   deployer: string;
   proverEnabled: boolean;
   deployedAt: string;
@@ -45,7 +50,8 @@ export const isDeploymentValid = (config: DeploymentConfig): boolean => {
 };
 
 /**
- * Default sandbox deployment config (placeholder until contracts are deployed)
+ * Default sandbox deployment config (placeholder until contracts are deployed).
+ * Run `yarn deploy` from repo root to deploy Certificate Registry + Use Case Example and update this file.
  */
 export const DEFAULT_SANDBOX_DEPLOYMENT: DeploymentConfig = {
   network: 'sandbox',
@@ -55,6 +61,14 @@ export const DEFAULT_SANDBOX_DEPLOYMENT: DeploymentConfig = {
     salt: PLACEHOLDER_SALT,
   },
   tokenContract: {
+    address: PLACEHOLDER_ADDRESS,
+    salt: PLACEHOLDER_SALT,
+  },
+  certificateRegistryContract: {
+    address: PLACEHOLDER_ADDRESS,
+    salt: PLACEHOLDER_SALT,
+  },
+  useCaseExampleContract: {
     address: PLACEHOLDER_ADDRESS,
     salt: PLACEHOLDER_SALT,
   },
@@ -74,6 +88,14 @@ export const DEFAULT_DEVNET_DEPLOYMENT: DeploymentConfig = {
     salt: PLACEHOLDER_SALT,
   },
   tokenContract: {
+    address: PLACEHOLDER_ADDRESS,
+    salt: PLACEHOLDER_SALT,
+  },
+  certificateRegistryContract: {
+    address: PLACEHOLDER_ADDRESS,
+    salt: PLACEHOLDER_SALT,
+  },
+  useCaseExampleContract: {
     address: PLACEHOLDER_ADDRESS,
     salt: PLACEHOLDER_SALT,
   },

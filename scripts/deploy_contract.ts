@@ -10,6 +10,7 @@ import { getCertificateRegistryAdminAddress } from "../crates/zk_certificate/src
 import { CertificateRegistryContract } from "../artifacts/CertificateRegistry.js";
 import { UseCaseExampleContract } from "../artifacts/UseCaseExample.js";
 import { ContractBase, DeployMethod } from "@aztec/aztec.js/contracts";
+import { updateDemoSandboxDeployment } from "./utils/update-demo-sandbox.js";
 
 async function main() {
   let logger: Logger;
@@ -95,6 +96,25 @@ async function main() {
   logger.info(`   - Use Case Example Contract Address: ${useCaseExampleContract.address}`);
   logger.info(`   - Admin Address: ${adminAddress}`);
   logger.info(`   - Sponsored FPC: ${sponsoredFPC.address}`);
+
+  // Update demo app sandbox deployment so Settings show these contracts
+  const certInstance = await certificateDeployMethod.getInstance();
+  const useCaseInstance = await useCaseExampleDeployMethod.getInstance();
+  if (certInstance && useCaseInstance) {
+    updateDemoSandboxDeployment({
+      certificateRegistryContract: {
+        address: certificateRegistryContract.address.toString(),
+        salt: certInstance.salt.toString(),
+      },
+      useCaseExampleContract: {
+        address: useCaseExampleContract.address.toString(),
+        salt: useCaseInstance.salt.toString(),
+      },
+      deployer: address.toString(),
+      nodeUrl: "http://localhost:8080",
+      logger,
+    });
+  }
 }
 
 main().catch((error) => {
