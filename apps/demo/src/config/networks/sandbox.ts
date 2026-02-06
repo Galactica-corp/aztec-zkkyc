@@ -38,6 +38,8 @@ export const SANDBOX_CONFIG: NetworkConfig = {
   certificateRegistryContractAddress:
     certRegistry?.address ?? PLACEHOLDER_ADDRESS,
   certificateRegistryDeploymentSalt: certRegistry?.salt ?? PLACEHOLDER_SALT,
+  certificateRegistryAdminAddress:
+    deployment.certificateRegistryAdminAddress ?? PLACEHOLDER_ADDRESS,
   useCaseExampleContractAddress:
     useCaseExample?.address ?? PLACEHOLDER_ADDRESS,
   useCaseExampleDeploymentSalt: useCaseExample?.salt ?? PLACEHOLDER_SALT,

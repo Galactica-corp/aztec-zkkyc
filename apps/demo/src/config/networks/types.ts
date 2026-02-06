@@ -30,6 +30,8 @@ export interface NetworkConfig {
   tokenDeploymentSalt: string;
   certificateRegistryContractAddress: string;
   certificateRegistryDeploymentSalt: string;
+  /** Admin address used in Certificate Registry constructor (synced from deploy script) */
+  certificateRegistryAdminAddress: string;
   useCaseExampleContractAddress: string;
   useCaseExampleDeploymentSalt: string;
   proverEnabled: boolean;

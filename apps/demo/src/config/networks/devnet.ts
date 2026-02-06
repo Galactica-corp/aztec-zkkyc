@@ -19,6 +19,8 @@ export const DEVNET_CONFIG: NetworkConfig = {
   certificateRegistryContractAddress:
     '0x0000000000000000000000000000000000000000000000000000000000000000',
   certificateRegistryDeploymentSalt: '0x00',
+  certificateRegistryAdminAddress:
+    '0x0000000000000000000000000000000000000000000000000000000000000000',
   useCaseExampleContractAddress:
     '0x0000000000000000000000000000000000000000000000000000000000000000',
   useCaseExampleDeploymentSalt: '0x00',

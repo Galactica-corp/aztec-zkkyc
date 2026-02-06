@@ -7,6 +7,7 @@
  * The JSON file must contain:
  *   certificateRegistryContract: { address: string, salt: string }
  *   useCaseExampleContract: { address: string, salt: string }
+ *   certificateRegistryAdminAddress: string
  *   deployer: string
  *   nodeUrl?: string
  */
@@ -25,6 +26,7 @@ const SANDBOX_JSON_PATH = path.join(
 export interface DeploymentPayload {
   certificateRegistryContract: { address: string; salt: string };
   useCaseExampleContract: { address: string; salt: string };
+  certificateRegistryAdminAddress: string;
   deployer: string;
   nodeUrl?: string;
 }
@@ -45,13 +47,23 @@ function main(): void {
     process.exit(1);
   }
 
-  const { certificateRegistryContract, useCaseExampleContract, deployer, nodeUrl } = payload;
+  const {
+    certificateRegistryContract,
+    useCaseExampleContract,
+    certificateRegistryAdminAddress,
+    deployer,
+    nodeUrl,
+  } = payload;
   if (!certificateRegistryContract?.address || !certificateRegistryContract?.salt) {
     console.error("Payload must include certificateRegistryContract.address and .salt");
     process.exit(1);
   }
   if (!useCaseExampleContract?.address || !useCaseExampleContract?.salt) {
     console.error("Payload must include useCaseExampleContract.address and .salt");
+    process.exit(1);
+  }
+  if (!certificateRegistryAdminAddress) {
+    console.error("Payload must include certificateRegistryAdminAddress");
     process.exit(1);
   }
   if (!deployer) {
@@ -77,6 +89,7 @@ function main(): void {
 
   deployment.certificateRegistryContract = certificateRegistryContract;
   deployment.useCaseExampleContract = useCaseExampleContract;
+  deployment.certificateRegistryAdminAddress = certificateRegistryAdminAddress;
   deployment.deployer = deployer;
   deployment.nodeUrl = deployment.nodeUrl ?? nodeUrl ?? "http://localhost:8080";
   deployment.deployedAt = new Date().toISOString();

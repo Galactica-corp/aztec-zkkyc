@@ -16,6 +16,8 @@ const DEPLOY_OUTPUT_JSON = path.join(APPS_DEMO, ".deploy-output.json");
 export interface UpdateDemoSandboxParams {
   certificateRegistryContract: { address: string; salt: string };
   useCaseExampleContract: { address: string; salt: string };
+  /** Admin address used in Certificate Registry constructor (from getCertificateRegistryAdminAddress) */
+  certificateRegistryAdminAddress: string;
   deployer: string;
   nodeUrl?: string;
   logger?: { info: (msg: string) => void; warn: (msg: string) => void };
@@ -33,6 +35,7 @@ export function updateDemoSandboxDeployment(
     const payload = {
       certificateRegistryContract: params.certificateRegistryContract,
       useCaseExampleContract: params.useCaseExampleContract,
+      certificateRegistryAdminAddress: params.certificateRegistryAdminAddress,
       deployer: params.deployer,
       nodeUrl: params.nodeUrl ?? "http://localhost:8080",
     };

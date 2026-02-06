@@ -9,7 +9,16 @@
     "address": "0x20a9b438a5939c854ee23e685c26e9725332f36b65a7870e690b7ad8f21c7491",
     "salt": "0x0000000000000000000000000000000000000000000000000000000000000539"
   },
-  "deployer": "0x18b1cbdcec832adbece3fb2aafa7cd0a6b7a892b76f85efc1499593b2556b20f",
+  "deployer": "0x03e93536ca14e901ff39a02cc4485d8b1801f7801ab499f3d46a02ad3e5d0da9",
   "proverEnabled": false,
-  "deployedAt": "2026-02-05T15:12:34.547Z"
+  "deployedAt": "2026-02-06T14:10:32.084Z",
+  "certificateRegistryContract": {
+    "address": "0x10a730c0c3d029b56b43c325b1b348117a5822cc1832e149fd18b9d37512aaac",
+    "salt": "0x16398477e615add660d0cb5618083fc0c31af0bbc2ba040d2db2cf6681db3502"
+  },
+  "useCaseExampleContract": {
+    "address": "0x184663d17f18cb7710c78301ca551d66692e7e07316f8c6708f96b3f6741d74d",
+    "salt": "0x12802689670eed85bc459e62cb7429653379e9f8a228a2a96d04833686eee18d"
+  },
+  "certificateRegistryAdminAddress": "0x0a2ca8b29f8834cff026f362aba3b9da1b83256bc043983edf34d810d43b483f"
 }

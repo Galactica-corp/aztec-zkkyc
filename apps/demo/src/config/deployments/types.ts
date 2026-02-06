@@ -25,6 +25,8 @@ export interface DeploymentConfig {
   certificateRegistryContract?: ContractDeployment;
   /** Set by root yarn deploy (scripts/deploy_contract.ts) */
   useCaseExampleContract?: ContractDeployment;
+  /** Admin address used in Certificate Registry constructor; set by root yarn deploy */
+  certificateRegistryAdminAddress?: string;
   deployer: string;
   proverEnabled: boolean;
   deployedAt: string;
@@ -72,6 +74,7 @@ export const DEFAULT_SANDBOX_DEPLOYMENT: DeploymentConfig = {
     address: PLACEHOLDER_ADDRESS,
     salt: PLACEHOLDER_SALT,
   },
+  certificateRegistryAdminAddress: PLACEHOLDER_ADDRESS,
   deployer: PLACEHOLDER_ADDRESS,
   proverEnabled: false,
   deployedAt: '',
@@ -99,6 +102,7 @@ export const DEFAULT_DEVNET_DEPLOYMENT: DeploymentConfig = {
     address: PLACEHOLDER_ADDRESS,
     salt: PLACEHOLDER_SALT,
   },
+  certificateRegistryAdminAddress: PLACEHOLDER_ADDRESS,
   deployer: PLACEHOLDER_ADDRESS,
   proverEnabled: true,
   deployedAt: '',

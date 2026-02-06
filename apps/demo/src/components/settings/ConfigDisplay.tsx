@@ -19,6 +19,10 @@ const CONFIG_FIELDS: ConfigField[] = [
         key: 'certificateRegistryContractAddress',
         label: 'Certificate Registry Contract',
     },
+    {
+        key: 'certificateRegistryAdminAddress',
+        label: 'Certificate Registry Admin',
+    },
     { key: 'useCaseExampleContractAddress', label: 'Use Case Example Contract' },
     { key: 'deployerAddress', label: 'Deployer Address' },
     {
@@ -60,7 +64,11 @@ export const ConfigDisplay: React.FC<ConfigDisplayProps> = ({
                     const value = config[key];
                     const displayValue = formatter
                         ? formatter(value as boolean)
-                        : value || 'Not configured';
+                        : value === undefined || value === null
+                            ? 'Not configured'
+                            : typeof value === 'object'
+                                ? JSON.stringify(value)
+                                : String(value);
 
                     return (
                         <div key={key} className={styles.row}>

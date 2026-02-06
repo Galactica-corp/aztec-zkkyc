@@ -110,6 +110,7 @@ async function main() {
         address: useCaseExampleContract.address.toString(),
         salt: useCaseInstance.salt.toString(),
       },
+      certificateRegistryAdminAddress: adminAddress.toString(),
       deployer: address.toString(),
       nodeUrl: "http://localhost:8080",
       logger,
