@@ -18,7 +18,7 @@ export const getDappMetadata = (): DappMetadata => {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
   return {
-    name: 'Aztec Web Boilerplate',
+    name: 'Aztec ZK KYC Demo',
     description: 'Privacy-first application built on Aztec Network',
     url: origin,
     icon: origin ? `${origin}/favicon.ico` : '',

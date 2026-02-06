@@ -69,7 +69,7 @@ const AZGUARD_METHODS = [
 ] as const;
 
 const buildDappMetadata = () => ({
-  name: 'Aztec Web Boilerplate',
+  name: 'Aztec ZK KYC Demo',
   description: 'Privacy-first application built on Aztec Network',
   url: typeof window !== 'undefined' ? window.location.origin : undefined,
 });
