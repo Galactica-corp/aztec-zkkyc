@@ -1,4 +1,4 @@
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig, Plugin, searchForWorkspaceRoot } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import wasm from 'vite-plugin-wasm';
@@ -158,7 +158,9 @@ export default defineConfig({
       'Cross-Origin-Resource-Policy': 'cross-origin',
     },
     fs: {
-      allow: ['..'],
+      // Allow serving from workspace root so @aztec/noir-acvm_js web/acvm_js_bg.wasm
+      // (and other hoisted deps) can be resolved when dev server runs from apps/demo
+      allow: ['..', searchForWorkspaceRoot(process.cwd())],
     },
   },
   preview: {
