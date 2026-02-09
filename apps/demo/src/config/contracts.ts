@@ -1,3 +1,4 @@
+import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { Fr } from '@aztec/aztec.js/fields';
 import { DripperContract } from '../artifacts/Dripper.js';
 import { TokenContract } from '../artifacts/Token.js';
@@ -49,13 +50,22 @@ export const contractsConfig = createContractConfig({
     lazyRegister: true,
   },
 
+  /**
+   * Certificate Registry and Use Case Example are deployed by the root script
+   * (scripts/deploy_contract.ts) with a real deployer account, not universal deploy.
+   * So we must use config.deployerAddress for instantiation params to match the
+   * deployed addresses. getDeployerAddress(config) returns ZERO for sandbox (used
+   * for Dripper/Token which use universal deploy from the demo deploy script).
+   */
   certificateRegistry: {
     artifact: CertificateRegistryContract.artifact,
     contract: CertificateRegistryContract,
     address: (config) => config.certificateRegistryContractAddress,
     deployParams: (config) => ({
       salt: Fr.fromString(config.certificateRegistryDeploymentSalt),
-      deployer: getDeployerAddress(config),
+      deployer: config.deployerAddress
+        ? AztecAddress.fromString(config.deployerAddress)
+        : getDeployerAddress(config),
       constructorArgs: [config.certificateRegistryAdminAddress],
       constructorArtifact: 'constructor',
     }),
@@ -67,7 +77,9 @@ export const contractsConfig = createContractConfig({
     address: (config) => config.useCaseExampleContractAddress,
     deployParams: (config) => ({
       salt: Fr.fromString(config.useCaseExampleDeploymentSalt),
-      deployer: getDeployerAddress(config),
+      deployer: config.deployerAddress
+        ? AztecAddress.fromString(config.deployerAddress)
+        : getDeployerAddress(config),
       constructorArgs: [config.certificateRegistryContractAddress],
       constructorArtifact: 'constructor',
     }),
