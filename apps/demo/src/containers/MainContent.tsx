@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Coins, Wrench, Settings, Layers } from 'lucide-react';
+import { Coins, FileCheck, Wrench, Settings, Layers } from 'lucide-react';
 import { useAztecWallet, isEmbeddedConnector } from '../aztec-wallet';
 import { Tabs, SecurityWarning } from '../components';
 import { TabConfig, TabType } from '../types';
 import { iconSize } from '../utils';
+import { CertificateRegistryCard } from './CertificateRegistryCard';
 import { ContractInteractionCard } from './ContractInteractionCard';
 import { DripperCard } from './DripperCard';
 import { SettingsCard } from './SettingsCard';
@@ -28,6 +29,12 @@ export const MainContent: React.FC = () => {
       label: 'Mint Tokens',
       icon: <Coins size={iconSize('md')} />,
       component: <DripperCard />,
+    },
+    {
+      id: 'certificate-registry',
+      label: 'Certificate Registry',
+      icon: <FileCheck size={iconSize('md')} />,
+      component: <CertificateRegistryCard />,
     },
     {
       id: 'contract',

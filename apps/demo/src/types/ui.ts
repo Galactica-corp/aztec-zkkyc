@@ -2,7 +2,12 @@
 // UI COMPONENT TYPES
 // ============================================================================
 
-export type TabType = 'mint' | 'settings' | 'contract' | 'components';
+export type TabType =
+  | 'mint'
+  | 'certificate-registry'
+  | 'settings'
+  | 'contract'
+  | 'components';
 
 export interface TabConfig {
   id: TabType;

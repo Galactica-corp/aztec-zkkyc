@@ -24,6 +24,11 @@ export const queryKeys = {
     address: (method: string, configHash: string) =>
       [...queryKeys.feePayer.all, 'address', method, configHash] as const,
   },
+  certificates: {
+    all: ['certificates'] as const,
+    list: (contractAddress: string, ownerAddress: string) =>
+      [...queryKeys.certificates.all, contractAddress, ownerAddress] as const,
+  },
 } as const;
 
 /**

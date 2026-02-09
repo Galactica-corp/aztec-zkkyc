@@ -1,3 +1,4 @@
+export { CertificateRegistryCard } from './CertificateRegistryCard';
 export { DripperCard } from './DripperCard';
 export { Layout } from './Layout';
 export { SettingsCard } from './SettingsCard';
