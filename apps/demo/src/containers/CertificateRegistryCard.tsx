@@ -19,7 +19,7 @@ import {
   TabsContent,
 } from '../components/ui';
 import { useRequiredContracts, useCertificates } from '../hooks';
-import { useWriteContract, useReadContract } from '../hooks/contracts';
+import { useWriteContract } from '../hooks/contracts';
 import { useToast } from '../hooks';
 import { contractsConfig } from '../config/contracts';
 import { CertificateRegistryContract } from '../../../../artifacts/CertificateRegistry';
@@ -88,7 +88,6 @@ export const CertificateRegistryCard: React.FC = () => {
   } = useRequiredContracts(['certificateRegistry'] as const);
 
   const { writeContract, isPending: writePending } = useWriteContract();
-  const { readContract, isPending: readPending } = useReadContract();
   const {
     certificates,
     isLoading: certificatesLoading,
@@ -117,10 +116,6 @@ export const CertificateRegistryCard: React.FC = () => {
   // Form state: revoke_certificate
   const [revokeRevocationId, setRevokeRevocationId] = useState('');
 
-  // Form state: get_certificate_count
-  const [countOwner, setCountOwner] = useState('');
-  const [certificateCount, setCertificateCount] = useState<number | null>(null);
-
   // Form state: check_certificate (uses connected account + authwit_nonce 0)
   const [checkCertificateStatus, setCheckCertificateStatus] = useState<
     'idle' | 'pending' | 'success'
@@ -129,7 +124,7 @@ export const CertificateRegistryCard: React.FC = () => {
   // Form state: cancel_authwit
   const [cancelInnerHash, setCancelInnerHash] = useState('');
 
-  const isProcessing = writePending || readPending;
+  const isProcessing = writePending;
   const connectorStatus = connector?.getStatus().status;
   const isWalletBusy =
     connectorStatus === 'connecting' || connectorStatus === 'deploying';
@@ -275,26 +270,6 @@ export const CertificateRegistryCard: React.FC = () => {
     success,
     toastError,
   ]);
-
-  const handleGetCertificateCount = useCallback(async () => {
-    if (!registryAddress || !countOwner.trim()) return;
-    try {
-      const result = await readContract({
-        contract: CertificateRegistryContract,
-        address: registryAddress,
-        functionName: 'get_certificate_count',
-        args: [AztecAddress.fromString(countOwner.trim())],
-      });
-      if (result.success && result.data !== undefined) {
-        setCertificateCount(Number(result.data));
-        success('Count loaded', `${result.data} certificate(s)`);
-      } else {
-        toastError('Failed', result.error ?? 'Unknown error');
-      }
-    } catch (err) {
-      toastError('Failed', err instanceof Error ? err.message : 'Unknown error');
-    }
-  }, [registryAddress, countOwner, readContract, success, toastError]);
 
   const handleCheckCertificate = useCallback(async () => {
     if (!registryAddress || !connectedAddress) return;
@@ -645,41 +620,6 @@ export const CertificateRegistryCard: React.FC = () => {
                   )}
                 </div>
               )}
-              <section className={styles.section}>
-                <h3 className={styles.sectionTitle}>Certificate count</h3>
-                <div className={styles.row}>
-                  <div className={cn(styles.formGroup, styles.inputFlex)}>
-                    <label htmlFor="cert-count-owner" className={styles.label}>
-                      Owner address
-                    </label>
-                    <Input
-                      id="cert-count-owner"
-                      value={countOwner}
-                      onChange={(e) => setCountOwner(e.target.value)}
-                      placeholder="0x..."
-                      disabled={isProcessing || !contractsReady}
-                    />
-                  </div>
-                  <Button
-                    variant="secondary"
-                    onClick={handleGetCertificateCount}
-                    disabled={
-                      !countOwner.trim() ||
-                      isProcessing ||
-                      isWalletBusy ||
-                      !contractsReady
-                    }
-                    isLoading={readPending}
-                  >
-                    Get count
-                  </Button>
-                </div>
-                {certificateCount !== null && (
-                  <p className="text-sm text-muted mt-2">
-                    Certificate count: <strong>{certificateCount}</strong>
-                  </p>
-                )}
-              </section>
               <section className={styles.section}>
                 <h3 className={styles.sectionTitle}>Check certificate</h3>
                 <p className={styles.checkHelper}>
