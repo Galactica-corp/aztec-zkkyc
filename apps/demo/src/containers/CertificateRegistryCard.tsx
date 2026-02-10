@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { FileCheck, AlertTriangle, Shield } from 'lucide-react';
+import { FileCheck, AlertTriangle, Shield, RefreshCw, Loader2, CheckCircle } from 'lucide-react';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { useAztecWallet } from '../aztec-wallet';
 import {
@@ -10,6 +10,9 @@ import {
   CardContent,
   Input,
   Button,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
 } from '../components/ui';
 import { useRequiredContracts, useCertificates } from '../hooks';
 import { useWriteContract, useReadContract } from '../hooks/contracts';
@@ -25,8 +28,10 @@ const styles = {
   formContainer: 'space-y-6',
   // My certificates section (top)
   certificatesSection: 'rounded-xl border border-default bg-surface-secondary shadow-theme p-4 mb-4',
-  certificatesSectionTitle: 'flex items-center gap-2 text-base font-semibold text-default pb-3',
+  certificatesSectionHeader: 'flex items-center justify-between gap-2 pb-3',
+  certificatesSectionTitle: 'flex items-center gap-2 text-base font-semibold text-default',
   certificatesSectionTitleIcon: 'text-accent',
+  certificatesReloadButton: 'shrink-0',
   certificatesFetchingBadge: 'ml-1 inline-block',
   certificatesLoading: 'flex items-center justify-center gap-3 py-6 text-muted',
   certificatesLoadingSpinner:
@@ -54,10 +59,17 @@ const styles = {
   errorIcon: 'text-amber-500 mx-auto mb-2',
   errorTitle: 'text-lg font-semibold text-default mb-1',
   errorText: 'text-sm text-muted',
+  // Check certificate status indicator
+  checkStatusRow: 'flex flex-wrap items-center gap-3',
+  checkStatusBox:
+    'p-3 rounded-lg bg-surface-secondary hover:bg-surface-tertiary transition-colors inline-flex items-center justify-center',
+  checkStatusSpinner: 'animate-spin text-accent',
+  checkStatusSuccess: 'text-green-500',
+  checkHelper: 'text-sm text-muted mb-2',
 } as const;
 
 export const CertificateRegistryCard: React.FC = () => {
-  const { account, isPXEInitialized, connectors, connector, currentConfig } =
+  const { account, address: connectedAddress, isPXEInitialized, connectors, connector, currentConfig } =
     useAztecWallet();
   const { success, error: toastError, loading } = useToast();
   const { method: feePaymentMethod } = useFeePayment();
@@ -104,9 +116,10 @@ export const CertificateRegistryCard: React.FC = () => {
   const [countOwner, setCountOwner] = useState('');
   const [certificateCount, setCertificateCount] = useState<number | null>(null);
 
-  // Form state: check_certificate
-  const [checkFrom, setCheckFrom] = useState('');
-  const [checkAuthwitNonce, setCheckAuthwitNonce] = useState('');
+  // Form state: check_certificate (uses connected account + authwit_nonce 0)
+  const [checkCertificateStatus, setCheckCertificateStatus] = useState<
+    'idle' | 'pending' | 'success'
+  >('idle');
 
   // Form state: cancel_authwit
   const [cancelInnerHash, setCancelInnerHash] = useState('');
@@ -279,34 +292,30 @@ export const CertificateRegistryCard: React.FC = () => {
   }, [registryAddress, countOwner, readContract, success, toastError]);
 
   const handleCheckCertificate = useCallback(async () => {
-    if (!registryAddress || !checkFrom.trim()) return;
-    const nonce = parseField(checkAuthwitNonce);
-    if (nonce === null) {
-      toastError('Invalid field', 'authwit_nonce must be a non-negative integer');
-      return;
-    }
+    if (!registryAddress || !connectedAddress) return;
+    setCheckCertificateStatus('pending');
     try {
       const result = await writeContract({
         contract: CertificateRegistryContract,
         address: registryAddress,
         functionName: 'check_certificate',
-        args: [AztecAddress.fromString(checkFrom.trim()), nonce],
+        args: [AztecAddress.fromString(connectedAddress), 0n],
         feePaymentMethod,
       });
       if (result.success) {
+        setCheckCertificateStatus('success');
         success('Certificate checked', 'Valid certificate');
-        setCheckFrom('');
-        setCheckAuthwitNonce('');
       } else {
+        setCheckCertificateStatus('idle');
         toastError('Failed', result.error ?? 'Unknown error');
       }
     } catch (err) {
+      setCheckCertificateStatus('idle');
       toastError('Failed', err instanceof Error ? err.message : 'Unknown error');
     }
   }, [
     registryAddress,
-    checkFrom,
-    checkAuthwitNonce,
+    connectedAddress,
     writeContract,
     feePaymentMethod,
     success,
@@ -389,12 +398,30 @@ export const CertificateRegistryCard: React.FC = () => {
             className={styles.certificatesSection}
             data-testid="certificates-owned-section"
           >
-            <div className={styles.certificatesSectionTitle}>
-              <Shield size={iconSize('md')} className={styles.certificatesSectionTitleIcon} />
-              My certificates
-              {certificatesFetching && !certificatesLoading && (
-                <span className={cn(styles.certificatesLoadingSpinner, styles.certificatesFetchingBadge)} />
-              )}
+            <div className={styles.certificatesSectionHeader}>
+              <div className={styles.certificatesSectionTitle}>
+                <Shield size={iconSize('md')} className={styles.certificatesSectionTitleIcon} />
+                My certificates
+                {certificatesFetching && !certificatesLoading && (
+                  <span className={cn(styles.certificatesLoadingSpinner, styles.certificatesFetchingBadge)} />
+                )}
+              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="icon"
+                    size="icon"
+                    onClick={() => refetchCertificates()}
+                    disabled={certificatesFetching || isWalletBusy}
+                    isLoading={certificatesFetching}
+                    className={styles.certificatesReloadButton}
+                    aria-label="Reload certificates"
+                  >
+                    <RefreshCw size={iconSize()} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Reload certificates</TooltipContent>
+              </Tooltip>
             </div>
             {certificatesLoading ? (
               <div className={styles.certificatesLoading} data-testid="certificates-loading">
@@ -630,50 +657,51 @@ export const CertificateRegistryCard: React.FC = () => {
               )}
             </section>
 
-            {/* User: check_certificate */}
+            {/* User: check_certificate (uses connected account + authwit_nonce 0) */}
             <section className={styles.section}>
               <h3 className={styles.sectionTitle}>User – Check certificate</h3>
-              <div className={styles.formGroup}>
-                <label htmlFor="cert-check-from" className={styles.label}>
-                  From (owner) address
-                </label>
-                <Input
-                  id="cert-check-from"
-                  value={checkFrom}
-                  onChange={(e) => setCheckFrom(e.target.value)}
-                  placeholder="0x..."
-                  disabled={isProcessing || !contractsReady}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label
-                  htmlFor="cert-check-authwit-nonce"
-                  className={styles.label}
+              <p className={styles.checkHelper}>
+                Uses your connected account and authwit_nonce 0.
+              </p>
+              <div className={styles.checkStatusRow}>
+                <Button
+                  variant="primary"
+                  onClick={handleCheckCertificate}
+                  disabled={
+                    !connectedAddress ||
+                    isProcessing ||
+                    isWalletBusy ||
+                    !contractsReady
+                  }
+                  isLoading={isProcessing}
                 >
-                  authwit_nonce (field)
-                </label>
-                <Input
-                  id="cert-check-authwit-nonce"
-                  value={checkAuthwitNonce}
-                  onChange={(e) => setCheckAuthwitNonce(e.target.value)}
-                  placeholder="0"
-                  disabled={isProcessing || !contractsReady}
-                />
+                  Check certificate
+                </Button>
+                {checkCertificateStatus === 'pending' && (
+                  <div
+                    className={styles.checkStatusBox}
+                    role="status"
+                    aria-label="Transaction in progress"
+                  >
+                    <Loader2
+                      size={iconSize('lg')}
+                      className={styles.checkStatusSpinner}
+                    />
+                  </div>
+                )}
+                {checkCertificateStatus === 'success' && (
+                  <div
+                    className={styles.checkStatusBox}
+                    role="status"
+                    aria-label="Certificate check confirmed"
+                  >
+                    <CheckCircle
+                      size={iconSize('lg')}
+                      className={styles.checkStatusSuccess}
+                    />
+                  </div>
+                )}
               </div>
-              <Button
-                variant="primary"
-                onClick={handleCheckCertificate}
-                disabled={
-                  !checkFrom.trim() ||
-                  !checkAuthwitNonce.trim() ||
-                  isProcessing ||
-                  isWalletBusy ||
-                  !contractsReady
-                }
-                isLoading={isProcessing}
-              >
-                Check certificate
-              </Button>
             </section>
 
             {/* User: cancel_authwit */}
