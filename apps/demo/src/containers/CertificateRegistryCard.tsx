@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { FileCheck, AlertTriangle, Shield, RefreshCw, Loader2, CheckCircle } from 'lucide-react';
+import { FileCheck, AlertTriangle, Shield, RefreshCw, CheckCircle } from 'lucide-react';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { useAztecWallet } from '../aztec-wallet';
 import {
@@ -59,13 +59,8 @@ const styles = {
   errorIcon: 'text-amber-500 mx-auto mb-2',
   errorTitle: 'text-lg font-semibold text-default mb-1',
   errorText: 'text-sm text-muted',
-  // Check certificate status indicator
-  checkStatusRow: 'flex flex-wrap items-center gap-3',
-  checkStatusBox:
-    'p-3 rounded-lg bg-surface-secondary hover:bg-surface-tertiary transition-colors inline-flex items-center justify-center',
-  checkStatusSpinner: 'animate-spin text-accent',
-  checkStatusSuccess: 'text-green-500',
   checkHelper: 'text-sm text-muted mb-2',
+  checkButtonSuccess: 'bg-green-500 text-white hover:bg-green-600 border-0',
 } as const;
 
 export const CertificateRegistryCard: React.FC = () => {
@@ -663,45 +658,27 @@ export const CertificateRegistryCard: React.FC = () => {
               <p className={styles.checkHelper}>
                 Uses your connected account and authwit_nonce 0.
               </p>
-              <div className={styles.checkStatusRow}>
-                <Button
-                  variant="primary"
-                  onClick={handleCheckCertificate}
-                  disabled={
-                    !connectedAddress ||
-                    isProcessing ||
-                    isWalletBusy ||
-                    !contractsReady
-                  }
-                  isLoading={isProcessing}
-                >
-                  Check certificate
-                </Button>
-                {checkCertificateStatus === 'pending' && (
-                  <div
-                    className={styles.checkStatusBox}
-                    role="status"
-                    aria-label="Transaction in progress"
-                  >
-                    <Loader2
-                      size={iconSize('lg')}
-                      className={styles.checkStatusSpinner}
-                    />
-                  </div>
-                )}
-                {checkCertificateStatus === 'success' && (
-                  <div
-                    className={styles.checkStatusBox}
-                    role="status"
-                    aria-label="Certificate check confirmed"
-                  >
-                    <CheckCircle
-                      size={iconSize('lg')}
-                      className={styles.checkStatusSuccess}
-                    />
-                  </div>
-                )}
-              </div>
+              <Button
+                variant={checkCertificateStatus === 'success' ? 'secondary' : 'primary'}
+                className={checkCertificateStatus === 'success' ? styles.checkButtonSuccess : undefined}
+                icon={
+                  checkCertificateStatus === 'success' ? (
+                    <CheckCircle size={iconSize()} />
+                  ) : undefined
+                }
+                onClick={handleCheckCertificate}
+                disabled={
+                  !connectedAddress ||
+                  isProcessing ||
+                  isWalletBusy ||
+                  !contractsReady
+                }
+                isLoading={isProcessing}
+              >
+                {checkCertificateStatus === 'success'
+                  ? 'Certificate valid'
+                  : 'Check certificate'}
+              </Button>
             </section>
 
             {/* User: cancel_authwit */}
