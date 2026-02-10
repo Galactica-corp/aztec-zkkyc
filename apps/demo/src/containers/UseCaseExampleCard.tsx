@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Puzzle, AlertTriangle } from 'lucide-react';
+import { Puzzle, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Contract } from '@aztec/aztec.js/contracts';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { Fr } from '@aztec/aztec.js/fields';
@@ -41,6 +41,7 @@ const styles = {
   errorIcon: 'text-amber-500 mx-auto mb-2',
   errorTitle: 'text-lg font-semibold text-default mb-1',
   errorText: 'text-sm text-muted',
+  usePrivatelyButtonSuccess: 'bg-green-500 text-white hover:bg-green-600 border-0',
 } as const;
 
 export const UseCaseExampleCard: React.FC = () => {
@@ -64,6 +65,10 @@ export const UseCaseExampleCard: React.FC = () => {
 
   const { writeContract, isPending: writePending } = useWriteContract();
 
+  const [usePrivatelyStatus, setUsePrivatelyStatus] = useState<
+    'idle' | 'pending' | 'success'
+  >('idle');
+
   const contractAddress = currentConfig
     ? contractsConfig.useCaseExample.address(currentConfig)
     : undefined;
@@ -75,6 +80,7 @@ export const UseCaseExampleCard: React.FC = () => {
 
   const handleUsePrivately = useCallback(async () => {
     if (!contractAddress || !account || !currentConfig) return;
+    setUsePrivatelyStatus('pending');
     const nonce = Fr.random();
     const userAddress = account.getAddress();
     try {
@@ -115,11 +121,14 @@ export const UseCaseExampleCard: React.FC = () => {
         authWitnesses,
       });
       if (result.success) {
+        setUsePrivatelyStatus('success');
         success('Use case executed', 'use_privately completed successfully');
       } else {
+        setUsePrivatelyStatus('idle');
         toastError('Failed', result.error ?? 'Unknown error');
       }
     } catch (err) {
+      setUsePrivatelyStatus('idle');
       toastError('Failed', err instanceof Error ? err.message : 'Unknown error');
     }
   }, [
@@ -187,14 +196,22 @@ export const UseCaseExampleCard: React.FC = () => {
               witness for check_certificate.
             </p>
             <Button
-              variant="primary"
+              variant={usePrivatelyStatus === 'success' ? 'secondary' : 'primary'}
+              className={usePrivatelyStatus === 'success' ? styles.usePrivatelyButtonSuccess : undefined}
+              icon={
+                usePrivatelyStatus === 'success' ? (
+                  <CheckCircle size={iconSize()} />
+                ) : undefined
+              }
               onClick={handleUsePrivately}
               disabled={
                 isProcessing || isWalletBusy || !contractsReady
               }
               isLoading={isProcessing}
             >
-              Use privately
+              {usePrivatelyStatus === 'success'
+                ? 'Completed'
+                : 'Use privately'}
             </Button>
           </section>
         )}
