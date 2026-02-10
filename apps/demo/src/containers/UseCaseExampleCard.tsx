@@ -1,0 +1,198 @@
+import React, { useState, useCallback } from 'react';
+import { Puzzle, AlertTriangle } from 'lucide-react';
+import { useAztecWallet } from '../aztec-wallet';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Input,
+  Button,
+} from '../components/ui';
+import { useRequiredContracts } from '../hooks';
+import { useWriteContract } from '../hooks/contracts';
+import { useToast } from '../hooks';
+import { contractsConfig } from '../config/contracts';
+import { UseCaseExampleContract } from '../../../../artifacts/UseCaseExample';
+import { cn, iconSize } from '../utils';
+import { useFeePayment } from '../store/feePayment';
+
+const styles = {
+  headerRow: 'flex flex-row items-start gap-4',
+  headerIcon: 'text-accent',
+  formContainer: 'space-y-6',
+  section: 'space-y-4 rounded-lg border border-default bg-surface-secondary p-4',
+  sectionTitle: 'text-sm font-semibold text-default mb-2',
+  formGroup: 'space-y-2',
+  label: 'block text-sm font-semibold text-default',
+  row: 'flex flex-col gap-2 sm:flex-row sm:items-end',
+  inputFlex: 'flex-1 min-w-0',
+  loadingContainer:
+    'flex flex-col items-center justify-center py-8 gap-4 text-muted',
+  loadingSpinner:
+    'animate-spin rounded-full h-8 w-8 border-2 border-current border-t-transparent',
+  loadingText: 'text-sm',
+  errorContainer: 'text-center py-6',
+  errorIcon: 'text-amber-500 mx-auto mb-2',
+  errorTitle: 'text-lg font-semibold text-default mb-1',
+  errorText: 'text-sm text-muted',
+} as const;
+
+function parseField(value: string): bigint | null {
+  if (value.trim() === '') return null;
+  try {
+    const n = BigInt(value);
+    if (n < 0n) return null;
+    return n;
+  } catch {
+    return null;
+  }
+}
+
+export const UseCaseExampleCard: React.FC = () => {
+  const { account, isPXEInitialized, connectors, connector, currentConfig } =
+    useAztecWallet();
+  const { success, error: toastError } = useToast();
+  const { method: feePaymentMethod } = useFeePayment();
+
+  const {
+    isReady: contractsReady,
+    isLoading: contractsLoading,
+    hasError: contractsHasError,
+    failedContracts,
+    pendingContracts,
+  } = useRequiredContracts(['useCaseExample'] as const);
+
+  const { writeContract, isPending: writePending } = useWriteContract();
+
+  const contractAddress = currentConfig
+    ? contractsConfig.useCaseExample.address(currentConfig)
+    : undefined;
+
+  const [authwitNonce, setAuthwitNonce] = useState('');
+
+  const isProcessing = writePending;
+  const connectorStatus = connector?.getStatus().status;
+  const isWalletBusy =
+    connectorStatus === 'connecting' || connectorStatus === 'deploying';
+
+  const handleUsePrivately = useCallback(async () => {
+    if (!contractAddress) return;
+    const nonce = parseField(authwitNonce);
+    if (nonce === null) {
+      toastError('Invalid field', 'authwit_nonce must be a non-negative integer');
+      return;
+    }
+    try {
+      const result = await writeContract({
+        contract: UseCaseExampleContract,
+        address: contractAddress,
+        functionName: 'use_privately',
+        args: [nonce],
+        feePaymentMethod,
+      });
+      if (result.success) {
+        success('Use case executed', 'use_privately completed successfully');
+        setAuthwitNonce('');
+      } else {
+        toastError('Failed', result.error ?? 'Unknown error');
+      }
+    } catch (err) {
+      toastError('Failed', err instanceof Error ? err.message : 'Unknown error');
+    }
+  }, [
+    contractAddress,
+    authwitNonce,
+    writeContract,
+    feePaymentMethod,
+    success,
+    toastError,
+  ]);
+
+  const isAnyWalletConnected =
+    Boolean(account) ||
+    connectors.some((c) => c.getStatus().status === 'connected');
+  const showForm = isAnyWalletConnected && isPXEInitialized;
+
+  if (!showForm) {
+    return null;
+  }
+
+  if (contractsHasError) {
+    return (
+      <Card>
+        <CardContent className={styles.errorContainer}>
+          <AlertTriangle size={iconSize('2xl')} className={styles.errorIcon} />
+          <h3 className={styles.errorTitle}>Contract Registration Failed</h3>
+          <p className={styles.errorText}>
+            Failed to register: {failedContracts.join(', ')}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader className={styles.headerRow}>
+        <Puzzle size={iconSize('xl')} className={styles.headerIcon} />
+        <div>
+          <CardTitle>Use Case Example</CardTitle>
+          <CardDescription>
+            Example contract that checks compliance via the ZK Certificate
+            Registry. Call use_privately with an authwit nonce after creating an
+            auth witness for check_certificate.
+          </CardDescription>
+        </div>
+      </CardHeader>
+
+      <CardContent className={styles.formContainer}>
+        {contractsLoading ? (
+          <div className={styles.loadingContainer}>
+            <div className={styles.loadingSpinner} />
+            <p className={styles.loadingText}>
+              Loading contracts: {pendingContracts.join(', ')}...
+            </p>
+          </div>
+        ) : (
+          <section className={styles.section}>
+            <h3 className={styles.sectionTitle}>use_privately</h3>
+            <p className="text-sm text-muted mb-3">
+              Private function that checks your certificate with the ZK
+              Certificate Registry. Requires an auth witness for
+              check_certificate; pass its nonce here.
+            </p>
+            <div className={styles.row}>
+              <div className={cn(styles.formGroup, styles.inputFlex)}>
+                <label htmlFor="use-case-authwit-nonce" className={styles.label}>
+                  authwit_nonce (field)
+                </label>
+                <Input
+                  id="use-case-authwit-nonce"
+                  value={authwitNonce}
+                  onChange={(e) => setAuthwitNonce(e.target.value)}
+                  placeholder="0"
+                  disabled={isProcessing || !contractsReady}
+                />
+              </div>
+              <Button
+                variant="primary"
+                onClick={handleUsePrivately}
+                disabled={
+                  !authwitNonce.trim() ||
+                  isProcessing ||
+                  isWalletBusy ||
+                  !contractsReady
+                }
+                isLoading={isProcessing}
+              >
+                Use privately
+              </Button>
+            </div>
+          </section>
+        )}
+      </CardContent>
+    </Card>
+  );
+};

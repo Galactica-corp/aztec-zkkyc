@@ -72,7 +72,7 @@ export const contractsConfig = createContractConfig({
   },
 
   useCaseExample: {
-    artifact: CertificateRegistryContract.artifact,
+    artifact: UseCaseExampleContract.artifact,
     contract: UseCaseExampleContract,
     address: (config) => config.useCaseExampleContractAddress,
     deployParams: (config) => ({

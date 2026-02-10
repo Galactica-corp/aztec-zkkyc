@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Coins, FileCheck, Wrench, Settings, Layers } from 'lucide-react';
+import { Coins, FileCheck, Puzzle, Wrench, Settings, Layers } from 'lucide-react';
 import { useAztecWallet, isEmbeddedConnector } from '../aztec-wallet';
 import { Tabs, SecurityWarning } from '../components';
 import { TabConfig, TabType } from '../types';
 import { iconSize } from '../utils';
 import { CertificateRegistryCard } from './CertificateRegistryCard';
 import { ContractInteractionCard } from './ContractInteractionCard';
+import { UseCaseExampleCard } from './UseCaseExampleCard';
 import { DripperCard } from './DripperCard';
 import { SettingsCard } from './SettingsCard';
 import { UIComponentsShowcase } from './UIComponentsShowcase';
@@ -35,6 +36,12 @@ export const MainContent: React.FC = () => {
       label: 'Certificate Registry',
       icon: <FileCheck size={iconSize('md')} />,
       component: <CertificateRegistryCard />,
+    },
+    {
+      id: 'use-case-example',
+      label: 'Use Case Example',
+      icon: <Puzzle size={iconSize('md')} />,
+      component: <UseCaseExampleCard />,
     },
     {
       id: 'contract',
