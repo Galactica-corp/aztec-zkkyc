@@ -13,6 +13,10 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
 } from '../components/ui';
 import { useRequiredContracts, useCertificates } from '../hooks';
 import { useWriteContract, useReadContract } from '../hooks/contracts';
@@ -61,6 +65,11 @@ const styles = {
   errorText: 'text-sm text-muted',
   checkHelper: 'text-sm text-muted mb-2',
   checkButtonSuccess: 'bg-green-500 text-white hover:bg-green-600 border-0',
+  // Role tabs
+  roleSelectorContainer: 'space-y-2 mb-2',
+  roleSelectorTitle: 'text-sm font-semibold text-default',
+  tabsList: 'w-full',
+  tabContent: 'space-y-6 mt-4',
 } as const;
 
 export const CertificateRegistryCard: React.FC = () => {
@@ -387,81 +396,6 @@ export const CertificateRegistryCard: React.FC = () => {
       </CardHeader>
 
       <CardContent className={styles.formContainer}>
-        {/* My certificates – at top, loads automatically */}
-        {showForm && (
-          <div
-            className={styles.certificatesSection}
-            data-testid="certificates-owned-section"
-          >
-            <div className={styles.certificatesSectionHeader}>
-              <div className={styles.certificatesSectionTitle}>
-                <Shield size={iconSize('md')} className={styles.certificatesSectionTitleIcon} />
-                My certificates
-                {certificatesFetching && !certificatesLoading && (
-                  <span className={cn(styles.certificatesLoadingSpinner, styles.certificatesFetchingBadge)} />
-                )}
-              </div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="icon"
-                    size="icon"
-                    onClick={() => refetchCertificates()}
-                    disabled={certificatesFetching || isWalletBusy}
-                    isLoading={certificatesFetching}
-                    className={styles.certificatesReloadButton}
-                    aria-label="Reload certificates"
-                  >
-                    <RefreshCw size={iconSize()} />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Reload certificates</TooltipContent>
-              </Tooltip>
-            </div>
-            {certificatesLoading ? (
-              <div className={styles.certificatesLoading} data-testid="certificates-loading">
-                <div className={styles.certificatesLoadingSpinner} />
-                <span>Loading certificates...</span>
-              </div>
-            ) : certificates.length === 0 ? (
-              <p className={styles.certificateEmpty}>
-                No certificates yet. Get one issued by a whitelisted guardian.
-              </p>
-            ) : (
-              <div className={styles.certificatesList}>
-                {certificates.map((cert, index) => (
-                  <div
-                    key={`${cert.revocationId}-${index}`}
-                    className={styles.certificateCard}
-                    data-testid="certificate-card"
-                  >
-                    <div className={styles.certificateRow}>
-                      <span className={styles.certificateLabel}>Owner:</span>
-                      <span className={styles.certificateValue} title={cert.owner}>
-                        {truncateAddress(cert.owner)}
-                      </span>
-                    </div>
-                    <div className={styles.certificateRow}>
-                      <span className={styles.certificateLabel}>Guardian:</span>
-                      <span className={styles.certificateValue} title={cert.guardian}>
-                        {truncateAddress(cert.guardian)}
-                      </span>
-                    </div>
-                    <div className={styles.certificateRow}>
-                      <span className={styles.certificateLabel}>Unique ID:</span>
-                      <span className={styles.certificateValue}>{cert.uniqueId}</span>
-                    </div>
-                    <div className={styles.certificateRow}>
-                      <span className={styles.certificateLabel}>Revocation ID:</span>
-                      <span className={styles.certificateValue}>{cert.revocationId}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
         {contractsLoading ? (
           <div className={styles.loadingContainer}>
             <div className={styles.loadingSpinner} />
@@ -470,252 +404,329 @@ export const CertificateRegistryCard: React.FC = () => {
             </p>
           </div>
         ) : (
-          <>
-            {/* Admin: whitelist / remove guardian */}
-            <section className={styles.section}>
-              <h3 className={styles.sectionTitle}>Admin – Guardian whitelist</h3>
-              <div className={styles.formGroup}>
-                <label htmlFor="cert-guardian" className={styles.label}>
-                  Guardian address
-                </label>
-                <div className={styles.row}>
+          <div className={styles.roleSelectorContainer}>
+            <h3 className={styles.roleSelectorTitle}>Select Role</h3>
+            <Tabs defaultValue="user">
+              <TabsList className={styles.tabsList}>
+                <TabsTrigger value="admin">Admin</TabsTrigger>
+                <TabsTrigger value="guardian">Guardian</TabsTrigger>
+                <TabsTrigger value="user">User</TabsTrigger>
+              </TabsList>
+
+            <TabsContent value="admin" className={styles.tabContent}>
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Guardian whitelist</h3>
+                <div className={styles.formGroup}>
+                  <label htmlFor="cert-guardian" className={styles.label}>
+                    Guardian address
+                  </label>
+                  <div className={styles.row}>
+                    <Input
+                      id="cert-guardian"
+                      value={guardianAddress}
+                      onChange={(e) => setGuardianAddress(e.target.value)}
+                      placeholder="0x..."
+                      disabled={isProcessing || !contractsReady}
+                      className={styles.inputFlex}
+                    />
+                    <Button
+                      variant="primary"
+                      onClick={handleWhitelistGuardian}
+                      disabled={
+                        !guardianAddress.trim() ||
+                        isProcessing ||
+                        isWalletBusy ||
+                        !contractsReady
+                      }
+                      isLoading={isProcessing}
+                    >
+                      Whitelist
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={handleRemoveGuardian}
+                      disabled={
+                        !guardianAddress.trim() ||
+                        isProcessing ||
+                        isWalletBusy ||
+                        !contractsReady
+                      }
+                      isLoading={isProcessing}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              </section>
+            </TabsContent>
+
+            <TabsContent value="guardian" className={styles.tabContent}>
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Issue certificate</h3>
+                <div className={styles.formGroup}>
+                  <label htmlFor="cert-issue-user" className={styles.label}>
+                    User address
+                  </label>
                   <Input
-                    id="cert-guardian"
-                    value={guardianAddress}
-                    onChange={(e) => setGuardianAddress(e.target.value)}
+                    id="cert-issue-user"
+                    value={issueUser}
+                    onChange={(e) => setIssueUser(e.target.value)}
                     placeholder="0x..."
                     disabled={isProcessing || !contractsReady}
-                    className={styles.inputFlex}
                   />
+                </div>
+                <div className={styles.row}>
+                  <div className={cn(styles.formGroup, styles.inputFlex)}>
+                    <label htmlFor="cert-issue-unique-id" className={styles.label}>
+                      unique_id (field)
+                    </label>
+                    <Input
+                      id="cert-issue-unique-id"
+                      value={issueUniqueId}
+                      onChange={(e) => setIssueUniqueId(e.target.value)}
+                      placeholder="0"
+                      disabled={isProcessing || !contractsReady}
+                    />
+                  </div>
+                  <div className={cn(styles.formGroup, styles.inputFlex)}>
+                    <label
+                      htmlFor="cert-issue-revocation-id"
+                      className={styles.label}
+                    >
+                      revocation_id (field)
+                    </label>
+                    <Input
+                      id="cert-issue-revocation-id"
+                      value={issueRevocationId}
+                      onChange={(e) => setIssueRevocationId(e.target.value)}
+                      placeholder="0"
+                      disabled={isProcessing || !contractsReady}
+                    />
+                  </div>
+                </div>
+                <Button
+                  variant="primary"
+                  onClick={handleIssueCertificate}
+                  disabled={
+                    !issueUser.trim() ||
+                    !issueUniqueId.trim() ||
+                    !issueRevocationId.trim() ||
+                    isProcessing ||
+                    isWalletBusy ||
+                    !contractsReady
+                  }
+                  isLoading={isProcessing}
+                >
+                  Issue certificate
+                </Button>
+              </section>
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Revoke certificate</h3>
+                <div className={styles.row}>
+                  <div className={cn(styles.formGroup, styles.inputFlex)}>
+                    <label
+                      htmlFor="cert-revoke-revocation-id"
+                      className={styles.label}
+                    >
+                      revocation_id (field)
+                    </label>
+                    <Input
+                      id="cert-revoke-revocation-id"
+                      value={revokeRevocationId}
+                      onChange={(e) => setRevokeRevocationId(e.target.value)}
+                      placeholder="0"
+                      disabled={isProcessing || !contractsReady}
+                    />
+                  </div>
                   <Button
-                    variant="primary"
-                    onClick={handleWhitelistGuardian}
+                    variant="danger"
+                    onClick={handleRevokeCertificate}
                     disabled={
-                      !guardianAddress.trim() ||
+                      !revokeRevocationId.trim() ||
                       isProcessing ||
                       isWalletBusy ||
                       !contractsReady
                     }
                     isLoading={isProcessing}
                   >
-                    Whitelist
+                    Revoke certificate
                   </Button>
+                </div>
+              </section>
+            </TabsContent>
+
+            <TabsContent value="user" className={styles.tabContent}>
+              {showForm && (
+                <div
+                  className={styles.certificatesSection}
+                  data-testid="certificates-owned-section"
+                >
+                  <div className={styles.certificatesSectionHeader}>
+                    <div className={styles.certificatesSectionTitle}>
+                      <Shield size={iconSize('md')} className={styles.certificatesSectionTitleIcon} />
+                      My certificates
+                      {certificatesFetching && !certificatesLoading && (
+                        <span className={cn(styles.certificatesLoadingSpinner, styles.certificatesFetchingBadge)} />
+                      )}
+                    </div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="icon"
+                          size="icon"
+                          onClick={() => refetchCertificates()}
+                          disabled={certificatesFetching || isWalletBusy}
+                          isLoading={certificatesFetching}
+                          className={styles.certificatesReloadButton}
+                          aria-label="Reload certificates"
+                        >
+                          <RefreshCw size={iconSize()} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Reload certificates</TooltipContent>
+                    </Tooltip>
+                  </div>
+                  {certificatesLoading ? (
+                    <div className={styles.certificatesLoading} data-testid="certificates-loading">
+                      <div className={styles.certificatesLoadingSpinner} />
+                      <span>Loading certificates...</span>
+                    </div>
+                  ) : certificates.length === 0 ? (
+                    <p className={styles.certificateEmpty}>
+                      No certificates yet. Get one issued by a whitelisted guardian.
+                    </p>
+                  ) : (
+                    <div className={styles.certificatesList}>
+                      {certificates.map((cert, index) => (
+                        <div
+                          key={`${cert.revocationId}-${index}`}
+                          className={styles.certificateCard}
+                          data-testid="certificate-card"
+                        >
+                          <div className={styles.certificateRow}>
+                            <span className={styles.certificateLabel}>Owner:</span>
+                            <span className={styles.certificateValue} title={cert.owner}>
+                              {truncateAddress(cert.owner)}
+                            </span>
+                          </div>
+                          <div className={styles.certificateRow}>
+                            <span className={styles.certificateLabel}>Guardian:</span>
+                            <span className={styles.certificateValue} title={cert.guardian}>
+                              {truncateAddress(cert.guardian)}
+                            </span>
+                          </div>
+                          <div className={styles.certificateRow}>
+                            <span className={styles.certificateLabel}>Unique ID:</span>
+                            <span className={styles.certificateValue}>{cert.uniqueId}</span>
+                          </div>
+                          <div className={styles.certificateRow}>
+                            <span className={styles.certificateLabel}>Revocation ID:</span>
+                            <span className={styles.certificateValue}>{cert.revocationId}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Certificate count</h3>
+                <div className={styles.row}>
+                  <div className={cn(styles.formGroup, styles.inputFlex)}>
+                    <label htmlFor="cert-count-owner" className={styles.label}>
+                      Owner address
+                    </label>
+                    <Input
+                      id="cert-count-owner"
+                      value={countOwner}
+                      onChange={(e) => setCountOwner(e.target.value)}
+                      placeholder="0x..."
+                      disabled={isProcessing || !contractsReady}
+                    />
+                  </div>
                   <Button
                     variant="secondary"
-                    onClick={handleRemoveGuardian}
+                    onClick={handleGetCertificateCount}
                     disabled={
-                      !guardianAddress.trim() ||
+                      !countOwner.trim() ||
+                      isProcessing ||
+                      isWalletBusy ||
+                      !contractsReady
+                    }
+                    isLoading={readPending}
+                  >
+                    Get count
+                  </Button>
+                </div>
+                {certificateCount !== null && (
+                  <p className="text-sm text-muted mt-2">
+                    Certificate count: <strong>{certificateCount}</strong>
+                  </p>
+                )}
+              </section>
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Check certificate</h3>
+                <p className={styles.checkHelper}>
+                  Uses your connected account and authwit_nonce 0.
+                </p>
+                <Button
+                  variant={checkCertificateStatus === 'success' ? 'secondary' : 'primary'}
+                  className={checkCertificateStatus === 'success' ? styles.checkButtonSuccess : undefined}
+                  icon={
+                    checkCertificateStatus === 'success' ? (
+                      <CheckCircle size={iconSize()} />
+                    ) : undefined
+                  }
+                  onClick={handleCheckCertificate}
+                  disabled={
+                    !connectedAddress ||
+                    isProcessing ||
+                    isWalletBusy ||
+                    !contractsReady
+                  }
+                  isLoading={isProcessing}
+                >
+                  {checkCertificateStatus === 'success'
+                    ? 'Certificate valid'
+                    : 'Check certificate'}
+                </Button>
+              </section>
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Cancel authwit</h3>
+                <div className={styles.row}>
+                  <div className={cn(styles.formGroup, styles.inputFlex)}>
+                    <label
+                      htmlFor="cert-cancel-inner-hash"
+                      className={styles.label}
+                    >
+                      inner_hash (field)
+                    </label>
+                    <Input
+                      id="cert-cancel-inner-hash"
+                      value={cancelInnerHash}
+                      onChange={(e) => setCancelInnerHash(e.target.value)}
+                      placeholder="0"
+                      disabled={isProcessing || !contractsReady}
+                    />
+                  </div>
+                  <Button
+                    variant="secondary"
+                    onClick={handleCancelAuthwit}
+                    disabled={
+                      !cancelInnerHash.trim() ||
                       isProcessing ||
                       isWalletBusy ||
                       !contractsReady
                     }
                     isLoading={isProcessing}
                   >
-                    Remove
+                    Cancel authwit
                   </Button>
                 </div>
-              </div>
-            </section>
-
-            {/* Guardian: issue_certificate */}
-            <section className={styles.section}>
-              <h3 className={styles.sectionTitle}>Guardian – Issue certificate</h3>
-              <div className={styles.formGroup}>
-                <label htmlFor="cert-issue-user" className={styles.label}>
-                  User address
-                </label>
-                <Input
-                  id="cert-issue-user"
-                  value={issueUser}
-                  onChange={(e) => setIssueUser(e.target.value)}
-                  placeholder="0x..."
-                  disabled={isProcessing || !contractsReady}
-                />
-              </div>
-              <div className={styles.row}>
-                <div className={cn(styles.formGroup, styles.inputFlex)}>
-                  <label htmlFor="cert-issue-unique-id" className={styles.label}>
-                    unique_id (field)
-                  </label>
-                  <Input
-                    id="cert-issue-unique-id"
-                    value={issueUniqueId}
-                    onChange={(e) => setIssueUniqueId(e.target.value)}
-                    placeholder="0"
-                    disabled={isProcessing || !contractsReady}
-                  />
-                </div>
-                <div className={cn(styles.formGroup, styles.inputFlex)}>
-                  <label
-                    htmlFor="cert-issue-revocation-id"
-                    className={styles.label}
-                  >
-                    revocation_id (field)
-                  </label>
-                  <Input
-                    id="cert-issue-revocation-id"
-                    value={issueRevocationId}
-                    onChange={(e) => setIssueRevocationId(e.target.value)}
-                    placeholder="0"
-                    disabled={isProcessing || !contractsReady}
-                  />
-                </div>
-              </div>
-              <Button
-                variant="primary"
-                onClick={handleIssueCertificate}
-                disabled={
-                  !issueUser.trim() ||
-                  !issueUniqueId.trim() ||
-                  !issueRevocationId.trim() ||
-                  isProcessing ||
-                  isWalletBusy ||
-                  !contractsReady
-                }
-                isLoading={isProcessing}
-              >
-                Issue certificate
-              </Button>
-            </section>
-
-            {/* Guardian: revoke_certificate */}
-            <section className={styles.section}>
-              <h3 className={styles.sectionTitle}>
-                Guardian – Revoke certificate
-              </h3>
-              <div className={styles.row}>
-                <div className={cn(styles.formGroup, styles.inputFlex)}>
-                  <label
-                    htmlFor="cert-revoke-revocation-id"
-                    className={styles.label}
-                  >
-                    revocation_id (field)
-                  </label>
-                  <Input
-                    id="cert-revoke-revocation-id"
-                    value={revokeRevocationId}
-                    onChange={(e) => setRevokeRevocationId(e.target.value)}
-                    placeholder="0"
-                    disabled={isProcessing || !contractsReady}
-                  />
-                </div>
-                <Button
-                  variant="danger"
-                  onClick={handleRevokeCertificate}
-                  disabled={
-                    !revokeRevocationId.trim() ||
-                    isProcessing ||
-                    isWalletBusy ||
-                    !contractsReady
-                  }
-                  isLoading={isProcessing}
-                >
-                  Revoke certificate
-                </Button>
-              </div>
-            </section>
-
-            {/* Read: get_certificate_count */}
-            <section className={styles.section}>
-              <h3 className={styles.sectionTitle}>Read – Certificate count</h3>
-              <div className={styles.row}>
-                <div className={cn(styles.formGroup, styles.inputFlex)}>
-                  <label htmlFor="cert-count-owner" className={styles.label}>
-                    Owner address
-                  </label>
-                  <Input
-                    id="cert-count-owner"
-                    value={countOwner}
-                    onChange={(e) => setCountOwner(e.target.value)}
-                    placeholder="0x..."
-                    disabled={isProcessing || !contractsReady}
-                  />
-                </div>
-                <Button
-                  variant="secondary"
-                  onClick={handleGetCertificateCount}
-                  disabled={
-                    !countOwner.trim() ||
-                    isProcessing ||
-                    isWalletBusy ||
-                    !contractsReady
-                  }
-                  isLoading={readPending}
-                >
-                  Get count
-                </Button>
-              </div>
-              {certificateCount !== null && (
-                <p className="text-sm text-muted mt-2">
-                  Certificate count: <strong>{certificateCount}</strong>
-                </p>
-              )}
-            </section>
-
-            {/* User: check_certificate (uses connected account + authwit_nonce 0) */}
-            <section className={styles.section}>
-              <h3 className={styles.sectionTitle}>User – Check certificate</h3>
-              <p className={styles.checkHelper}>
-                Uses your connected account and authwit_nonce 0.
-              </p>
-              <Button
-                variant={checkCertificateStatus === 'success' ? 'secondary' : 'primary'}
-                className={checkCertificateStatus === 'success' ? styles.checkButtonSuccess : undefined}
-                icon={
-                  checkCertificateStatus === 'success' ? (
-                    <CheckCircle size={iconSize()} />
-                  ) : undefined
-                }
-                onClick={handleCheckCertificate}
-                disabled={
-                  !connectedAddress ||
-                  isProcessing ||
-                  isWalletBusy ||
-                  !contractsReady
-                }
-                isLoading={isProcessing}
-              >
-                {checkCertificateStatus === 'success'
-                  ? 'Certificate valid'
-                  : 'Check certificate'}
-              </Button>
-            </section>
-
-            {/* User: cancel_authwit */}
-            <section className={styles.section}>
-              <h3 className={styles.sectionTitle}>User – Cancel authwit</h3>
-              <div className={styles.row}>
-                <div className={cn(styles.formGroup, styles.inputFlex)}>
-                  <label
-                    htmlFor="cert-cancel-inner-hash"
-                    className={styles.label}
-                  >
-                    inner_hash (field)
-                  </label>
-                  <Input
-                    id="cert-cancel-inner-hash"
-                    value={cancelInnerHash}
-                    onChange={(e) => setCancelInnerHash(e.target.value)}
-                    placeholder="0"
-                    disabled={isProcessing || !contractsReady}
-                  />
-                </div>
-                <Button
-                  variant="secondary"
-                  onClick={handleCancelAuthwit}
-                  disabled={
-                    !cancelInnerHash.trim() ||
-                    isProcessing ||
-                    isWalletBusy ||
-                    !contractsReady
-                  }
-                  isLoading={isProcessing}
-                >
-                  Cancel authwit
-                </Button>
-              </div>
-            </section>
-          </>
+              </section>
+            </TabsContent>
+            </Tabs>
+          </div>
         )}
       </CardContent>
     </Card>
