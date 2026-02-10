@@ -50,6 +50,7 @@ const styles = {
   // Form sections
   section: 'space-y-4 rounded-lg border border-default bg-surface-secondary p-4',
   sectionTitle: 'text-sm font-semibold text-default mb-2',
+  subsectionTitle: 'text-xs font-semibold text-default mb-2 mt-4 first:mt-0',
   formGroup: 'space-y-2',
   label: 'block text-sm font-semibold text-default',
   row: 'flex flex-col gap-2 sm:flex-row sm:items-end',
@@ -417,12 +418,12 @@ export const CertificateRegistryCard: React.FC = () => {
               <section className={styles.section}>
                 <h3 className={styles.sectionTitle}>Guardian whitelist</h3>
                 <div className={styles.formGroup}>
-                  <label htmlFor="cert-guardian" className={styles.label}>
-                    Guardian address
+                  <label htmlFor="cert-guardian-add" className={styles.subsectionTitle}>
+                    Add guardian to whitelist
                   </label>
                   <div className={styles.row}>
                     <Input
-                      id="cert-guardian"
+                      id="cert-guardian-add"
                       value={guardianAddress}
                       onChange={(e) => setGuardianAddress(e.target.value)}
                       placeholder="0x..."
@@ -442,6 +443,21 @@ export const CertificateRegistryCard: React.FC = () => {
                     >
                       Whitelist
                     </Button>
+                  </div>
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="cert-guardian-remove" className={styles.subsectionTitle}>
+                    Remove guardian from whitelist
+                  </label>
+                  <div className={styles.row}>
+                    <Input
+                      id="cert-guardian-remove"
+                      value={guardianAddress}
+                      onChange={(e) => setGuardianAddress(e.target.value)}
+                      placeholder="0x..."
+                      disabled={isProcessing || !contractsReady}
+                      className={styles.inputFlex}
+                    />
                     <Button
                       variant="secondary"
                       onClick={handleRemoveGuardian}
