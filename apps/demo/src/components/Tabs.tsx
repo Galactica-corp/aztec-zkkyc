@@ -24,7 +24,7 @@ interface TabsProps {
  */
 export const Tabs: React.FC<TabsProps> = ({
   tabs,
-  defaultTab = 'mint',
+  defaultTab = 'certificate-registry',
   onTabChange,
   children,
 }) => {

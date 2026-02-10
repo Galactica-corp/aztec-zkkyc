@@ -3,7 +3,6 @@
 // ============================================================================
 
 export type TabType =
-  | 'mint'
   | 'certificate-registry'
   | 'use-case-example'
   | 'settings'

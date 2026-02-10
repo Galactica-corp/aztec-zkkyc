@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Coins, FileCheck, Puzzle, Wrench, Settings, Layers } from 'lucide-react';
+import { FileCheck, Puzzle, Wrench, Settings, Layers } from 'lucide-react';
 import { useAztecWallet, isEmbeddedConnector } from '../aztec-wallet';
 import { Tabs, SecurityWarning } from '../components';
 import { TabConfig, TabType } from '../types';
@@ -7,7 +7,6 @@ import { iconSize } from '../utils';
 import { CertificateRegistryCard } from './CertificateRegistryCard';
 import { ContractInteractionCard } from './ContractInteractionCard';
 import { UseCaseExampleCard } from './UseCaseExampleCard';
-import { DripperCard } from './DripperCard';
 import { SettingsCard } from './SettingsCard';
 import { UIComponentsShowcase } from './UIComponentsShowcase';
 
@@ -17,7 +16,7 @@ const styles = {
 
 export const MainContent: React.FC = () => {
   const { connector } = useAztecWallet();
-  const [activeTab, setActiveTab] = useState<TabType>('mint');
+  const [activeTab, setActiveTab] = useState<TabType>('certificate-registry');
 
   // Show security warning for embedded wallet (stores keys in browser localStorage)
   const showSecurityWarning =
@@ -25,12 +24,6 @@ export const MainContent: React.FC = () => {
     isEmbeddedConnector(connector);
 
   const tabs: TabConfig[] = [
-    {
-      id: 'mint',
-      label: 'Mint Tokens',
-      icon: <Coins size={iconSize('md')} />,
-      component: <DripperCard />,
-    },
     {
       id: 'certificate-registry',
       label: 'Certificate Registry',
