@@ -1,6 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { Puzzle, AlertTriangle } from 'lucide-react';
-import { useAztecWallet } from '../aztec-wallet';
+import { Contract } from '@aztec/aztec.js/contracts';
+import { AztecAddress } from '@aztec/aztec.js/addresses';
+import { Fr } from '@aztec/aztec.js/fields';
+import type { AuthWitness } from '@aztec/stdlib/auth-witness';
+import { useAztecWallet, hasAppManagedPXE } from '../aztec-wallet';
 import {
   Card,
   CardHeader,
@@ -14,6 +18,7 @@ import { useRequiredContracts } from '../hooks';
 import { useWriteContract } from '../hooks/contracts';
 import { useToast } from '../hooks';
 import { contractsConfig } from '../config/contracts';
+import { CertificateRegistryContract } from '../../../../artifacts/CertificateRegistry';
 import { UseCaseExampleContract } from '../../../../artifacts/UseCaseExample';
 import { cn, iconSize } from '../utils';
 import { useFeePayment } from '../store/feePayment';
@@ -51,8 +56,13 @@ function parseField(value: string): bigint | null {
 }
 
 export const UseCaseExampleCard: React.FC = () => {
-  const { account, isPXEInitialized, connectors, connector, currentConfig } =
-    useAztecWallet();
+  const {
+    account,
+    isPXEInitialized,
+    connectors,
+    connector,
+    currentConfig,
+  } = useAztecWallet();
   const { success, error: toastError } = useToast();
   const { method: feePaymentMethod } = useFeePayment();
 
@@ -78,19 +88,49 @@ export const UseCaseExampleCard: React.FC = () => {
     connectorStatus === 'connecting' || connectorStatus === 'deploying';
 
   const handleUsePrivately = useCallback(async () => {
-    if (!contractAddress) return;
+    if (!contractAddress || !account || !currentConfig) return;
     const nonce = parseField(authwitNonce);
     if (nonce === null) {
       toastError('Invalid field', 'authwit_nonce must be a non-negative integer');
       return;
     }
+    const userAddress = account.getAddress();
     try {
+      let authWitnesses: AuthWitness[] | undefined;
+      if (connector && hasAppManagedPXE(connector)) {
+        const wallet = connector.getWallet();
+        if (wallet) {
+          const certRegistryAddress = contractsConfig.certificateRegistry.address(
+            currentConfig
+          );
+          const useCaseExampleAddress = AztecAddress.fromString(contractAddress);
+          const certRegistry = await Contract.at(
+            AztecAddress.fromString(certRegistryAddress),
+            CertificateRegistryContract.artifact,
+            wallet
+          );
+          const action = (
+            certRegistry as unknown as {
+              methods: {
+                check_certificate: (user: typeof userAddress, authwitNonce: Fr) => unknown;
+              };
+            }
+          ).methods.check_certificate(userAddress, new Fr(nonce));
+          const intent = { caller: useCaseExampleAddress, action };
+          const witness = await wallet.createAuthWit(
+            userAddress,
+            intent as unknown as Parameters<typeof wallet.createAuthWit>[1]
+          );
+          authWitnesses = [witness];
+        }
+      }
       const result = await writeContract({
         contract: UseCaseExampleContract,
         address: contractAddress,
         functionName: 'use_privately',
         args: [nonce],
         feePaymentMethod,
+        authWitnesses,
       });
       if (result.success) {
         success('Use case executed', 'use_privately completed successfully');
@@ -104,6 +144,9 @@ export const UseCaseExampleCard: React.FC = () => {
   }, [
     contractAddress,
     authwitNonce,
+    account,
+    connector,
+    currentConfig,
     writeContract,
     feePaymentMethod,
     success,

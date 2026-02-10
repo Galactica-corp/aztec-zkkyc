@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import type { ContractArtifact } from '@aztec/aztec.js/abi';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { Contract, type ContractBase } from '@aztec/aztec.js/contracts';
+import type { AuthWitness } from '@aztec/stdlib/auth-witness';
 import {
   useAztecWallet,
   isBrowserWalletConnector,
@@ -51,6 +52,8 @@ interface WriteContractParams<
   args: ArgsOf<TContract, TMethod>;
   /** Fee payment method to use (defaults to DEFAULT_FEE_PAYMENT_METHOD) */
   feePaymentMethod?: FeePaymentMethodType;
+  /** Optional auth witnesses (e.g. for use_privately with check_certificate) */
+  authWitnesses?: AuthWitness[];
 }
 
 const getChainFromCaipAccount = (caipAccount: string): string => {
@@ -95,6 +98,7 @@ export const useWriteContract = (options: UseWriteContractOptions = {}) => {
         functionName,
         args,
         feePaymentMethod = DEFAULT_FEE_PAYMENT_METHOD,
+        authWitnesses,
       } = params;
       const artifact = contract.artifact;
 
@@ -199,9 +203,13 @@ export const useWriteContract = (options: UseWriteContractOptions = {}) => {
             `[useWriteContract] Simulating ${String(functionName)}...`
           );
           try {
+            const simulateOpts: { from: ReturnType<typeof account.getAddress>; authWitnesses?: AuthWitness[] } = {
+              from: account.getAddress(),
+            };
+            if (authWitnesses?.length) simulateOpts.authWitnesses = authWitnesses;
             const simulateResult = await (
               tx as { simulate: (opts: unknown) => Promise<unknown> }
-            ).simulate({ from: account.getAddress() });
+            ).simulate(simulateOpts);
             console.log(
               `[useWriteContract] Simulation successful:`,
               simulateResult
@@ -229,6 +237,7 @@ export const useWriteContract = (options: UseWriteContractOptions = {}) => {
           ).send({
             from: account.getAddress(),
             fee: { paymentMethod },
+            ...(authWitnesses?.length ? { authWitnesses } : {}),
           });
 
           const result = await sentTx.wait({ timeout });
