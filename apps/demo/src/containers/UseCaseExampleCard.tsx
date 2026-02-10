@@ -11,7 +11,6 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-  Input,
   Button,
 } from '../components/ui';
 import { useRequiredContracts } from '../hooks';
@@ -20,7 +19,7 @@ import { useToast } from '../hooks';
 import { contractsConfig } from '../config/contracts';
 import { CertificateRegistryContract } from '../../../../artifacts/CertificateRegistry';
 import { UseCaseExampleContract } from '../../../../artifacts/UseCaseExample';
-import { cn, iconSize } from '../utils';
+import { iconSize } from '../utils';
 import { useFeePayment } from '../store/feePayment';
 
 const styles = {
@@ -43,17 +42,6 @@ const styles = {
   errorTitle: 'text-lg font-semibold text-default mb-1',
   errorText: 'text-sm text-muted',
 } as const;
-
-function parseField(value: string): bigint | null {
-  if (value.trim() === '') return null;
-  try {
-    const n = BigInt(value);
-    if (n < 0n) return null;
-    return n;
-  } catch {
-    return null;
-  }
-}
 
 export const UseCaseExampleCard: React.FC = () => {
   const {
@@ -80,8 +68,6 @@ export const UseCaseExampleCard: React.FC = () => {
     ? contractsConfig.useCaseExample.address(currentConfig)
     : undefined;
 
-  const [authwitNonce, setAuthwitNonce] = useState('');
-
   const isProcessing = writePending;
   const connectorStatus = connector?.getStatus().status;
   const isWalletBusy =
@@ -89,11 +75,7 @@ export const UseCaseExampleCard: React.FC = () => {
 
   const handleUsePrivately = useCallback(async () => {
     if (!contractAddress || !account || !currentConfig) return;
-    const nonce = parseField(authwitNonce);
-    if (nonce === null) {
-      toastError('Invalid field', 'authwit_nonce must be a non-negative integer');
-      return;
-    }
+    const nonce = Fr.random();
     const userAddress = account.getAddress();
     try {
       let authWitnesses: AuthWitness[] | undefined;
@@ -115,7 +97,7 @@ export const UseCaseExampleCard: React.FC = () => {
                 check_certificate: (user: typeof userAddress, authwitNonce: Fr) => unknown;
               };
             }
-          ).methods.check_certificate(userAddress, new Fr(nonce));
+          ).methods.check_certificate(userAddress, nonce);
           const intent = { caller: useCaseExampleAddress, action };
           const witness = await wallet.createAuthWit(
             userAddress,
@@ -134,7 +116,6 @@ export const UseCaseExampleCard: React.FC = () => {
       });
       if (result.success) {
         success('Use case executed', 'use_privately completed successfully');
-        setAuthwitNonce('');
       } else {
         toastError('Failed', result.error ?? 'Unknown error');
       }
@@ -143,7 +124,6 @@ export const UseCaseExampleCard: React.FC = () => {
     }
   }, [
     contractAddress,
-    authwitNonce,
     account,
     connector,
     currentConfig,
@@ -184,8 +164,8 @@ export const UseCaseExampleCard: React.FC = () => {
           <CardTitle>Use Case Example</CardTitle>
           <CardDescription>
             Example contract that checks compliance via the ZK Certificate
-            Registry. Call use_privately with an authwit nonce after creating an
-            auth witness for check_certificate.
+            Registry. Call use_privately with a random authwit nonce and an auth
+            witness for check_certificate.
           </CardDescription>
         </div>
       </CardHeader>
@@ -203,36 +183,19 @@ export const UseCaseExampleCard: React.FC = () => {
             <h3 className={styles.sectionTitle}>use_privately</h3>
             <p className="text-sm text-muted mb-3">
               Private function that checks your certificate with the ZK
-              Certificate Registry. Requires an auth witness for
-              check_certificate; pass its nonce here.
+              Certificate Registry. Uses a random authwit nonce and an auth
+              witness for check_certificate.
             </p>
-            <div className={styles.row}>
-              <div className={cn(styles.formGroup, styles.inputFlex)}>
-                <label htmlFor="use-case-authwit-nonce" className={styles.label}>
-                  authwit_nonce (field)
-                </label>
-                <Input
-                  id="use-case-authwit-nonce"
-                  value={authwitNonce}
-                  onChange={(e) => setAuthwitNonce(e.target.value)}
-                  placeholder="0"
-                  disabled={isProcessing || !contractsReady}
-                />
-              </div>
-              <Button
-                variant="primary"
-                onClick={handleUsePrivately}
-                disabled={
-                  !authwitNonce.trim() ||
-                  isProcessing ||
-                  isWalletBusy ||
-                  !contractsReady
-                }
-                isLoading={isProcessing}
-              >
-                Use privately
-              </Button>
-            </div>
+            <Button
+              variant="primary"
+              onClick={handleUsePrivately}
+              disabled={
+                isProcessing || isWalletBusy || !contractsReady
+              }
+              isLoading={isProcessing}
+            >
+              Use privately
+            </Button>
           </section>
         )}
       </CardContent>
