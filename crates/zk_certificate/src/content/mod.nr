@@ -15,4 +15,4 @@ pub global CONTENT_TYPE_CEX: Field = 6;
 pub global CONTENT_TYPE_TELEGRAM: Field = 7;
 
 // Number of Fields for KYC content (surname through country)
-pub global CONTENT_SIZE_KYC: u32 = 13;
+pub global CONTENT_SIZE_KYC: u32 = 11;
