@@ -43,3 +43,6 @@ playwright/.cache/
 
 .cursor/*
 .claude/*
+
+# ignore sandbox deployment config
+src/config/deployments/sandbox.json
