@@ -43,6 +43,7 @@ pub contract CertificateRegistry {
     use crate::certificate_note::CertificateNote;
     use crate::content::CONTENT_TYPE_ZK_KYC;
     use crate::content_note::ContentNote;
+    use dep::age_check_requirement::AgeCheckRequirement;
 
     global REVOCATION_DELAY: u64 = 12 * 60 * 60; // 12 hours
 
@@ -229,6 +230,77 @@ pub contract CertificateRegistry {
 
         // Put the certificate back into the storage to be used again
         self.storage.certificates.at(from).insert(notes.get(0)).deliver(
+            MessageDelivery.CONSTRAINED_ONCHAIN,
+        );
+    }
+
+    /**
+     * Check if a user has a valid certificate and that all requirement checkers pass.
+     * @param from - The user address whose certificate to check
+     * @param authwit_nonce - Nonce for the authwit
+     * @param requirement_checker_address - Address of requirement checker contract (e.g. AgeCheckRequirement)
+     */
+    #[authorize_once("from", "authwit_nonce")]
+    #[external("private")]
+    fn check_certificate_and_requirements(
+        from: AztecAddress,
+        authwit_nonce: Field,
+        requirement_checker_address AztecAddress,
+    ) {
+        let mut options = NoteGetterOptions::new().set_limit(1);
+
+        let notes = self.storage.certificates.at(from).pop_notes(options);
+        assert(notes.len() > 0, "No certificate found");
+
+        let certificate = notes.get(0);
+
+        // Ensure that the issuing guardian is still whitelisted
+        self.enqueue_self._check_guardian_whitelisted(certificate.guardian);
+
+        // Check that the note has not been revoked
+        assert_eq(
+            self.storage.revocation_list.at(certificate.revocation_id).get_current_value(),
+            false,
+            "Certificate revoked",
+        );
+
+        // Pop content notes for KYC and call requirement checkers
+        if certificate.content_type.eq(CONTENT_TYPE_ZK_KYC) {
+            let getter_0 = NoteGetterOptions::new()
+                .select(ContentNote::properties().content_id, Comparator.EQ, certificate.unique_id + 0)
+                .set_limit(1);
+            let getter_1 = NoteGetterOptions::new()
+                .select(ContentNote::properties().content_id, Comparator.EQ, certificate.unique_id + 1)
+                .set_limit(1);
+
+            let popped_0 = self.storage.content_notes.at(from).pop_notes(getter_0);
+            let popped_1 = self.storage.content_notes.at(from).pop_notes(getter_1);
+
+            assert(popped_0.len() > 0, "Content note 0 not found");
+            assert(popped_1.len() > 0, "Content note 1 not found");
+
+            let note_0 = popped_0.get(0);
+            let note_1 = popped_1.get(0);
+
+            self.call(
+                AgeCheckRequirement::at(requirement_checker_address).check_requirements(
+                    certificate.content_type,
+                    note_0.data,
+                    note_1.data,
+                ),
+            );
+
+            // Put content notes back
+            self.storage.content_notes.at(from).insert(note_0).deliver(
+                MessageDelivery.CONSTRAINED_ONCHAIN,
+            );
+            self.storage.content_notes.at(from).insert(note_1).deliver(
+                MessageDelivery.CONSTRAINED_ONCHAIN,
+            );
+        }
+
+        // Put the certificate back into the storage to be used again
+        self.storage.certificates.at(from).insert(certificate).deliver(
             MessageDelivery.CONSTRAINED_ONCHAIN,
         );
     }

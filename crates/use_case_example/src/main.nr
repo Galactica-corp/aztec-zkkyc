@@ -19,25 +19,40 @@ pub contract UseCaseExample {
     struct Storage<Context> {
         // Address of the ZK Certificate Registry contract where ZK KYC records proving compliance can be checked
         zk_certificate_registry: PublicImmutable<AztecAddress, Context>,
+
+        // Address of the Age Check Requirement contract
+        age_check_requirement: PublicImmutable<AztecAddress, Context>,
     }
 
     #[external("public")]
     #[initializer]
-    fn constructor(zk_certificate_registry: AztecAddress) {
+    fn constructor(
+        zk_certificate_registry: AztecAddress,
+        age_check_requirement: AztecAddress,
+    ) {
         self.storage.zk_certificate_registry.initialize(zk_certificate_registry);
+        self.storage.age_check_requirement.initialize(age_check_requirement);
     }
 
     /**
-     * Private usage that is checking compliance with a ZK Certificate Registry.
+     * Private usage that is checking compliance with a ZK Certificate Registry and requirement checkers.
      * @param authwit_nonce The nonce of the private authentication witness of checking the certificate.
      */
     #[external("private")]
     fn use_privately(authwit_nonce: Field) {
         let user = self.context.msg_sender().unwrap();
 
-        // call the ZK Certificate Registry to check compliance
-        self.call(CertificateRegistry::at(self.storage.zk_certificate_registry.read())
-            .check_certificate(user, authwit_nonce));
+        let  = self.storage.age_check_requirement.read();
+
+        self.call(
+            CertificateRegistry::at(self.storage.zk_certificate_registry.read())
+                .check_certificate_and_requirements(
+                    user,
+                    authwit_nonce,
+                    age_check,
+                    num_checkers,
+                ),
+        );
 
         // Custom use case logic would go here
     }

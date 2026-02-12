@@ -1,6 +1,8 @@
 use crate::CertificateRegistry;
 use crate::content::CONTENT_TYPE_ZK_KYC;
 use crate::test::utils;
+use dep::age_check_requirement::AgeCheckRequirement;
+use dep::aztec::protocol_types::address::AztecAddress;
 use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
 use dep::aztec::test::helpers::authwit::add_private_authwit_from_call;
 
@@ -180,6 +182,43 @@ unconstrained fn test_user_proof_certificate_existence() {
         CertificateRegistry::at(contract_address).check_certificate(user, 0);
     add_private_authwit_from_call(env, user, user, check_certificate_call);
     env.call_private(user, check_certificate_call);
+}
+
+// Test: User can proof certificate existence with requirement check (age check)
+#[test]
+unconstrained fn test_user_proof_certificate_existence_with_requirements() {
+    let (mut env, contract_address, admin) = utils::setup_certificate_registry();
+    let guardian = env.create_light_account();
+    let user = env.create_light_account();
+    let unique_id = Field::from(1);
+    let revocation_id = Field::from(1234561);
+    let (kyc_personal, kyc_address) = utils::sample_kyc_content();
+
+    let age_check_initializer = AgeCheckRequirement::interface().constructor(18u32);
+    let age_check_address = env
+        .deploy("@age_check_requirement/AgeCheckRequirement")
+        .with_public_initializer(admin, age_check_initializer);
+
+    env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
+    env.call_private(
+        guardian,
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_id,
+            CONTENT_TYPE_ZK_KYC,
+            kyc_personal,
+            kyc_address,
+        ),
+    );
+
+    let check_call = CertificateRegistry::at(contract_address).check_certificate_and_requirements(
+        user,
+        0,
+        age_check_address,
+    );
+    add_private_authwit_from_call(env, user, user, check_call);
+    env.call_private(user, check_call);
 }
 
 // Test: User cannot pass the check when the certificate is missing
