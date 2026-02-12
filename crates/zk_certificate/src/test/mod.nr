@@ -1,2 +1,2 @@
 mod certificate_registry;
-mod utils;
+pub mod utils;

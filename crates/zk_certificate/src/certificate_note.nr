@@ -6,9 +6,6 @@ use aztec::{macros::notes::note, protocol_types::{address::AztecAddress, traits:
 #[derive(Eq, Packable)]
 #[note]
 pub struct CertificateNote {
-    // The user who holds the certificate (only they can read it)
-    pub owner: AztecAddress,
-
     // The guardian who issued the certificate
     pub guardian: AztecAddress,
 
@@ -17,27 +14,30 @@ pub struct CertificateNote {
 
     // A random id that can be used to revoke the certificate, assumed to be unique
     pub revocation_id: Field,
+
+    // Content type (maps to KnownZkCertStandard: 1=gip1, 2=gip2, etc.)
+    pub content_type: Field,
     // We omit a generic expiration date. Guardians can revoke the certificate if needed, so we keep it simple for the user.
 }
 
 impl CertificateNote {
     // Creates a new note with the certificate data
     pub fn new(
-        owner: AztecAddress,
         guardian: AztecAddress,
         unique_id: Field,
         revocation_id: Field,
+        content_type: Field,
     ) -> Self {
-        Self { owner, guardian, unique_id, revocation_id }
+        Self { guardian, unique_id, revocation_id, content_type }
     }
 
     // Helper method to access the note data
     pub fn get(self) -> Self {
         Self {
-            owner: self.owner,
             guardian: self.guardian,
             unique_id: self.unique_id,
             revocation_id: self.revocation_id,
+            content_type: self.content_type,
         }
     }
 }

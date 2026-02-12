@@ -16,7 +16,12 @@
 use dep::aztec::macros::aztec;
 
 mod certificate_note;
+mod content_note;
+pub mod content;
 mod test;
+
+// Re-export for dependents' tests (e.g. use_case_example)
+pub use test::utils::sample_kyc_content;
 
 #[aztec]
 pub contract CertificateRegistry {
@@ -36,6 +41,8 @@ pub contract CertificateRegistry {
     };
 
     use crate::certificate_note::CertificateNote;
+    use crate::content::CONTENT_TYPE_ZK_KYC;
+    use crate::content_note::ContentNote;
 
     global REVOCATION_DELAY: u64 = 12 * 60 * 60; // 12 hours
 
@@ -49,6 +56,9 @@ pub contract CertificateRegistry {
 
         // Private Certificates of the user
         certificates: Owned<PrivateSet<CertificateNote, Context>, Context>,
+
+        // Private certificate content notes (KYC personal, address, etc.)
+        content_notes: Owned<PrivateSet<ContentNote, Context>, Context>,
 
         // Public disclosures (optional, the certificates can also be used privately only)
         // User address -> public KYC ok flag
@@ -90,15 +100,26 @@ pub contract CertificateRegistry {
     /**
      * Issue a certificate to a user.
      * @param user - The user address to issue the certificate to
-     * @param certificate - The certificate to issue
+     * @param unique_id - Unique identifier for the certificate
+     * @param revocation_id - Id for revocation (must be unique)
+     * @param content_type - Content type (e.g. CONTENT_TYPE_ZK_KYC for gip1)
+     * @param content_note_data_0 - First content note payload (8 fields). E.g. KYC personal when content_type is ZK_KYC.
+     * @param content_note_data_1 - Second content note payload (8 fields). E.g. KYC address when content_type is ZK_KYC.
      */
     #[external("private")]
-    fn issue_certificate(user: AztecAddress, unique_id: Field, revocation_id: Field) {
+    fn issue_certificate(
+        user: AztecAddress,
+        unique_id: Field,
+        revocation_id: Field,
+        content_type: Field,
+        content_note_data_0: [Field; 8],
+        content_note_data_1: [Field; 8],
+    ) {
         let guardian = self.context.msg_sender().unwrap();
 
         self.enqueue_self._check_guardian_whitelisted(guardian);
 
-        let certificate = CertificateNote::new(user, guardian, unique_id, revocation_id);
+        let certificate = CertificateNote::new(guardian, unique_id, revocation_id, content_type);
         self.storage.certificates.at(user).insert(certificate).deliver(
             MessageDelivery.CONSTRAINED_ONCHAIN,
         );
@@ -109,6 +130,19 @@ pub contract CertificateRegistry {
             false,
             "Revocation id already used",
         );
+
+        // Create content notes for KYC
+        if content_type.eq(CONTENT_TYPE_ZK_KYC) {
+            let content_note_0 = ContentNote::new(unique_id + 0, content_note_data_0);
+            self.storage.content_notes.at(user).insert(content_note_0).deliver(
+                MessageDelivery.CONSTRAINED_ONCHAIN,
+            );
+
+            let content_note_1 = ContentNote::new(unique_id + 1, content_note_data_1);
+            self.storage.content_notes.at(user).insert(content_note_1).deliver(
+                MessageDelivery.CONSTRAINED_ONCHAIN,
+            );
+        }
 
         // Give the guardian a copy of the certificate note to remember the revocation-nullifier
         self.storage.guardian_certificates_copies.at(guardian).insert(certificate).deliver(

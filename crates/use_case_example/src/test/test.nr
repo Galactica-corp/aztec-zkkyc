@@ -1,7 +1,8 @@
 use crate::test::utils;
 use dep::aztec::test::helpers::authwit::add_private_authwit_from_call;
-
-use dep::zk_certificate::CertificateRegistry;
+use dep::zk_certificate::{
+    content::CONTENT_TYPE_ZK_KYC, sample_kyc_content, CertificateRegistry,
+};
 
 use crate::UseCaseExample;
 
@@ -38,6 +39,8 @@ unconstrained fn test_zk_certificate_integration() {
     let unique_id = Field::from(1);
     let revocation_nullifier = Field::from(1234561);
 
+    let (kyc_personal, kyc_address) = sample_kyc_content();
+
     env.call_public(
         admin,
         CertificateRegistry::at(zk_certificate_registry_address).whitelist_guardian(guardian),
@@ -48,6 +51,9 @@ unconstrained fn test_zk_certificate_integration() {
             user,
             unique_id,
             revocation_nullifier,
+            CONTENT_TYPE_ZK_KYC,
+            kyc_personal,
+            kyc_address,
         ),
     );
 

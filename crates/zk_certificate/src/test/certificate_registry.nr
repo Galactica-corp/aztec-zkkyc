@@ -1,4 +1,5 @@
 use crate::CertificateRegistry;
+use crate::content::CONTENT_TYPE_ZK_KYC;
 use crate::test::utils;
 use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
 use dep::aztec::test::helpers::authwit::add_private_authwit_from_call;
@@ -103,10 +104,18 @@ unconstrained fn test_fail_non_whitelisted_guardian_issue_certificate() {
     let user = env.create_light_account();
     let unique_id = Field::from(1);
     let revocation_id = Field::from(2);
+    let (kyc_personal, kyc_address) = utils::sample_kyc_content();
 
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id, revocation_id),
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_id,
+            CONTENT_TYPE_ZK_KYC,
+            kyc_personal,
+            kyc_address,
+        ),
     );
 }
 
@@ -118,13 +127,21 @@ unconstrained fn test_whitelisted_guardian_issue_certificate() {
     let user = env.create_light_account();
     let unique_id = Field::from(1);
     let revocation_id = Field::from(1234562);
+    let (kyc_personal, kyc_address) = utils::sample_kyc_content();
 
     // Whitelist the guardian
     env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
 
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id, revocation_id),
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_id,
+            CONTENT_TYPE_ZK_KYC,
+            kyc_personal,
+            kyc_address,
+        ),
     );
 
     let certificates_count =
@@ -144,11 +161,19 @@ unconstrained fn test_user_proof_certificate_existence() {
     let user = env.create_light_account();
     let unique_id = Field::from(1);
     let revocation_id = Field::from(1234561);
+    let (kyc_personal, kyc_address) = utils::sample_kyc_content();
 
     env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id, revocation_id),
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_id,
+            CONTENT_TYPE_ZK_KYC,
+            kyc_personal,
+            kyc_address,
+        ),
     );
 
     let check_certificate_call =
@@ -177,11 +202,19 @@ unconstrained fn test_fail_user_proof_certificate_existence_after_guardian_remov
     let user = env.create_light_account();
     let unique_id = Field::from(1);
     let revocation_id = Field::from(1234561);
+    let (kyc_personal, kyc_address) = utils::sample_kyc_content();
 
     env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id, revocation_id),
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_id,
+            CONTENT_TYPE_ZK_KYC,
+            kyc_personal,
+            kyc_address,
+        ),
     );
     env.call_public(
         admin,
@@ -206,11 +239,19 @@ unconstrained fn test_guardian_revoke_certificate() {
     let user = env.create_light_account();
     let unique_id = Field::from(1);
     let revocation_id = Field::from(1234561);
+    let (kyc_personal, kyc_address) = utils::sample_kyc_content();
 
     env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id, revocation_id),
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_id,
+            CONTENT_TYPE_ZK_KYC,
+            kyc_personal,
+            kyc_address,
+        ),
     );
 
     env.call_private(
@@ -229,11 +270,19 @@ unconstrained fn test_fail_user_use_certificate_after_revocation() {
     let user = env.create_light_account();
     let unique_id = Field::from(1);
     let revocation_id = Field::from(1234561);
+    let (kyc_personal, kyc_address) = utils::sample_kyc_content();
 
     env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
     env.call_private(
         guardian,
-        CertificateRegistry::at(contract_address).issue_certificate(user, unique_id, revocation_id),
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_id,
+            CONTENT_TYPE_ZK_KYC,
+            kyc_personal,
+            kyc_address,
+        ),
     );
     env.call_private(
         guardian,
