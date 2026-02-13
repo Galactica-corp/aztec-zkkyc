@@ -1,6 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { FileCheck, AlertTriangle, Shield, RefreshCw, CheckCircle } from 'lucide-react';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
+import { Fr } from '@aztec/aztec.js/fields';
+import { poseidon2Hash } from '@aztec/foundation/crypto/poseidon';
+import { iso31661, iso31662 } from 'iso-3166';
 import { useAztecWallet } from '../aztec-wallet';
 import {
   Card,
@@ -13,6 +16,11 @@ import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
   Tabs,
   TabsList,
   TabsTrigger,
@@ -71,7 +79,47 @@ const styles = {
   roleSelectorTitle: 'text-sm font-semibold text-default',
   tabsList: 'w-full',
   tabContent: 'space-y-6 mt-4',
+  kycSection: 'space-y-3 rounded-lg border border-default bg-surface-tertiary p-3',
+  kycSectionTitle: 'text-xs font-semibold text-default uppercase tracking-wide',
+  kycGrid: 'grid grid-cols-1 gap-3 sm:grid-cols-2',
 } as const;
+
+const CONTENT_TYPE_ZK_KYC = 1n;
+const DEFAULT_KYC_BIRTHDAY_DATE = '1990-06-01';
+const DEFAULT_KYC_VERIFICATION_LEVEL = '2';
+const EMPTY_REGION_VALUE = '__none__';
+
+const toPaddedField = (value: string): Fr =>
+  Fr.fromBufferReduce(Buffer.from(value.padEnd(32, '#'), 'utf8'));
+
+const hashStringToField = async (value: string): Promise<bigint> => {
+  const hash = await poseidon2Hash([toPaddedField(value)]);
+  return hash.toBigInt();
+};
+
+const parseBirthdayDateToUnix = (value: string): bigint | null => {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+    return null;
+  }
+
+  const timestampMs = Date.UTC(year, month - 1, day, 0, 0, 0, 0);
+  const date = new Date(timestampMs);
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return BigInt(Math.floor(timestampMs / 1000));
+};
 
 export const CertificateRegistryCard: React.FC = () => {
   const { account, address: connectedAddress, isPXEInitialized, connectors, connector, currentConfig } =
@@ -112,6 +160,17 @@ export const CertificateRegistryCard: React.FC = () => {
   const [issueUser, setIssueUser] = useState('');
   const [issueUniqueId, setIssueUniqueId] = useState('');
   const [issueRevocationId, setIssueRevocationId] = useState('');
+  const [kycSurname, setKycSurname] = useState('DOE');
+  const [kycForename, setKycForename] = useState('JANE');
+  const [kycMiddlename, setKycMiddlename] = useState('');
+  const [kycBirthdayDate, setKycBirthdayDate] = useState(DEFAULT_KYC_BIRTHDAY_DATE);
+  const [kycCitizenship, setKycCitizenship] = useState('DEU');
+  const [kycVerificationLevel, setKycVerificationLevel] = useState(DEFAULT_KYC_VERIFICATION_LEVEL);
+  const [kycStreetAndNumber, setKycStreetAndNumber] = useState('MUSTERSTRASSE 10');
+  const [kycPostcode, setKycPostcode] = useState('10115');
+  const [kycTown, setKycTown] = useState('BERLIN');
+  const [kycRegion, setKycRegion] = useState('DE-BE');
+  const [kycCountry, setKycCountry] = useState('DEU');
 
   // Form state: revoke_certificate
   const [revokeRevocationId, setRevokeRevocationId] = useState('');
@@ -139,6 +198,40 @@ export const CertificateRegistryCard: React.FC = () => {
       return null;
     }
   };
+
+  const countryOptions = useMemo(
+    () =>
+      iso31661
+        .map((entry) => ({
+          alpha2: entry.alpha2,
+          alpha3: entry.alpha3,
+          name: entry.name,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    []
+  );
+
+  const alpha2ByAlpha3 = useMemo(
+    () =>
+      countryOptions.reduce<Record<string, string>>((acc, country) => {
+        acc[country.alpha3] = country.alpha2;
+        return acc;
+      }, {}),
+    [countryOptions]
+  );
+
+  const regionOptions = useMemo(() => {
+    const alpha2 = alpha2ByAlpha3[kycCountry];
+    if (!alpha2) return [];
+
+    return iso31662
+      .filter((entry) => entry.code.startsWith(`${alpha2}-`))
+      .map((entry) => ({
+        code: entry.code,
+        name: entry.name,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [alpha2ByAlpha3, kycCountry]);
 
   const handleWhitelistGuardian = useCallback(async () => {
     if (!registryAddress || !guardianAddress.trim()) return;
@@ -200,11 +293,62 @@ export const CertificateRegistryCard: React.FC = () => {
     if (!registryAddress || !issueUser.trim()) return;
     const uniqueId = parseField(issueUniqueId);
     const revocationId = parseField(issueRevocationId);
-    if (uniqueId === null || revocationId === null) {
-      toastError('Invalid fields', 'unique_id and revocation_id must be non-negative integers');
+    const birthdayUnix = parseBirthdayDateToUnix(kycBirthdayDate);
+    const verificationLevel = parseField(kycVerificationLevel);
+
+    if (uniqueId === null || revocationId === null || birthdayUnix === null || verificationLevel === null) {
+      toastError(
+        'Invalid fields',
+        'unique_id, revocation_id and verification_level must be non-negative integers, and birthday must be a valid date'
+      );
       return;
     }
+
+    if (verificationLevel > 2n) {
+      toastError(
+        'Invalid verification level',
+        'verification_level must be 0, 1, or 2'
+      );
+      return;
+    }
+
+    const requiredTextValues = [
+      ['surname', kycSurname],
+      ['forename', kycForename],
+      ['citizenship', kycCitizenship],
+      ['streetAndNumber', kycStreetAndNumber],
+      ['postcode', kycPostcode],
+      ['town', kycTown],
+      ['country', kycCountry],
+    ];
+    const missingValue = requiredTextValues.find(([, value]) => value.trim() === '');
+    if (missingValue) {
+      toastError('Missing KYC field', `${missingValue[0]} is required`);
+      return;
+    }
+
     try {
+      const kycPersonalData = [
+        await hashStringToField(kycSurname.trim()),
+        await hashStringToField(kycForename.trim()),
+        await hashStringToField(kycMiddlename.trim()),
+        birthdayUnix,
+        await hashStringToField(kycCitizenship.trim()),
+        verificationLevel,
+        0n,
+        0n,
+      ];
+      const kycAddressData = [
+        await hashStringToField(kycStreetAndNumber.trim()),
+        await hashStringToField(kycPostcode.trim()),
+        await hashStringToField(kycTown.trim()),
+        await hashStringToField(kycRegion.trim()),
+        await hashStringToField(kycCountry.trim()),
+        0n,
+        0n,
+        0n,
+      ];
+
       const result = await writeContract({
         contract: CertificateRegistryContract,
         address: registryAddress,
@@ -213,6 +357,9 @@ export const CertificateRegistryCard: React.FC = () => {
           AztecAddress.fromString(issueUser.trim()),
           uniqueId,
           revocationId,
+          CONTENT_TYPE_ZK_KYC,
+          kycPersonalData,
+          kycAddressData,
         ],
         feePaymentMethod,
       });
@@ -232,6 +379,17 @@ export const CertificateRegistryCard: React.FC = () => {
     issueUser,
     issueUniqueId,
     issueRevocationId,
+    kycSurname,
+    kycForename,
+    kycMiddlename,
+    kycBirthdayDate,
+    kycCitizenship,
+    kycVerificationLevel,
+    kycStreetAndNumber,
+    kycPostcode,
+    kycTown,
+    kycRegion,
+    kycCountry,
     writeContract,
     feePaymentMethod,
     success,
@@ -495,6 +653,191 @@ export const CertificateRegistryCard: React.FC = () => {
                     />
                   </div>
                 </div>
+                <section className={styles.kycSection}>
+                  <h4 className={styles.kycSectionTitle}>KYC personal note</h4>
+                  <div className={styles.kycGrid}>
+                    <div className={styles.formGroup}>
+                      <label htmlFor="cert-kyc-surname" className={styles.label}>
+                        surname
+                      </label>
+                      <Input
+                        id="cert-kyc-surname"
+                        value={kycSurname}
+                        onChange={(e) => setKycSurname(e.target.value)}
+                        placeholder="DOE"
+                        disabled={isProcessing || !contractsReady}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label htmlFor="cert-kyc-forename" className={styles.label}>
+                        forename
+                      </label>
+                      <Input
+                        id="cert-kyc-forename"
+                        value={kycForename}
+                        onChange={(e) => setKycForename(e.target.value)}
+                        placeholder="JANE"
+                        disabled={isProcessing || !contractsReady}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label htmlFor="cert-kyc-middlename" className={styles.label}>
+                        middlename
+                      </label>
+                      <Input
+                        id="cert-kyc-middlename"
+                        value={kycMiddlename}
+                        onChange={(e) => setKycMiddlename(e.target.value)}
+                        placeholder="Optional"
+                        disabled={isProcessing || !contractsReady}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label htmlFor="cert-kyc-birthday-unix" className={styles.label}>
+                        birthday (UTC date)
+                      </label>
+                      <Input
+                        id="cert-kyc-birthday-unix"
+                        type="date"
+                        value={kycBirthdayDate}
+                        onChange={(e) => setKycBirthdayDate(e.target.value)}
+                        disabled={isProcessing || !contractsReady}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label htmlFor="cert-kyc-citizenship" className={styles.label}>
+                        citizenship (ISO-3166 alpha-3)
+                      </label>
+                      <Select
+                        value={kycCitizenship}
+                        onValueChange={setKycCitizenship}
+                        disabled={isProcessing || !contractsReady}
+                      >
+                        <SelectTrigger id="cert-kyc-citizenship">
+                          <SelectValue placeholder="Select citizenship" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {countryOptions.map((country) => (
+                            <SelectItem key={country.alpha3} value={country.alpha3}>
+                              {country.alpha3} - {country.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label htmlFor="cert-kyc-verification-level" className={styles.label}>
+                        verification_level (0-2)
+                      </label>
+                      <Select
+                        value={kycVerificationLevel}
+                        onValueChange={setKycVerificationLevel}
+                        disabled={isProcessing || !contractsReady}
+                      >
+                        <SelectTrigger id="cert-kyc-verification-level">
+                          <SelectValue placeholder="Select level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0">0 - Basic</SelectItem>
+                          <SelectItem value="1">1 - Intermediate</SelectItem>
+                          <SelectItem value="2">2 - Enhanced</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </section>
+                <section className={styles.kycSection}>
+                  <h4 className={styles.kycSectionTitle}>KYC address note</h4>
+                  <div className={styles.kycGrid}>
+                    <div className={styles.formGroup}>
+                      <label htmlFor="cert-kyc-street-and-number" className={styles.label}>
+                        street_and_number
+                      </label>
+                      <Input
+                        id="cert-kyc-street-and-number"
+                        value={kycStreetAndNumber}
+                        onChange={(e) => setKycStreetAndNumber(e.target.value)}
+                        placeholder="MUSTERSTRASSE 10"
+                        disabled={isProcessing || !contractsReady}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label htmlFor="cert-kyc-postcode" className={styles.label}>
+                        postcode
+                      </label>
+                      <Input
+                        id="cert-kyc-postcode"
+                        value={kycPostcode}
+                        onChange={(e) => setKycPostcode(e.target.value)}
+                        placeholder="10115"
+                        disabled={isProcessing || !contractsReady}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label htmlFor="cert-kyc-town" className={styles.label}>
+                        town
+                      </label>
+                      <Input
+                        id="cert-kyc-town"
+                        value={kycTown}
+                        onChange={(e) => setKycTown(e.target.value)}
+                        placeholder="BERLIN"
+                        disabled={isProcessing || !contractsReady}
+                      />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label htmlFor="cert-kyc-region" className={styles.label}>
+                        region (ISO-3166-2 optional)
+                      </label>
+                      <Select
+                        value={kycRegion || EMPTY_REGION_VALUE}
+                        onValueChange={(value) =>
+                          setKycRegion(value === EMPTY_REGION_VALUE ? '' : value)
+                        }
+                        disabled={isProcessing || !contractsReady}
+                      >
+                        <SelectTrigger id="cert-kyc-region">
+                          <SelectValue placeholder="Select region (optional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={EMPTY_REGION_VALUE}>None</SelectItem>
+                          {regionOptions.map((region) => (
+                            <SelectItem key={region.code} value={region.code}>
+                              {region.code} - {region.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label htmlFor="cert-kyc-country" className={styles.label}>
+                        country (ISO-3166 alpha-3)
+                      </label>
+                      <Select
+                        value={kycCountry}
+                        onValueChange={(value) => {
+                          setKycCountry(value);
+                          const alpha2 = alpha2ByAlpha3[value];
+                          if (!alpha2 || !kycRegion.startsWith(`${alpha2}-`)) {
+                            setKycRegion('');
+                          }
+                        }}
+                        disabled={isProcessing || !contractsReady}
+                      >
+                        <SelectTrigger id="cert-kyc-country">
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {countryOptions.map((country) => (
+                            <SelectItem key={country.alpha3} value={country.alpha3}>
+                              {country.alpha3} - {country.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </section>
                 <Button
                   variant="primary"
                   onClick={handleIssueCertificate}
@@ -502,6 +845,14 @@ export const CertificateRegistryCard: React.FC = () => {
                     !issueUser.trim() ||
                     !issueUniqueId.trim() ||
                     !issueRevocationId.trim() ||
+                    !kycBirthdayDate.trim() ||
+                    !kycSurname.trim() ||
+                    !kycForename.trim() ||
+                    !kycCitizenship.trim() ||
+                    !kycStreetAndNumber.trim() ||
+                    !kycPostcode.trim() ||
+                    !kycTown.trim() ||
+                    !kycCountry.trim() ||
                     isProcessing ||
                     isWalletBusy ||
                     !contractsReady
