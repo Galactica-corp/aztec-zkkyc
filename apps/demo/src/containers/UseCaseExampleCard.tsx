@@ -42,6 +42,7 @@ const styles = {
   errorTitle: 'text-lg font-semibold text-default mb-1',
   errorText: 'text-sm text-muted',
   usePrivatelyButtonSuccess: 'bg-green-500 text-white hover:bg-green-600 border-0',
+  helperText: 'text-sm text-muted mb-3',
 } as const;
 
 export const UseCaseExampleCard: React.FC = () => {
@@ -100,10 +101,18 @@ export const UseCaseExampleCard: React.FC = () => {
           const action = (
             certRegistry as unknown as {
               methods: {
-                check_certificate: (user: typeof userAddress, authwitNonce: Fr) => unknown;
+                check_certificate_and_requirements: (
+                  user: typeof userAddress,
+                  authwitNonce: Fr,
+                  checkerAddress: AztecAddress
+                ) => unknown;
               };
             }
-          ).methods.check_certificate(userAddress, nonce);
+          ).methods.check_certificate_and_requirements(
+            userAddress,
+            nonce,
+            AztecAddress.fromString(currentConfig.ageCheckRequirementContractAddress)
+          );
           const intent = { caller: useCaseExampleAddress, action };
           const witness = await wallet.createAuthWit(
             userAddress,
@@ -174,7 +183,7 @@ export const UseCaseExampleCard: React.FC = () => {
           <CardDescription>
             Example contract that checks compliance via the ZK Certificate
             Registry. Call use_privately with a random authwit nonce and an auth
-            witness for check_certificate.
+            witness for check_certificate_and_requirements.
           </CardDescription>
         </div>
       </CardHeader>
@@ -190,10 +199,10 @@ export const UseCaseExampleCard: React.FC = () => {
         ) : (
           <section className={styles.section}>
             <h3 className={styles.sectionTitle}>use_privately</h3>
-            <p className="text-sm text-muted mb-3">
+            <p className={styles.helperText}>
               Private function that checks your certificate with the ZK
               Certificate Registry. Uses a random authwit nonce and an auth
-              witness for check_certificate.
+              witness for check_certificate_and_requirements.
             </p>
             <Button
               variant={usePrivatelyStatus === 'success' ? 'secondary' : 'primary'}

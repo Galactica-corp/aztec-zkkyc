@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { FileCheck, AlertTriangle, Shield, RefreshCw, CheckCircle } from 'lucide-react';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { Fr } from '@aztec/aztec.js/fields';
@@ -177,6 +177,10 @@ export const CertificateRegistryCard: React.FC = () => {
 
   // Form state: check_certificate (uses connected account + authwit_nonce 0)
   const [checkCertificateStatus, setCheckCertificateStatus] = useState<
+    'idle' | 'pending' | 'success'
+  >('idle');
+  const [checkRequirementAddress, setCheckRequirementAddress] = useState('');
+  const [checkWithRequirementsStatus, setCheckWithRequirementsStatus] = useState<
     'idle' | 'pending' | 'success'
   >('idle');
 
@@ -454,6 +458,52 @@ export const CertificateRegistryCard: React.FC = () => {
   }, [
     registryAddress,
     connectedAddress,
+    writeContract,
+    feePaymentMethod,
+    success,
+    toastError,
+  ]);
+
+  useEffect(() => {
+    const defaultRequirementAddress =
+      currentConfig?.ageCheckRequirementContractAddress ?? '';
+    setCheckRequirementAddress(defaultRequirementAddress);
+    setCheckWithRequirementsStatus('idle');
+  }, [currentConfig]);
+
+  const handleCheckCertificateWithRequirements = useCallback(async () => {
+    if (!registryAddress || !connectedAddress || !checkRequirementAddress.trim()) {
+      return;
+    }
+
+    setCheckWithRequirementsStatus('pending');
+    try {
+      const result = await writeContract({
+        contract: CertificateRegistryContract,
+        address: registryAddress,
+        functionName: 'check_certificate_and_requirements',
+        args: [
+          AztecAddress.fromString(connectedAddress),
+          0n,
+          AztecAddress.fromString(checkRequirementAddress.trim()),
+        ],
+        feePaymentMethod,
+      });
+      if (result.success) {
+        setCheckWithRequirementsStatus('success');
+        success('Certificate checked with requirements', 'Valid certificate');
+      } else {
+        setCheckWithRequirementsStatus('idle');
+        toastError('Failed', result.error ?? 'Unknown error');
+      }
+    } catch (err) {
+      setCheckWithRequirementsStatus('idle');
+      toastError('Failed', err instanceof Error ? err.message : 'Unknown error');
+    }
+  }, [
+    registryAddress,
+    connectedAddress,
+    checkRequirementAddress,
     writeContract,
     feePaymentMethod,
     success,
@@ -996,6 +1046,47 @@ export const CertificateRegistryCard: React.FC = () => {
                   {checkCertificateStatus === 'success'
                     ? 'Certificate valid'
                     : 'Check certificate'}
+                </Button>
+              </section>
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Check certificate with requirements</h3>
+                <p className={styles.checkHelper}>
+                  Uses your connected account, authwit_nonce 0, and a requirement
+                  checker contract.
+                </p>
+                <div className={styles.formGroup}>
+                  <label htmlFor="cert-check-requirement-address" className={styles.label}>
+                    Requirement contract address
+                  </label>
+                  <Input
+                    id="cert-check-requirement-address"
+                    value={checkRequirementAddress}
+                    onChange={(e) => setCheckRequirementAddress(e.target.value)}
+                    placeholder="0x..."
+                    disabled={isProcessing || !contractsReady}
+                  />
+                </div>
+                <Button
+                  variant={checkWithRequirementsStatus === 'success' ? 'secondary' : 'primary'}
+                  className={checkWithRequirementsStatus === 'success' ? styles.checkButtonSuccess : undefined}
+                  icon={
+                    checkWithRequirementsStatus === 'success' ? (
+                      <CheckCircle size={iconSize()} />
+                    ) : undefined
+                  }
+                  onClick={handleCheckCertificateWithRequirements}
+                  disabled={
+                    !connectedAddress ||
+                    !checkRequirementAddress.trim() ||
+                    isProcessing ||
+                    isWalletBusy ||
+                    !contractsReady
+                  }
+                  isLoading={isProcessing}
+                >
+                  {checkWithRequirementsStatus === 'success'
+                    ? 'Certificate valid'
+                    : 'Check with requirements'}
                 </Button>
               </section>
               <section className={styles.section}>
