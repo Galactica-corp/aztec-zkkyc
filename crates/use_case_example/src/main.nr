@@ -13,6 +13,7 @@ pub contract UseCaseExample {
         protocol_types::address::AztecAddress,
         state_vars::PublicImmutable,
     };
+    use dep::requirement_checker_interface::CHECKER_TYPE_AGE;
     use dep::zk_certificate::CertificateRegistry;
 
     #[storage]
@@ -41,16 +42,15 @@ pub contract UseCaseExample {
     #[external("private")]
     fn use_privately(authwit_nonce: Field) {
         let user = self.context.msg_sender().unwrap();
-
-        let  = self.storage.age_check_requirement.read();
+        let age_check = self.storage.age_check_requirement.read();
 
         self.call(
             CertificateRegistry::at(self.storage.zk_certificate_registry.read())
                 .check_certificate_and_requirements(
                     user,
                     authwit_nonce,
+                    CHECKER_TYPE_AGE,
                     age_check,
-                    num_checkers,
                 ),
         );
 

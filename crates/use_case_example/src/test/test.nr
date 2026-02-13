@@ -2,6 +2,7 @@ use crate::test::utils;
 use dep::aztec::{
     protocol_types::address::AztecAddress, test::helpers::authwit::add_private_authwit_from_call,
 };
+use dep::requirement_checker_interface::CHECKER_TYPE_AGE;
 use dep::zk_certificate::{CertificateRegistry, content::CONTENT_TYPE_ZK_KYC, sample_kyc_content};
 
 use crate::UseCaseExample;
@@ -66,7 +67,7 @@ unconstrained fn test_zk_certificate_integration() {
     // Prepare authwit for checking the certificate and requirements (user authorizes self).
     // When from == msg_sender, authwit_nonce must be 0.
     let check_call = CertificateRegistry::at(zk_certificate_registry_address)
-        .check_certificate_and_requirements(user, 0, age_check_address);
+        .check_certificate_and_requirements(user, 0, CHECKER_TYPE_AGE, age_check_address);
     add_private_authwit_from_call(env, user, user, check_call);
 
     // Call CertificateRegistry directly - same logic as UseCaseExample.use_privately
@@ -81,7 +82,7 @@ unconstrained fn test_fail_user_proof_certificate_non_existence() {
     let user = env.create_contract_account(); // use contract account to support authwit
 
     let check_call = CertificateRegistry::at(zk_certificate_registry_address)
-        .check_certificate_and_requirements(user, AUTHWIT_NONCE, age_check_address);
+        .check_certificate_and_requirements(user, AUTHWIT_NONCE, CHECKER_TYPE_AGE, age_check_address);
     add_private_authwit_from_call(env, user, use_case_example_address, check_call);
 
     env.call_private(user, UseCaseExample::at(use_case_example_address).use_privately(AUTHWIT_NONCE));
@@ -139,7 +140,7 @@ unconstrained fn test_fail_underage_user() {
     // Default block timestamp (~2026): user born 2020-01-01 is 16, under threshold 18
 
     let check_call = CertificateRegistry::at(zk_certificate_registry_address)
-        .check_certificate_and_requirements(user, AUTHWIT_NONCE, age_check_address);
+        .check_certificate_and_requirements(user, AUTHWIT_NONCE, CHECKER_TYPE_AGE, age_check_address);
     add_private_authwit_from_call(env, user, use_case_example_address, check_call);
 
     env.call_private(user, UseCaseExample::at(use_case_example_address).use_privately(AUTHWIT_NONCE));

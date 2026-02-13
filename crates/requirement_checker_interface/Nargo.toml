@@ -1,0 +1,5 @@
+[package]
+name = "requirement_checker_interface"
+type = "lib"
+authors = [ "Galactica Network" ]
+compiler_version = ">=0.18.0"

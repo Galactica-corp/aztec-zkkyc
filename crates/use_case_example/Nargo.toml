@@ -8,3 +8,4 @@ compiler_version = ">=0.18.0"
 aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0-devnet.20251212", directory = "aztec" }
 zk_certificate = { path = "../zk_certificate" }
 age_check_requirement = { path = "../age_check_requirement" }
+requirement_checker_interface = { path = "../requirement_checker_interface" }

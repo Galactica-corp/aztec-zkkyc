@@ -44,6 +44,7 @@ pub contract CertificateRegistry {
     use crate::content::CONTENT_TYPE_ZK_KYC;
     use crate::content_note::ContentNote;
     use dep::age_check_requirement::AgeCheckRequirement;
+    use dep::requirement_checker_interface::CHECKER_TYPE_AGE;
 
     global REVOCATION_DELAY: u64 = 12 * 60 * 60; // 12 hours
 
@@ -238,14 +239,16 @@ pub contract CertificateRegistry {
      * Check if a user has a valid certificate and that all requirement checkers pass.
      * @param from - The user address whose certificate to check
      * @param authwit_nonce - Nonce for the authwit
-     * @param requirement_checker_address - Address of requirement checker contract (e.g. AgeCheckRequirement)
+     * @param checker_type - Type of requirement checker (e.g. CHECKER_TYPE_AGE)
+     * @param checker_address - Address of the requirement checker contract
      */
     #[authorize_once("from", "authwit_nonce")]
     #[external("private")]
     fn check_certificate_and_requirements(
         from: AztecAddress,
         authwit_nonce: Field,
-        requirement_checker_address AztecAddress,
+        checker_type: u32,
+        checker_address: AztecAddress,
     ) {
         let mut options = NoteGetterOptions::new().set_limit(1);
 
@@ -282,13 +285,17 @@ pub contract CertificateRegistry {
             let note_0 = popped_0.get(0);
             let note_1 = popped_1.get(0);
 
-            self.call(
-                AgeCheckRequirement::at(requirement_checker_address).check_requirements(
-                    certificate.content_type,
-                    note_0.data,
-                    note_1.data,
-                ),
-            );
+            if Field::from(checker_type).eq(Field::from(CHECKER_TYPE_AGE)) {
+                self.call(
+                    AgeCheckRequirement::at(checker_address).check_requirements(
+                        certificate.content_type,
+                        note_0.data,
+                        note_1.data,
+                    ),
+                );
+            } else {
+                assert(false, "Unknown requirement checker type");
+            }
 
             // Put content notes back
             self.storage.content_notes.at(from).insert(note_0).deliver(

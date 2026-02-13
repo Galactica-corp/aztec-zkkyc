@@ -3,6 +3,7 @@ use crate::content::CONTENT_TYPE_ZK_KYC;
 use crate::test::utils;
 use dep::age_check_requirement::AgeCheckRequirement;
 use dep::aztec::protocol_types::address::AztecAddress;
+use dep::requirement_checker_interface::CHECKER_TYPE_AGE;
 use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
 use dep::aztec::test::helpers::authwit::add_private_authwit_from_call;
 
@@ -215,6 +216,7 @@ unconstrained fn test_user_proof_certificate_existence_with_requirements() {
     let check_call = CertificateRegistry::at(contract_address).check_certificate_and_requirements(
         user,
         0,
+        CHECKER_TYPE_AGE,
         age_check_address,
     );
     add_private_authwit_from_call(env, user, user, check_call);
