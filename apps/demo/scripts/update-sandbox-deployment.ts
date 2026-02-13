@@ -1,11 +1,13 @@
 /**
- * Updates apps/demo sandbox deployment config with Certificate Registry and Use Case Example
+ * Updates apps/demo sandbox deployment config with Certificate Registry, Age Check Requirement,
+ * and Use Case Example
  * contract addresses. Invoked from repo root after `yarn deploy` (scripts/deploy_contract.ts).
  *
  * Usage: tsx scripts/update-sandbox-deployment.ts <path-to-deployment-json>
  *
  * The JSON file must contain:
  *   certificateRegistryContract: { address: string, salt: string }
+ *   ageCheckRequirementContract: { address: string, salt: string }
  *   useCaseExampleContract: { address: string, salt: string }
  *   certificateRegistryAdminAddress: string
  *   deployer: string
@@ -25,6 +27,7 @@ const SANDBOX_JSON_PATH = path.join(
 
 export interface DeploymentPayload {
   certificateRegistryContract: { address: string; salt: string };
+  ageCheckRequirementContract: { address: string; salt: string };
   useCaseExampleContract: { address: string; salt: string };
   certificateRegistryAdminAddress: string;
   deployer: string;
@@ -49,6 +52,7 @@ function main(): void {
 
   const {
     certificateRegistryContract,
+    ageCheckRequirementContract,
     useCaseExampleContract,
     certificateRegistryAdminAddress,
     deployer,
@@ -60,6 +64,10 @@ function main(): void {
   }
   if (!useCaseExampleContract?.address || !useCaseExampleContract?.salt) {
     console.error("Payload must include useCaseExampleContract.address and .salt");
+    process.exit(1);
+  }
+  if (!ageCheckRequirementContract?.address || !ageCheckRequirementContract?.salt) {
+    console.error("Payload must include ageCheckRequirementContract.address and .salt");
     process.exit(1);
   }
   if (!certificateRegistryAdminAddress) {
@@ -88,6 +96,7 @@ function main(): void {
   }
 
   deployment.certificateRegistryContract = certificateRegistryContract;
+  deployment.ageCheckRequirementContract = ageCheckRequirementContract;
   deployment.useCaseExampleContract = useCaseExampleContract;
   deployment.certificateRegistryAdminAddress = certificateRegistryAdminAddress;
   deployment.deployer = deployer;

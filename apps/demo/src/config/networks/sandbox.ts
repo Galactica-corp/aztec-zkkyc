@@ -12,11 +12,13 @@ const env = getEnv();
 /**
  * Load sandbox deployment from JSON config file.
  * Environment variables can override nodeUrl and proverEnabled.
- * Certificate Registry and Use Case Example are set by root `yarn deploy` (scripts/deploy_contract.ts).
+ * Certificate Registry, Age Check Requirement, and Use Case Example are set by
+ * root `yarn deploy` (scripts/deploy_contract.ts).
  */
 const deployment = getSandboxDeployment();
 
 const certRegistry = deployment.certificateRegistryContract;
+const ageCheckRequirement = deployment.ageCheckRequirementContract;
 const useCaseExample = deployment.useCaseExampleContract;
 
 /**
@@ -24,7 +26,7 @@ const useCaseExample = deployment.useCaseExampleContract;
  *
  * Contract addresses are loaded from src/config/deployments/sandbox.json
  * - Token/Dripper: run `yarn deploy-contracts` from apps/demo
- * - Certificate Registry + Use Case Example: run `yarn deploy` from repo root
+ * - Certificate Registry + Age Check Requirement + Use Case Example: run `yarn deploy` from repo root
  */
 export const SANDBOX_CONFIG: NetworkConfig = {
   name: 'sandbox',
@@ -40,8 +42,11 @@ export const SANDBOX_CONFIG: NetworkConfig = {
   certificateRegistryDeploymentSalt: certRegistry?.salt ?? PLACEHOLDER_SALT,
   certificateRegistryAdminAddress:
     deployment.certificateRegistryAdminAddress ?? PLACEHOLDER_ADDRESS,
-  useCaseExampleContractAddress:
-    useCaseExample?.address ?? PLACEHOLDER_ADDRESS,
+  ageCheckRequirementContractAddress:
+    ageCheckRequirement?.address ?? PLACEHOLDER_ADDRESS,
+  ageCheckRequirementDeploymentSalt:
+    ageCheckRequirement?.salt ?? PLACEHOLDER_SALT,
+  useCaseExampleContractAddress: useCaseExample?.address ?? PLACEHOLDER_ADDRESS,
   useCaseExampleDeploymentSalt: useCaseExample?.salt ?? PLACEHOLDER_SALT,
   deployerAddress: deployment.deployer,
   dripperDeploymentSalt: deployment.dripperContract.salt,

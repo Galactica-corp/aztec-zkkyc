@@ -32,6 +32,8 @@ export interface NetworkConfig {
   certificateRegistryDeploymentSalt: string;
   /** Admin address used in Certificate Registry constructor (synced from deploy script) */
   certificateRegistryAdminAddress: string;
+  ageCheckRequirementContractAddress: string;
+  ageCheckRequirementDeploymentSalt: string;
   useCaseExampleContractAddress: string;
   useCaseExampleDeploymentSalt: string;
   proverEnabled: boolean;

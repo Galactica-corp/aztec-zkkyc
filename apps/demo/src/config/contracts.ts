@@ -1,10 +1,10 @@
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { Fr } from '@aztec/aztec.js/fields';
-import { DripperContract } from '../artifacts/Dripper.js';
-import { TokenContract } from '../artifacts/Token.js';
+import { AgeCheckRequirementContract } from '../../../../artifacts/AgeCheckRequirement';
 import { CertificateRegistryContract } from '../../../../artifacts/CertificateRegistry';
 import { UseCaseExampleContract } from '../../../../artifacts/UseCaseExample';
-
+import { DripperContract } from '../artifacts/Dripper.js';
+import { TokenContract } from '../artifacts/Token.js';
 import {
   createContractConfig,
   getDeployerAddress,
@@ -51,7 +51,7 @@ export const contractsConfig = createContractConfig({
   },
 
   /**
-   * Certificate Registry and Use Case Example are deployed by the root script
+   * Certificate Registry, Age Check Requirement, and Use Case Example are deployed by the root script
    * (scripts/deploy_contract.ts) with a real deployer account, not universal deploy.
    * So we must use config.deployerAddress for instantiation params to match the
    * deployed addresses. getDeployerAddress(config) returns ZERO for sandbox (used
@@ -71,6 +71,21 @@ export const contractsConfig = createContractConfig({
     }),
   },
 
+  ageCheckRequirement: {
+    artifact: AgeCheckRequirementContract.artifact,
+    contract: AgeCheckRequirementContract,
+    address: (config) => config.ageCheckRequirementContractAddress,
+    deployParams: (config) => ({
+      salt: Fr.fromString(config.ageCheckRequirementDeploymentSalt),
+      deployer: config.deployerAddress
+        ? AztecAddress.fromString(config.deployerAddress)
+        : getDeployerAddress(config),
+      constructorArgs: [18],
+      constructorArtifact: 'constructor',
+    }),
+    lazyRegister: true,
+  },
+
   useCaseExample: {
     artifact: UseCaseExampleContract.artifact,
     contract: UseCaseExampleContract,
@@ -80,7 +95,10 @@ export const contractsConfig = createContractConfig({
       deployer: config.deployerAddress
         ? AztecAddress.fromString(config.deployerAddress)
         : getDeployerAddress(config),
-      constructorArgs: [config.certificateRegistryContractAddress],
+      constructorArgs: [
+        config.certificateRegistryContractAddress,
+        config.ageCheckRequirementContractAddress,
+      ],
       constructorArtifact: 'constructor',
     }),
     lazyRegister: true,

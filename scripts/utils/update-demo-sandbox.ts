@@ -1,6 +1,6 @@
 /**
- * Updates the demo app sandbox deployment config with Certificate Registry and
- * Use Case Example contract addresses by writing a payload and invoking
+ * Updates the demo app sandbox deployment config with Certificate Registry,
+ * Age Check Requirement, and Use Case Example contract addresses by writing a payload and invoking
  * apps/demo/scripts/update-sandbox-deployment.ts.
  */
 
@@ -15,6 +15,7 @@ const DEPLOY_OUTPUT_JSON = path.join(APPS_DEMO, ".deploy-output.json");
 
 export interface UpdateDemoSandboxParams {
   certificateRegistryContract: { address: string; salt: string };
+  ageCheckRequirementContract: { address: string; salt: string };
   useCaseExampleContract: { address: string; salt: string };
   /** Admin address used in Certificate Registry constructor (from getCertificateRegistryAdminAddress) */
   certificateRegistryAdminAddress: string;
@@ -34,6 +35,7 @@ export function updateDemoSandboxDeployment(
   try {
     const payload = {
       certificateRegistryContract: params.certificateRegistryContract,
+      ageCheckRequirementContract: params.ageCheckRequirementContract,
       useCaseExampleContract: params.useCaseExampleContract,
       certificateRegistryAdminAddress: params.certificateRegistryAdminAddress,
       deployer: params.deployer,

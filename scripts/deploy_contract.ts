@@ -8,9 +8,12 @@ import { createAccountFromEnv } from "../crates/zk_certificate/src/utils/create_
 import { getCertificateRegistryAdminAddress } from "../crates/zk_certificate/src/utils/env_helper.js";
 
 import { CertificateRegistryContract } from "../artifacts/CertificateRegistry.js";
+import { AgeCheckRequirementContract } from "../artifacts/AgeCheckRequirement.js";
 import { UseCaseExampleContract } from "../artifacts/UseCaseExample.js";
 import { ContractBase, DeployMethod } from "@aztec/aztec.js/contracts";
 import { updateDemoSandboxDeployment } from "./utils/update-demo-sandbox.js";
+
+const AGE_CHECK_MINIMUM_AGE = 18;
 
 async function main() {
   let logger: Logger;
@@ -73,10 +76,27 @@ async function main() {
   await logContractInstantiationData(certificateDeployMethod, [adminAddress.toString()]);
   logger.info(`👤 Admin address: ${address}`);
 
+  // Deploy age check requirement contract
+  logger.info('🏎️  Starting age check requirement contract deployment...');
+  logger.info(`📋 Minimum required age: ${AGE_CHECK_MINIMUM_AGE}`);
+  const ageCheckDeployMethod = AgeCheckRequirementContract.deploy(wallet, AGE_CHECK_MINIMUM_AGE);
+  logger.info('⏳ Waiting for deployment transaction to be mined...');
+  const ageCheckRequirementContract = await ageCheckDeployMethod.send({
+    from: address,
+    fee: { paymentMethod: sponsoredPaymentMethod }
+  }).deployed({ timeout: timeouts.deployTimeout });
+  logger.info(`🎉 Age Check Requirement Contract deployed successfully!`);
+  logger.info(`📍 Contract address: ${ageCheckRequirementContract.address}`);
+  await logContractInstantiationData(ageCheckDeployMethod, [AGE_CHECK_MINIMUM_AGE.toString()]);
+
 
   // Deploy use case example contract
   logger.info('🏎️  Starting use case example contract deployment...');
-  const useCaseExampleDeployMethod = UseCaseExampleContract.deploy(wallet, certificateRegistryContract.address);
+  const useCaseExampleDeployMethod = UseCaseExampleContract.deploy(
+    wallet,
+    certificateRegistryContract.address,
+    ageCheckRequirementContract.address
+  );
   logger.info('⏳ Waiting for deployment transaction to be mined...');
   const useCaseExampleContract = await useCaseExampleDeployMethod.send({
     from: address,
@@ -84,7 +104,10 @@ async function main() {
   }).deployed({ timeout: timeouts.deployTimeout });
   logger.info(`🎉 Use Case Example Contract deployed successfully!`);
   logger.info(`📍 Contract address: ${useCaseExampleContract.address}`);
-  await logContractInstantiationData(useCaseExampleDeployMethod, [certificateRegistryContract.address.toString()]);
+  await logContractInstantiationData(useCaseExampleDeployMethod, [
+    certificateRegistryContract.address.toString(),
+    ageCheckRequirementContract.address.toString(),
+  ]);
 
   // Verify deployment
   logger.info('🔍 Verifying contract deployment...');
@@ -93,18 +116,24 @@ async function main() {
   logger.info('🏁 Deployment process completed successfully!');
   logger.info(`📋 Summary:`);
   logger.info(`   - Contract Address: ${certificateRegistryContract.address}`);
+  logger.info(`   - Age Check Requirement Contract Address: ${ageCheckRequirementContract.address}`);
   logger.info(`   - Use Case Example Contract Address: ${useCaseExampleContract.address}`);
   logger.info(`   - Admin Address: ${adminAddress}`);
   logger.info(`   - Sponsored FPC: ${sponsoredFPC.address}`);
 
   // Update demo app sandbox deployment so Settings show these contracts
   const certInstance = await certificateDeployMethod.getInstance();
+  const ageCheckInstance = await ageCheckDeployMethod.getInstance();
   const useCaseInstance = await useCaseExampleDeployMethod.getInstance();
-  if (certInstance && useCaseInstance) {
+  if (certInstance && ageCheckInstance && useCaseInstance) {
     updateDemoSandboxDeployment({
       certificateRegistryContract: {
         address: certificateRegistryContract.address.toString(),
         salt: certInstance.salt.toString(),
+      },
+      ageCheckRequirementContract: {
+        address: ageCheckRequirementContract.address.toString(),
+        salt: ageCheckInstance.salt.toString(),
       },
       useCaseExampleContract: {
         address: useCaseExampleContract.address.toString(),
