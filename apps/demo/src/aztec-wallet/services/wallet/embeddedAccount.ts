@@ -262,5 +262,10 @@ async function connectWithCredentials(
   );
   wallet.addAccount(account);
 
+  // Ensure account contract is initialized on-chain before use.
+  // This is required for simulations/sends to work with configured credentials
+  // (e.g., VITE_EMBEDDED_ACCOUNT_SECRET_KEY) and recovered local accounts.
+  await deployAccountIfNotExists(accountManager, pxeInstance);
+
   return account;
 }
