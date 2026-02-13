@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { FileCheck, AlertTriangle, Shield, RefreshCw, CheckCircle } from 'lucide-react';
+import { FileCheck, AlertTriangle, Shield, RefreshCw, CheckCircle, Dice5 } from 'lucide-react';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { Fr } from '@aztec/aztec.js/fields';
 import { poseidon2Hash } from '@aztec/foundation/crypto/poseidon';
@@ -82,6 +82,9 @@ const styles = {
   kycSection: 'space-y-3 rounded-lg border border-default bg-surface-tertiary p-3',
   kycSectionTitle: 'text-xs font-semibold text-default uppercase tracking-wide',
   kycGrid: 'grid grid-cols-1 gap-3 sm:grid-cols-2',
+  inputWithIconContainer: 'relative',
+  inputWithIcon: 'pr-12',
+  inputInlineButton: 'absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2',
 } as const;
 
 const CONTENT_TYPE_ZK_KYC = 1n;
@@ -120,6 +123,8 @@ const parseBirthdayDateToUnix = (value: string): bigint | null => {
 
   return BigInt(Math.floor(timestampMs / 1000));
 };
+
+const getRandomFieldElementString = (): string => Fr.random().toBigInt().toString();
 
 export const CertificateRegistryCard: React.FC = () => {
   const { account, address: connectedAddress, isPXEInitialized, connectors, connector, currentConfig } =
@@ -400,6 +405,14 @@ export const CertificateRegistryCard: React.FC = () => {
     toastError,
   ]);
 
+  const fillRandomUniqueId = useCallback(() => {
+    setIssueUniqueId(getRandomFieldElementString());
+  }, []);
+
+  const fillRandomRevocationId = useCallback(() => {
+    setIssueRevocationId(getRandomFieldElementString());
+  }, []);
+
   const handleRevokeCertificate = useCallback(async () => {
     if (!registryAddress) return;
     const revocationId = parseField(revokeRevocationId);
@@ -679,13 +692,27 @@ export const CertificateRegistryCard: React.FC = () => {
                     <label htmlFor="cert-issue-unique-id" className={styles.label}>
                       unique_id (field)
                     </label>
-                    <Input
-                      id="cert-issue-unique-id"
-                      value={issueUniqueId}
-                      onChange={(e) => setIssueUniqueId(e.target.value)}
-                      placeholder="0"
-                      disabled={isProcessing || !contractsReady}
-                    />
+                    <div className={styles.inputWithIconContainer}>
+                      <Input
+                        id="cert-issue-unique-id"
+                        value={issueUniqueId}
+                        onChange={(e) => setIssueUniqueId(e.target.value)}
+                        placeholder="0"
+                        disabled={isProcessing || !contractsReady}
+                        className={styles.inputWithIcon}
+                      />
+                      <Button
+                        type="button"
+                        variant="icon"
+                        size="icon"
+                        className={styles.inputInlineButton}
+                        onClick={fillRandomUniqueId}
+                        disabled={isProcessing || !contractsReady}
+                        aria-label="Generate random unique ID in field"
+                      >
+                        <Dice5 size={iconSize()} />
+                      </Button>
+                    </div>
                   </div>
                   <div className={cn(styles.formGroup, styles.inputFlex)}>
                     <label
@@ -694,13 +721,27 @@ export const CertificateRegistryCard: React.FC = () => {
                     >
                       revocation_id (field)
                     </label>
-                    <Input
-                      id="cert-issue-revocation-id"
-                      value={issueRevocationId}
-                      onChange={(e) => setIssueRevocationId(e.target.value)}
-                      placeholder="0"
-                      disabled={isProcessing || !contractsReady}
-                    />
+                    <div className={styles.inputWithIconContainer}>
+                      <Input
+                        id="cert-issue-revocation-id"
+                        value={issueRevocationId}
+                        onChange={(e) => setIssueRevocationId(e.target.value)}
+                        placeholder="0"
+                        disabled={isProcessing || !contractsReady}
+                        className={styles.inputWithIcon}
+                      />
+                      <Button
+                        type="button"
+                        variant="icon"
+                        size="icon"
+                        className={styles.inputInlineButton}
+                        onClick={fillRandomRevocationId}
+                        disabled={isProcessing || !contractsReady}
+                        aria-label="Generate random revocation ID in field"
+                      >
+                        <Dice5 size={iconSize()} />
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 <section className={styles.kycSection}>
