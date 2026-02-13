@@ -1,7 +1,5 @@
 use crate::test::utils;
-use dep::aztec::{
-    protocol_types::address::AztecAddress, test::helpers::authwit::add_private_authwit_from_call,
-};
+use dep::aztec::test::helpers::authwit::add_private_authwit_from_call;
 use dep::zk_certificate::{CertificateRegistry, content::CONTENT_TYPE_ZK_KYC, sample_kyc_content};
 
 use crate::UseCaseExample;
@@ -30,10 +28,6 @@ unconstrained fn test_initializer() {
 // ============================================================================
 
 // Test: Use case can check compliance with a ZK Certificate Registry and age requirement.
-// Calls CertificateRegistry.check_certificate_and_requirements directly (same flow as UseCaseExample.use_privately).
-// NOTE: The full User->UseCaseExample->CertificateRegistry->AgeCheckRequirement chain hits a known
-// framework limitation (execution cache size mismatch) with 3-level nested private calls when the
-// age check succeeds. test_fail_underage_user validates the UseCaseExample path when the check fails.
 #[test]
 unconstrained fn test_zk_certificate_integration() {
     let (mut env, zk_certificate_registry_address, use_case_example_address, admin, age_check_address) =
@@ -63,14 +57,12 @@ unconstrained fn test_zk_certificate_integration() {
 
     // Default block timestamp (~2026) is sufficient for adult (birthday 1990-06-15)
 
-    // Prepare authwit for checking the certificate and requirements (user authorizes self).
-    // When from == msg_sender, authwit_nonce must be 0.
+    // Prepare authwit for checking the certificate and requirements.
     let check_call = CertificateRegistry::at(zk_certificate_registry_address)
-        .check_certificate_and_requirements(user, 0, age_check_address);
-    add_private_authwit_from_call(env, user, user, check_call);
+        .check_certificate_and_requirements(user, AUTHWIT_NONCE, age_check_address);
+    add_private_authwit_from_call(env, user, use_case_example_address, check_call);
 
-    // Call CertificateRegistry directly - same logic as UseCaseExample.use_privately
-    env.call_private(user, check_call);
+    env.call_private(user, UseCaseExample::at(use_case_example_address).use_privately(AUTHWIT_NONCE));
 }
 
 // Test: User cannot proof that their certificate does not exist
