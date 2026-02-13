@@ -1,5 +1,8 @@
 [package]
 name = "requirement_checker_interface"
-type = "lib"
+type = "contract"
 authors = [ "Galactica Network" ]
 compiler_version = ">=0.18.0"
+
+[dependencies]
+aztec = { git = "https://github.com/AztecProtocol/aztec-nr/", tag = "v3.0.0-devnet.20251212", directory = "aztec" }

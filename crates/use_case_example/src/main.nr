@@ -13,7 +13,6 @@ pub contract UseCaseExample {
         protocol_types::address::AztecAddress,
         state_vars::PublicImmutable,
     };
-    use dep::requirement_checker_interface::CHECKER_TYPE_AGE;
     use dep::zk_certificate::CertificateRegistry;
 
     #[storage]
@@ -46,12 +45,7 @@ pub contract UseCaseExample {
 
         self.call(
             CertificateRegistry::at(self.storage.zk_certificate_registry.read())
-                .check_certificate_and_requirements(
-                    user,
-                    authwit_nonce,
-                    CHECKER_TYPE_AGE,
-                    age_check,
-                ),
+                .check_certificate_and_requirements(user, authwit_nonce, age_check),
         );
 
         // Custom use case logic would go here

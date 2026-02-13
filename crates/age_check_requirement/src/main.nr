@@ -55,7 +55,7 @@ pub contract AgeCheckRequirement {
         let header = self.context.get_anchor_block_header();
         let reference_timestamp = header.global_variables.timestamp;
 
-        let birth_timestamp = content_note_0[KYC_PERSONAL_INDEX_BIRTHDAY as u32];
+        let birth_timestamp = content_note_0[KYC_PERSONAL_INDEX_BIRTHDAY];
 
         let age_seconds = Field::from(reference_timestamp) - birth_timestamp;
         let threshold = self.storage.age_threshold.read();
