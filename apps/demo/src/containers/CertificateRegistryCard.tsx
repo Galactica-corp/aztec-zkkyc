@@ -133,7 +133,7 @@ export const CertificateRegistryCard: React.FC = () => {
     hasError: contractsHasError,
     failedContracts,
     pendingContracts,
-  } = useRequiredContracts(['certificateRegistry'] as const);
+  } = useRequiredContracts(['certificateRegistry', 'ageCheckRequirement'] as const);
 
   const { writeContract, isPending: writePending } = useWriteContract();
   const {

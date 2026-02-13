@@ -62,7 +62,7 @@ export const UseCaseExampleCard: React.FC = () => {
     hasError: contractsHasError,
     failedContracts,
     pendingContracts,
-  } = useRequiredContracts(['useCaseExample'] as const);
+  } = useRequiredContracts(['useCaseExample', 'ageCheckRequirement'] as const);
 
   const { writeContract, isPending: writePending } = useWriteContract();
 
