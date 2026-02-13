@@ -1,18 +1,12 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { iso31661, iso31662 } from 'iso-3166';
-import {
-  FileCheck,
-  AlertTriangle,
-  Shield,
-  RefreshCw,
-  CheckCircle,
-  Dice5,
-} from 'lucide-react';
+import { FileCheck, AlertTriangle, CheckCircle, Dice5 } from 'lucide-react';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { Fr } from '@aztec/aztec.js/fields';
 import { poseidon2Hash } from '@aztec/foundation/crypto/poseidon';
 import { CertificateRegistryContract } from '../../../../artifacts/CertificateRegistry';
 import { useAztecWallet } from '../aztec-wallet';
+import { CertificateListSection } from '../components/certificates';
 import {
   Card,
   CardHeader,
@@ -21,9 +15,6 @@ import {
   CardContent,
   Input,
   Button,
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
   Select,
   SelectTrigger,
   SelectValue,
@@ -39,39 +30,12 @@ import { useRequiredContracts, useCertificates } from '../hooks';
 import { useToast } from '../hooks';
 import { useWriteContract } from '../hooks/contracts';
 import { useFeePayment } from '../store/feePayment';
-import { cn, iconSize, truncateAddress } from '../utils';
+import { cn, iconSize } from '../utils';
 
 const styles = {
   headerRow: 'flex flex-row items-start gap-4',
   headerIcon: 'text-accent',
   formContainer: 'space-y-6',
-  // My certificates section (top)
-  certificatesSection:
-    'rounded-xl border border-default bg-surface-secondary shadow-theme p-4 mb-4',
-  certificatesSectionHeader: 'flex items-center justify-between gap-2 pb-3',
-  certificatesSectionTitle:
-    'flex items-center gap-2 text-base font-semibold text-default',
-  certificatesSectionTitleIcon: 'text-accent',
-  certificatesDescription: 'text-xs text-muted mb-3',
-  certificatesReloadButton: 'shrink-0',
-  certificatesFetchingBadge: 'ml-1 inline-block',
-  certificatesLoading: 'flex items-center justify-center gap-3 py-6 text-muted',
-  certificatesLoadingSpinner:
-    'animate-spin rounded-full h-5 w-5 border-2 border-current border-t-transparent',
-  certificatesList: 'space-y-3',
-  certificateCard:
-    'rounded-lg border border-default bg-surface-tertiary p-3 space-y-2',
-  certificateRow: 'flex flex-wrap items-center gap-x-2 gap-y-1 text-sm',
-  certificateLabel: 'text-muted shrink-0',
-  certificateValue: 'font-mono text-default break-all',
-  certificateContentContainer:
-    'rounded-md border border-default bg-surface p-2 space-y-2',
-  certificateContentTitle: 'text-xs font-semibold text-default',
-  certificateContentRow: 'flex flex-wrap items-center gap-x-2 gap-y-1 text-xs',
-  certificateContentLabel: 'text-muted shrink-0',
-  certificateContentValue: 'font-mono text-default break-all',
-  certificateContentEmpty: 'text-xs text-muted',
-  certificateEmpty: 'py-4 text-center text-sm text-muted',
   // Form sections
   section:
     'space-y-4 rounded-lg border border-default bg-surface-secondary p-4',
@@ -107,43 +71,9 @@ const styles = {
 } as const;
 
 const CONTENT_TYPE_ZK_KYC = 1n;
-const CONTENT_TYPE_ZK_KYC_STRING = CONTENT_TYPE_ZK_KYC.toString();
 const DEFAULT_KYC_BIRTHDAY_DATE = '1990-06-01';
 const DEFAULT_KYC_VERIFICATION_LEVEL = '2';
 const EMPTY_REGION_VALUE = '__none__';
-const KYC_CONTENT_INDEX_PERSONAL = 0;
-const KYC_CONTENT_INDEX_ADDRESS = 1;
-
-const KYC_CONTENT_LABELS: Record<number, { title: string; labels: string[] }> =
-  {
-    [KYC_CONTENT_INDEX_PERSONAL]: {
-      title: 'Personal note',
-      labels: [
-        'surname',
-        'forename',
-        'middlename',
-        'birthday (unix)',
-        'citizenship',
-        'verification_level',
-      ],
-    },
-    [KYC_CONTENT_INDEX_ADDRESS]: {
-      title: 'Address note',
-      labels: ['street_and_number', 'postcode', 'town', 'region', 'country'],
-    },
-  };
-
-interface CertificateContentField {
-  label: string;
-  value: string;
-}
-
-interface CertificateContentSection {
-  index: number;
-  title: string;
-  fields: CertificateContentField[];
-  contentId: string;
-}
 
 const toPaddedField = (value: string): Fr =>
   Fr.fromBufferReduce(Buffer.from(value.padEnd(32, '#'), 'utf8'));
@@ -183,70 +113,6 @@ const parseBirthdayDateToUnix = (value: string): bigint | null => {
 
 const getRandomFieldElementString = (): string =>
   Fr.random().toBigInt().toString();
-
-const getContentTypeLabel = (contentType: string): string => {
-  try {
-    if (BigInt(contentType) === CONTENT_TYPE_ZK_KYC) {
-      return `ZK KYC (${CONTENT_TYPE_ZK_KYC_STRING})`;
-    }
-  } catch {
-    // Keep unknown label fallback when parsing fails.
-  }
-  if (contentType === CONTENT_TYPE_ZK_KYC_STRING) {
-    return `ZK KYC (${CONTENT_TYPE_ZK_KYC_STRING})`;
-  }
-  return `Unknown (${contentType})`;
-};
-
-const getContentIndex = (
-  uniqueId: string,
-  contentId: string
-): number | null => {
-  try {
-    const index = BigInt(contentId) - BigInt(uniqueId);
-    if (index < 0n) {
-      return null;
-    }
-    return Number(index);
-  } catch {
-    return null;
-  }
-};
-
-const buildContentSections = (
-  uniqueId: string,
-  contentType: string,
-  contentNotes: { contentId: string; data: string[] }[]
-): CertificateContentSection[] => {
-  return contentNotes
-    .map((note) => {
-      const contentIndex = getContentIndex(uniqueId, note.contentId);
-      if (contentIndex === null) {
-        return null;
-      }
-
-      const kycLayout = KYC_CONTENT_LABELS[contentIndex];
-      const isKyc = contentType === CONTENT_TYPE_ZK_KYC_STRING;
-      const labels =
-        isKyc && kycLayout
-          ? kycLayout.labels
-          : note.data.map((_, fieldIndex) => `field_${fieldIndex}`);
-      const title =
-        isKyc && kycLayout ? kycLayout.title : `Content note ${contentIndex}`;
-
-      return {
-        index: contentIndex,
-        title,
-        contentId: note.contentId,
-        fields: labels.map((label, fieldIndex) => ({
-          label,
-          value: note.data[fieldIndex] ?? '',
-        })),
-      };
-    })
-    .filter((section): section is CertificateContentSection => section !== null)
-    .sort((a, b) => a.index - b.index);
-};
 
 export const CertificateRegistryCard: React.FC = () => {
   const {
@@ -1216,170 +1082,13 @@ export const CertificateRegistryCard: React.FC = () => {
 
               <TabsContent value="user" className={styles.tabContent}>
                 {showForm && (
-                  <div
-                    className={styles.certificatesSection}
-                    data-testid="certificates-owned-section"
-                  >
-                    <div className={styles.certificatesSectionHeader}>
-                      <div className={styles.certificatesSectionTitle}>
-                        <Shield
-                          size={iconSize('md')}
-                          className={styles.certificatesSectionTitleIcon}
-                        />
-                        My certificates
-                        {certificatesFetching && !certificatesLoading && (
-                          <span
-                            className={cn(
-                              styles.certificatesLoadingSpinner,
-                              styles.certificatesFetchingBadge
-                            )}
-                          />
-                        )}
-                      </div>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="icon"
-                            size="icon"
-                            onClick={() => refetchCertificates()}
-                            disabled={certificatesFetching || isWalletBusy}
-                            isLoading={certificatesFetching}
-                            className={styles.certificatesReloadButton}
-                            aria-label="Reload certificates"
-                          >
-                            <RefreshCw size={iconSize()} />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Reload certificates</TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <p className={styles.certificatesDescription}>
-                      For KYC content, string values are stored as Poseidon
-                      hashes. Numeric fields like birthday and verification
-                      level are shown as plain field values.
-                    </p>
-                    {certificatesLoading ? (
-                      <div
-                        className={styles.certificatesLoading}
-                        data-testid="certificates-loading"
-                      >
-                        <div className={styles.certificatesLoadingSpinner} />
-                        <span>Loading certificates...</span>
-                      </div>
-                    ) : certificates.length === 0 ? (
-                      <p className={styles.certificateEmpty}>
-                        No certificates yet. Get one issued by a whitelisted
-                        guardian.
-                      </p>
-                    ) : (
-                      <div className={styles.certificatesList}>
-                        {certificates.map((cert, index) => {
-                          const contentSections = buildContentSections(
-                            cert.uniqueId,
-                            cert.contentType,
-                            cert.contentNotes
-                          );
-
-                          return (
-                            <div
-                              key={`${cert.revocationId}-${index}`}
-                              className={styles.certificateCard}
-                              data-testid="certificate-card"
-                            >
-                              <div className={styles.certificateRow}>
-                                <span className={styles.certificateLabel}>
-                                  Owner:
-                                </span>
-                                <span
-                                  className={styles.certificateValue}
-                                  title={cert.owner}
-                                >
-                                  {truncateAddress(cert.owner)}
-                                </span>
-                              </div>
-                              <div className={styles.certificateRow}>
-                                <span className={styles.certificateLabel}>
-                                  Guardian:
-                                </span>
-                                <span
-                                  className={styles.certificateValue}
-                                  title={cert.guardian}
-                                >
-                                  {truncateAddress(cert.guardian)}
-                                </span>
-                              </div>
-                              <div className={styles.certificateRow}>
-                                <span className={styles.certificateLabel}>
-                                  Type:
-                                </span>
-                                <span className={styles.certificateValue}>
-                                  {getContentTypeLabel(cert.contentType)}
-                                </span>
-                              </div>
-                              <div className={styles.certificateRow}>
-                                <span className={styles.certificateLabel}>
-                                  Unique ID:
-                                </span>
-                                <span className={styles.certificateValue}>
-                                  {cert.uniqueId}
-                                </span>
-                              </div>
-                              <div className={styles.certificateRow}>
-                                <span className={styles.certificateLabel}>
-                                  Revocation ID:
-                                </span>
-                                <span className={styles.certificateValue}>
-                                  {cert.revocationId}
-                                </span>
-                              </div>
-                              {contentSections.length === 0 ? (
-                                <p className={styles.certificateContentEmpty}>
-                                  No linked content notes found for this
-                                  certificate.
-                                </p>
-                              ) : (
-                                contentSections.map((section) => (
-                                  <div
-                                    key={`${cert.revocationId}-${section.contentId}`}
-                                    className={
-                                      styles.certificateContentContainer
-                                    }
-                                  >
-                                    <div
-                                      className={styles.certificateContentTitle}
-                                    >
-                                      {section.title} (index {section.index})
-                                    </div>
-                                    {section.fields.map((field) => (
-                                      <div
-                                        key={`${section.contentId}-${field.label}`}
-                                        className={styles.certificateContentRow}
-                                      >
-                                        <span
-                                          className={
-                                            styles.certificateContentLabel
-                                          }
-                                        >
-                                          {field.label}:
-                                        </span>
-                                        <span
-                                          className={
-                                            styles.certificateContentValue
-                                          }
-                                        >
-                                          {field.value}
-                                        </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                ))
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
+                  <CertificateListSection
+                    certificates={certificates}
+                    isLoading={certificatesLoading}
+                    isFetching={certificatesFetching}
+                    isWalletBusy={isWalletBusy}
+                    onReload={() => refetchCertificates()}
+                  />
                 )}
                 <section className={styles.section}>
                   <h3 className={styles.sectionTitle}>Check certificate</h3>
