@@ -12,23 +12,14 @@ use dep::aztec::macros::aztec;
 
 #[aztec]
 pub contract RequirementCheckerInterface {
-    use dep::aztec::{
-        macros::{functions::{external, initializer}, storage::storage},
-        protocol_types::address::AztecAddress,
-        state_vars::PublicImmutable,
-    };
+    use dep::aztec::macros::{functions::{external, initializer}, storage::storage};
 
     #[storage]
-    struct Storage<Context> {
-        // Dummy field - this contract is never deployed, used only as call type
-        _unused: PublicImmutable<u32, Context>,
-    }
+    struct Storage<Context> {}
 
     #[external("public")]
     #[initializer]
-    fn constructor() {
-        self.storage._unused.initialize(0);
-    }
+    fn constructor() {}
 
     /**
      * Check requirements against certificate content.
@@ -45,7 +36,12 @@ pub contract RequirementCheckerInterface {
         content_note_0: [Field; 8],
         content_note_1: [Field; 8],
     ) {
-        // Dummy constraint so the circuit is non-empty (deploying this contract is forbidden)
-        assert(content_type.eq(content_type), "Interface - use concrete checker");
+        // Dummy check that is supposed to fail. However and obvious fail leads to a compile error
+        // (Assertion failed: (!result.empty()) Reason   : split_into_mul_quad_gates: resulted in zero gates. This means that there is an expression with no  multiplication terms and no linear terms.)
+        assert_eq(
+            content_type,
+            Field::from(123456789),
+            "RequirementCheckerInterface: Don't call the generic requirement interface. Implement the concrete checker instead and call that.",
+        );
     }
 }

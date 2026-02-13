@@ -264,40 +264,34 @@ pub contract CertificateRegistry {
             "Certificate revoked",
         );
 
-        // Pop content notes for KYC and call requirement checkers
-        if certificate.content_type.eq(CONTENT_TYPE_ZK_KYC) {
-            let getter_0 = NoteGetterOptions::new()
-                .select(ContentNote::properties().content_id, Comparator.EQ, certificate.unique_id + 0)
-                .set_limit(1);
-            let getter_1 = NoteGetterOptions::new()
-                .select(ContentNote::properties().content_id, Comparator.EQ, certificate.unique_id + 1)
-                .set_limit(1);
+        // Pop content notes to get data for requirement check
+        let getter_0 = NoteGetterOptions::new()
+            .select(ContentNote::properties().content_id, Comparator.EQ, certificate.unique_id + 0)
+            .set_limit(1);
+        let getter_1 = NoteGetterOptions::new()
+            .select(ContentNote::properties().content_id, Comparator.EQ, certificate.unique_id + 1)
+            .set_limit(1);
+        let popped_0 = self.storage.content_notes.at(from).pop_notes(getter_0);
+        let popped_1 = self.storage.content_notes.at(from).pop_notes(getter_1);
+        assert(popped_0.len() > 0, "Content note 0 not found");
+        assert(popped_1.len() > 0, "Content note 1 not found");
+        let note_0 = popped_0.get(0);
+        let note_1 = popped_1.get(0);
 
-            let popped_0 = self.storage.content_notes.at(from).pop_notes(getter_0);
-            let popped_1 = self.storage.content_notes.at(from).pop_notes(getter_1);
+        // Call the requirement checker (using generic interface to allow for different content types and requirements)
+        self.call(RequirementCheckerInterface::at(checker_address).check_requirements(
+            certificate.content_type,
+            note_0.data,
+            note_1.data,
+        ));
 
-            assert(popped_0.len() > 0, "Content note 0 not found");
-            assert(popped_1.len() > 0, "Content note 1 not found");
-
-            let note_0 = popped_0.get(0);
-            let note_1 = popped_1.get(0);
-
-            self.call(
-                RequirementCheckerInterface::at(checker_address).check_requirements(
-                    certificate.content_type,
-                    note_0.data,
-                    note_1.data,
-                ),
-            );
-
-            // Put content notes back
-            self.storage.content_notes.at(from).insert(note_0).deliver(
-                MessageDelivery.CONSTRAINED_ONCHAIN,
-            );
-            self.storage.content_notes.at(from).insert(note_1).deliver(
-                MessageDelivery.CONSTRAINED_ONCHAIN,
-            );
-        }
+        // Put content notes back
+        self.storage.content_notes.at(from).insert(note_0).deliver(
+            MessageDelivery.CONSTRAINED_ONCHAIN,
+        );
+        self.storage.content_notes.at(from).insert(note_1).deliver(
+            MessageDelivery.CONSTRAINED_ONCHAIN,
+        );
 
         // Put the certificate back into the storage to be used again
         self.storage.certificates.at(from).insert(certificate).deliver(
