@@ -2,6 +2,7 @@
 // Tests the full flow: deploy, whitelist guardian, issue certificate, use with authwit, revoke
 
 import { CertificateRegistryContract } from "../../../../../artifacts/CertificateRegistry.js";
+import { AgeCheckRequirementContract } from "../../../../../artifacts/AgeCheckRequirement.js";
 import { UseCaseExampleContract } from "../../../../../artifacts/UseCaseExample.js";
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { getSponsoredFPCInstance } from "../../../../zk_certificate/src/utils/sponsored_fpc.js";
@@ -15,11 +16,34 @@ import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
 import { TxStatus } from "@aztec/stdlib/tx";
 import { TestWallet } from "@aztec/test-wallet/server";
 import { AccountManager } from "@aztec/aztec.js/wallet";
+import { poseidon2Hash } from "@aztec/foundation/crypto/poseidon";
 
 // Test constants (aligned with Noir tests)
 const AUTHWIT_NONCE = new Fr(456789);
 const UNIQUE_ID = new Fr(1);
 const REVOCATION_ID = new Fr(1234561);
+const CONTENT_TYPE_ZK_KYC = new Fr(1);
+
+const hashStringToField = async (value: string): Promise<Fr> =>
+  poseidon2Hash([Fr.fromBufferReduce(Buffer.from(value.padEnd(32, "#"), "utf8"))]);
+
+const KYC_SAMPLE = {
+  personal: {
+    surname: "DOE",
+    forename: "JANE",
+    middlename: "",
+    birthdayUnixTimestamp: 645494400, // 1990-06-01 00:00:00 UTC
+    citizenship: "DE",
+    verificationLevel: 2,
+  },
+  address: {
+    streetAndNumber: "MUSTERSTRASSE 10",
+    postcode: "10115",
+    town: "BERLIN",
+    region: "BERLIN",
+    country: "DE",
+  },
+} as const;
 
 describe("ZK Certificate and UseCaseExample", () => {
   let logger: Logger;
@@ -30,12 +54,39 @@ describe("ZK Certificate and UseCaseExample", () => {
   let guardianAccount: AccountManager;
   let userAccount: AccountManager;
   let certificateRegistry: CertificateRegistryContract;
+  let ageCheckRequirement: AgeCheckRequirementContract;
   let useCaseExample: UseCaseExampleContract;
+  let kycPersonalData: Fr[];
+  let kycAddressData: Fr[];
 
   beforeAll(async () => {
     logger = createLogger("aztec:zkkyc:e2e");
     logger.info("ZK Certificate + UseCaseExample e2e tests running.");
     wallet = await setupWallet();
+
+    // KYC layout mapping (see crates/zk_certificate/src/content/kyc_layout.nr):
+    // personal: [surname, forename, middlename, birthday, citizenship, verification_level]
+    // address:  [street_and_number, postcode, town, region, country]
+    kycPersonalData = [
+      await hashStringToField(KYC_SAMPLE.personal.surname),
+      await hashStringToField(KYC_SAMPLE.personal.forename),
+      await hashStringToField(KYC_SAMPLE.personal.middlename),
+      new Fr(KYC_SAMPLE.personal.birthdayUnixTimestamp),
+      await hashStringToField(KYC_SAMPLE.personal.citizenship),
+      new Fr(KYC_SAMPLE.personal.verificationLevel),
+      new Fr(0),
+      new Fr(0),
+    ];
+    kycAddressData = [
+      await hashStringToField(KYC_SAMPLE.address.streetAndNumber),
+      await hashStringToField(KYC_SAMPLE.address.postcode),
+      await hashStringToField(KYC_SAMPLE.address.town),
+      await hashStringToField(KYC_SAMPLE.address.region),
+      await hashStringToField(KYC_SAMPLE.address.country),
+      new Fr(0),
+      new Fr(0),
+      new Fr(0),
+    ];
 
     sponsoredFPC = await getSponsoredFPCInstance();
     await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
@@ -93,10 +144,19 @@ describe("ZK Certificate and UseCaseExample", () => {
       })
       .deployed({ timeout: getTimeouts().deployTimeout });
 
+    logger.info("Deploying AgeCheckRequirement...");
+    ageCheckRequirement = await AgeCheckRequirementContract.deploy(wallet, 18)
+      .send({
+        from: adminAccount.address,
+        fee: { paymentMethod: sponsoredPaymentMethod },
+      })
+      .deployed({ timeout: getTimeouts().deployTimeout });
+
     logger.info("Deploying UseCaseExample...");
     useCaseExample = await UseCaseExampleContract.deploy(
       wallet,
-      certificateRegistry.address
+      certificateRegistry.address,
+      ageCheckRequirement.address
     )
       .send({
         from: adminAccount.address,
@@ -130,9 +190,10 @@ describe("ZK Certificate and UseCaseExample", () => {
   }, 600000);
 
   it("User cannot use use_privately before guardian issues certificate", async () => {
-    const action = certificateRegistry.methods.check_certificate(
+    const action = certificateRegistry.methods.check_certificate_and_requirements(
       userAccount.address,
-      AUTHWIT_NONCE
+      AUTHWIT_NONCE,
+      ageCheckRequirement.address
     );
     const witness = await wallet.createAuthWit(userAccount.address, {
       caller: useCaseExample.address,
@@ -154,7 +215,10 @@ describe("ZK Certificate and UseCaseExample", () => {
       .issue_certificate(
         userAccount.address,
         UNIQUE_ID,
-        REVOCATION_ID
+        REVOCATION_ID,
+        CONTENT_TYPE_ZK_KYC,
+        kycPersonalData,
+        kycAddressData
       )
       .send({
         from: guardianAccount.address,
@@ -175,9 +239,10 @@ describe("ZK Certificate and UseCaseExample", () => {
   }, 60000);
 
   it("User uses certificate with authwit to call use_privately", async () => {
-    const action = certificateRegistry.methods.check_certificate(
+    const action = certificateRegistry.methods.check_certificate_and_requirements(
       userAccount.address,
-      AUTHWIT_NONCE
+      AUTHWIT_NONCE,
+      ageCheckRequirement.address
     );
     const witness = await wallet.createAuthWit(userAccount.address, {
       caller: useCaseExample.address,
