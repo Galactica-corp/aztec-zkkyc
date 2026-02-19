@@ -9,11 +9,18 @@ import { getCertificateRegistryAdminAddress } from "../crates/zk_certificate/src
 
 import { CertificateRegistryContract } from "../artifacts/CertificateRegistry.js";
 import { AgeCheckRequirementContract } from "../artifacts/AgeCheckRequirement.js";
+import { BasicDisclosureContract } from "../artifacts/BasicDisclosure.js";
+import { ShamirDisclosureContract } from "../artifacts/ShamirDisclosure.js";
 import { UseCaseExampleContract } from "../artifacts/UseCaseExample.js";
 import { ContractBase, DeployMethod } from "@aztec/aztec.js/contracts";
 import { updateDemoSandboxDeployment } from "./utils/update-demo-sandbox.js";
 
 const AGE_CHECK_MINIMUM_AGE = 18;
+const MAX_REQUIREMENT_CHECKERS = 4;
+const MAX_DISCLOSURES = 4;
+const REQUIREMENT_CHECKER_COUNT = 1;
+const DISCLOSURE_COUNT = 2;
+const DISCLOSURE_CONTEXT = 777;
 
 async function main() {
   let logger: Logger;
@@ -89,13 +96,59 @@ async function main() {
   logger.info(`📍 Contract address: ${ageCheckRequirementContract.address}`);
   await logContractInstantiationData(ageCheckDeployMethod, [AGE_CHECK_MINIMUM_AGE.toString()]);
 
+  // Deploy basic disclosure contract
+  logger.info("🏎️  Starting basic disclosure contract deployment...");
+  const basicDisclosureDeployMethod = BasicDisclosureContract.deploy(wallet, address);
+  logger.info("⏳ Waiting for deployment transaction to be mined...");
+  const basicDisclosureContract = await basicDisclosureDeployMethod
+    .send({
+      from: address,
+      fee: { paymentMethod: sponsoredPaymentMethod },
+    })
+    .deployed({ timeout: timeouts.deployTimeout });
+  logger.info("🎉 Basic Disclosure Contract deployed successfully!");
+  logger.info(`📍 Contract address: ${basicDisclosureContract.address}`);
+  await logContractInstantiationData(basicDisclosureDeployMethod, [address.toString()]);
+
+  // Deploy shamir disclosure contract
+  logger.info("🏎️  Starting shamir disclosure contract deployment...");
+  const shamirDisclosureDeployMethod = ShamirDisclosureContract.deploy(
+    wallet,
+    address,
+    adminAddress,
+    ageCheckRequirementContract.address
+  );
+  logger.info("⏳ Waiting for deployment transaction to be mined...");
+  const shamirDisclosureContract = await shamirDisclosureDeployMethod
+    .send({
+      from: address,
+      fee: { paymentMethod: sponsoredPaymentMethod },
+    })
+    .deployed({ timeout: timeouts.deployTimeout });
+  logger.info("🎉 Shamir Disclosure Contract deployed successfully!");
+  logger.info(`📍 Contract address: ${shamirDisclosureContract.address}`);
+  await logContractInstantiationData(shamirDisclosureDeployMethod, [
+    address.toString(),
+    adminAddress.toString(),
+    ageCheckRequirementContract.address.toString(),
+  ]);
+
 
   // Deploy use case example contract
   logger.info('🏎️  Starting use case example contract deployment...');
   const useCaseExampleDeployMethod = UseCaseExampleContract.deploy(
     wallet,
     certificateRegistryContract.address,
-    ageCheckRequirementContract.address
+    Array.from(
+      { length: MAX_REQUIREMENT_CHECKERS },
+      () => ageCheckRequirementContract.address
+    ),
+    REQUIREMENT_CHECKER_COUNT,
+    Array.from({ length: MAX_DISCLOSURES }, (_, i) =>
+      i % 2 === 0 ? basicDisclosureContract.address : shamirDisclosureContract.address
+    ),
+    DISCLOSURE_COUNT,
+    DISCLOSURE_CONTEXT
   );
   logger.info('⏳ Waiting for deployment transaction to be mined...');
   const useCaseExampleContract = await useCaseExampleDeployMethod.send({
@@ -107,6 +160,8 @@ async function main() {
   await logContractInstantiationData(useCaseExampleDeployMethod, [
     certificateRegistryContract.address.toString(),
     ageCheckRequirementContract.address.toString(),
+    basicDisclosureContract.address.toString(),
+    shamirDisclosureContract.address.toString(),
   ]);
 
   // Verify deployment
@@ -117,6 +172,8 @@ async function main() {
   logger.info(`📋 Summary:`);
   logger.info(`   - Contract Address: ${certificateRegistryContract.address}`);
   logger.info(`   - Age Check Requirement Contract Address: ${ageCheckRequirementContract.address}`);
+  logger.info(`   - Basic Disclosure Contract Address: ${basicDisclosureContract.address}`);
+  logger.info(`   - Shamir Disclosure Contract Address: ${shamirDisclosureContract.address}`);
   logger.info(`   - Use Case Example Contract Address: ${useCaseExampleContract.address}`);
   logger.info(`   - Admin Address: ${adminAddress}`);
   logger.info(`   - Sponsored FPC: ${sponsoredFPC.address}`);
@@ -124,8 +181,16 @@ async function main() {
   // Update demo app sandbox deployment so Settings show these contracts
   const certInstance = await certificateDeployMethod.getInstance();
   const ageCheckInstance = await ageCheckDeployMethod.getInstance();
+  const basicDisclosureInstance = await basicDisclosureDeployMethod.getInstance();
+  const shamirDisclosureInstance = await shamirDisclosureDeployMethod.getInstance();
   const useCaseInstance = await useCaseExampleDeployMethod.getInstance();
-  if (certInstance && ageCheckInstance && useCaseInstance) {
+  if (
+    certInstance &&
+    ageCheckInstance &&
+    basicDisclosureInstance &&
+    shamirDisclosureInstance &&
+    useCaseInstance
+  ) {
     updateDemoSandboxDeployment({
       certificateRegistryContract: {
         address: certificateRegistryContract.address.toString(),
@@ -134,6 +199,14 @@ async function main() {
       ageCheckRequirementContract: {
         address: ageCheckRequirementContract.address.toString(),
         salt: ageCheckInstance.salt.toString(),
+      },
+      basicDisclosureContract: {
+        address: basicDisclosureContract.address.toString(),
+        salt: basicDisclosureInstance.salt.toString(),
+      },
+      shamirDisclosureContract: {
+        address: shamirDisclosureContract.address.toString(),
+        salt: shamirDisclosureInstance.salt.toString(),
       },
       useCaseExampleContract: {
         address: useCaseExampleContract.address.toString(),

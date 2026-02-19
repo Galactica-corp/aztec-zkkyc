@@ -14,7 +14,8 @@ export interface ContractDeployment {
 
 /**
  * Full deployment configuration for a network.
- * certificateRegistryContract, ageCheckRequirementContract, and useCaseExampleContract
+ * certificateRegistryContract, ageCheckRequirementContract, basicDisclosureContract,
+ * shamirDisclosureContract, and useCaseExampleContract
  * are populated by scripts/deploy_contract.ts (root).
  */
 export interface DeploymentConfig {
@@ -26,6 +27,10 @@ export interface DeploymentConfig {
   certificateRegistryContract?: ContractDeployment;
   /** Set by root yarn deploy (scripts/deploy_contract.ts) */
   ageCheckRequirementContract?: ContractDeployment;
+  /** Set by root yarn deploy (scripts/deploy_contract.ts) */
+  basicDisclosureContract?: ContractDeployment;
+  /** Set by root yarn deploy (scripts/deploy_contract.ts) */
+  shamirDisclosureContract?: ContractDeployment;
   /** Set by root yarn deploy (scripts/deploy_contract.ts) */
   useCaseExampleContract?: ContractDeployment;
   /** Admin address used in Certificate Registry constructor; set by root yarn deploy */
@@ -77,6 +82,14 @@ export const DEFAULT_SANDBOX_DEPLOYMENT: DeploymentConfig = {
     address: PLACEHOLDER_ADDRESS,
     salt: PLACEHOLDER_SALT,
   },
+  basicDisclosureContract: {
+    address: PLACEHOLDER_ADDRESS,
+    salt: PLACEHOLDER_SALT,
+  },
+  shamirDisclosureContract: {
+    address: PLACEHOLDER_ADDRESS,
+    salt: PLACEHOLDER_SALT,
+  },
   useCaseExampleContract: {
     address: PLACEHOLDER_ADDRESS,
     salt: PLACEHOLDER_SALT,
@@ -106,6 +119,14 @@ export const DEFAULT_DEVNET_DEPLOYMENT: DeploymentConfig = {
     salt: PLACEHOLDER_SALT,
   },
   ageCheckRequirementContract: {
+    address: PLACEHOLDER_ADDRESS,
+    salt: PLACEHOLDER_SALT,
+  },
+  basicDisclosureContract: {
+    address: PLACEHOLDER_ADDRESS,
+    salt: PLACEHOLDER_SALT,
+  },
+  shamirDisclosureContract: {
     address: PLACEHOLDER_ADDRESS,
     salt: PLACEHOLDER_SALT,
   },

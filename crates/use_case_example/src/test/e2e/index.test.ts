@@ -3,6 +3,8 @@
 
 import { CertificateRegistryContract } from "../../../../../artifacts/CertificateRegistry.js";
 import { AgeCheckRequirementContract } from "../../../../../artifacts/AgeCheckRequirement.js";
+import { BasicDisclosureContract } from "../../../../../artifacts/BasicDisclosure.js";
+import { ShamirDisclosureContract } from "../../../../../artifacts/ShamirDisclosure.js";
 import { UseCaseExampleContract } from "../../../../../artifacts/UseCaseExample.js";
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { getSponsoredFPCInstance } from "../../../../zk_certificate/src/utils/sponsored_fpc.js";
@@ -23,6 +25,22 @@ const AUTHWIT_NONCE = new Fr(456789);
 const UNIQUE_ID = new Fr(1);
 const REVOCATION_ID = new Fr(1234561);
 const CONTENT_TYPE_ZK_KYC = new Fr(1);
+const MAX_REQUIREMENT_CHECKERS = 4;
+const MAX_DISCLOSURES = 4;
+const REQUIREMENT_CHECKER_COUNT = 1;
+const DISCLOSURE_COUNT = 2;
+const DISCLOSURE_CONTEXT = new Fr(777);
+
+const configuredRequirementCheckerAddresses = (checkerAddress: AztecAddress) =>
+  Array.from({ length: MAX_REQUIREMENT_CHECKERS }, () => checkerAddress);
+
+const configuredDisclosureAddresses = (
+  basicDisclosureAddress: AztecAddress,
+  shamirDisclosureAddress: AztecAddress
+) =>
+  Array.from({ length: MAX_DISCLOSURES }, (_, i) =>
+    i % 2 === 0 ? basicDisclosureAddress : shamirDisclosureAddress
+  );
 
 const hashStringToField = async (value: string): Promise<Fr> =>
   poseidon2Hash([Fr.fromBufferReduce(Buffer.from(value.padEnd(32, "#"), "utf8"))]);
@@ -55,6 +73,8 @@ describe("ZK Certificate and UseCaseExample", () => {
   let userAccount: AccountManager;
   let certificateRegistry: CertificateRegistryContract;
   let ageCheckRequirement: AgeCheckRequirementContract;
+  let basicDisclosure: BasicDisclosureContract;
+  let shamirDisclosure: ShamirDisclosureContract;
   let useCaseExample: UseCaseExampleContract;
   let kycPersonalData: Fr[];
   let kycAddressData: Fr[];
@@ -152,11 +172,39 @@ describe("ZK Certificate and UseCaseExample", () => {
       })
       .deployed({ timeout: getTimeouts().deployTimeout });
 
+    logger.info("Deploying BasicDisclosure...");
+    basicDisclosure = await BasicDisclosureContract.deploy(wallet, adminAccount.address)
+      .send({
+        from: adminAccount.address,
+        fee: { paymentMethod: sponsoredPaymentMethod },
+      })
+      .deployed({ timeout: getTimeouts().deployTimeout });
+
+    logger.info("Deploying ShamirDisclosure...");
+    shamirDisclosure = await ShamirDisclosureContract.deploy(
+      wallet,
+      adminAccount.address,
+      guardianAccount.address,
+      userAccount.address
+    )
+      .send({
+        from: adminAccount.address,
+        fee: { paymentMethod: sponsoredPaymentMethod },
+      })
+      .deployed({ timeout: getTimeouts().deployTimeout });
+
     logger.info("Deploying UseCaseExample...");
     useCaseExample = await UseCaseExampleContract.deploy(
       wallet,
       certificateRegistry.address,
-      ageCheckRequirement.address
+      configuredRequirementCheckerAddresses(ageCheckRequirement.address),
+      REQUIREMENT_CHECKER_COUNT,
+      configuredDisclosureAddresses(
+        basicDisclosure.address,
+        shamirDisclosure.address
+      ),
+      DISCLOSURE_COUNT,
+      DISCLOSURE_CONTEXT
     )
       .send({
         from: adminAccount.address,
@@ -193,7 +241,14 @@ describe("ZK Certificate and UseCaseExample", () => {
     const action = certificateRegistry.methods.check_certificate_and_requirements(
       userAccount.address,
       AUTHWIT_NONCE,
-      ageCheckRequirement.address
+      configuredRequirementCheckerAddresses(ageCheckRequirement.address),
+      REQUIREMENT_CHECKER_COUNT,
+      configuredDisclosureAddresses(
+        basicDisclosure.address,
+        shamirDisclosure.address
+      ),
+      DISCLOSURE_COUNT,
+      DISCLOSURE_CONTEXT
     );
     const witness = await wallet.createAuthWit(userAccount.address, {
       caller: useCaseExample.address,
@@ -242,7 +297,14 @@ describe("ZK Certificate and UseCaseExample", () => {
     const action = certificateRegistry.methods.check_certificate_and_requirements(
       userAccount.address,
       AUTHWIT_NONCE,
-      ageCheckRequirement.address
+      configuredRequirementCheckerAddresses(ageCheckRequirement.address),
+      REQUIREMENT_CHECKER_COUNT,
+      configuredDisclosureAddresses(
+        basicDisclosure.address,
+        shamirDisclosure.address
+      ),
+      DISCLOSURE_COUNT,
+      DISCLOSURE_CONTEXT
     );
     const witness = await wallet.createAuthWit(userAccount.address, {
       caller: useCaseExample.address,

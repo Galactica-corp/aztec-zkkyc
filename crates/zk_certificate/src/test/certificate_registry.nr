@@ -2,9 +2,38 @@ use crate::CertificateRegistry;
 use crate::content::CONTENT_TYPE_ZK_KYC;
 use crate::test::utils;
 use dep::age_check_requirement::AgeCheckRequirement;
+use dep::basic_disclosure::BasicDisclosure;
 use dep::aztec::protocol_types::address::AztecAddress;
 use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
 use dep::aztec::test::helpers::authwit::add_private_authwit_from_call;
+use dep::shamir_disclosure::ShamirDisclosure;
+
+global MAX_REQUIREMENT_CHECKERS: u32 = 4;
+global MAX_DISCLOSURES: u32 = 4;
+global TEST_DISCLOSURE_CONTEXT: Field = 999;
+
+fn requirement_checker_addresses(
+    checker_address: AztecAddress,
+) -> [AztecAddress; MAX_REQUIREMENT_CHECKERS] {
+    [
+        checker_address,
+        checker_address,
+        checker_address,
+        checker_address,
+    ]
+}
+
+fn disclosure_addresses(
+    first_disclosure: AztecAddress,
+    second_disclosure: AztecAddress,
+) -> [AztecAddress; MAX_DISCLOSURES] {
+    [
+        first_disclosure,
+        second_disclosure,
+        first_disclosure,
+        second_disclosure,
+    ]
+}
 
 // ============================================================================
 // INITIALIZATION TESTS
@@ -198,6 +227,11 @@ unconstrained fn test_user_proof_certificate_existence_with_requirements() {
     let age_check_address = env
         .deploy("@age_check_requirement/AgeCheckRequirement")
         .with_public_initializer(admin, age_check_initializer);
+    let disclosure_recipient = env.create_light_account();
+    let basic_disclosure_initializer = BasicDisclosure::interface().constructor(disclosure_recipient);
+    let basic_disclosure_address = env
+        .deploy("@basic_disclosure/BasicDisclosure")
+        .with_public_initializer(admin, basic_disclosure_initializer);
 
     env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
     env.call_private(
@@ -215,7 +249,130 @@ unconstrained fn test_user_proof_certificate_existence_with_requirements() {
     let check_call = CertificateRegistry::at(contract_address).check_certificate_and_requirements(
         user,
         0,
-        age_check_address,
+        requirement_checker_addresses(age_check_address),
+        1,
+        disclosure_addresses(basic_disclosure_address, basic_disclosure_address),
+        1,
+        TEST_DISCLOSURE_CONTEXT,
+    );
+    add_private_authwit_from_call(env, user, user, check_call);
+    env.call_private(user, check_call);
+}
+
+// Test: User can proof certificate existence with requirement check and shamir disclosure
+#[test]
+unconstrained fn test_user_proof_certificate_existence_with_shamir_disclosure() {
+    let (mut env, contract_address, admin) = utils::setup_certificate_registry();
+    let guardian = env.create_light_account();
+    let user = env.create_light_account();
+    let unique_id = Field::from(1);
+    let revocation_id = Field::from(1234561);
+    let (kyc_personal, kyc_address) = utils::sample_kyc_content();
+
+    let age_check_initializer = AgeCheckRequirement::interface().constructor(18u32);
+    let age_check_address = env
+        .deploy("@age_check_requirement/AgeCheckRequirement")
+        .with_public_initializer(admin, age_check_initializer);
+
+    let shamir_recipient_0 = env.create_light_account();
+    let shamir_recipient_1 = env.create_light_account();
+    let shamir_recipient_2 = env.create_light_account();
+    let shamir_disclosure_initializer = ShamirDisclosure::interface().constructor(
+        shamir_recipient_0,
+        shamir_recipient_1,
+        shamir_recipient_2,
+    );
+    let shamir_disclosure_address = env
+        .deploy("@shamir_disclosure/ShamirDisclosure")
+        .with_public_initializer(admin, shamir_disclosure_initializer);
+
+    env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
+    env.call_private(
+        guardian,
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_id,
+            CONTENT_TYPE_ZK_KYC,
+            kyc_personal,
+            kyc_address,
+        ),
+    );
+
+    let check_call = CertificateRegistry::at(contract_address).check_certificate_and_requirements(
+        user,
+        0,
+        requirement_checker_addresses(age_check_address),
+        1,
+        disclosure_addresses(shamir_disclosure_address, shamir_disclosure_address),
+        1,
+        TEST_DISCLOSURE_CONTEXT,
+    );
+    add_private_authwit_from_call(env, user, user, check_call);
+    env.call_private(user, check_call);
+}
+
+// Test: Requirement failure prevents requirement+disclosure check flow from succeeding
+#[test(should_fail)]
+unconstrained fn test_fail_requirement_blocks_disclosure_flow() {
+    let (mut env, contract_address, admin) = utils::setup_certificate_registry();
+    let guardian = env.create_light_account();
+    let user = env.create_light_account();
+    let unique_id = Field::from(2);
+    let revocation_id = Field::from(1234562);
+
+    let kyc_personal_underage: [Field; 8] = [
+        Field::from(1),
+        Field::from(2),
+        Field::from(0),
+        Field::from(1577836800),
+        Field::from(3),
+        Field::from(1),
+        Field::from(0),
+        Field::from(0),
+    ];
+    let kyc_address: [Field; 8] = [
+        Field::from(11),
+        Field::from(12),
+        Field::from(0),
+        Field::from(0),
+        Field::from(0),
+        Field::from(0),
+        Field::from(0),
+        Field::from(0),
+    ];
+
+    let age_check_initializer = AgeCheckRequirement::interface().constructor(18u32);
+    let age_check_address = env
+        .deploy("@age_check_requirement/AgeCheckRequirement")
+        .with_public_initializer(admin, age_check_initializer);
+    let disclosure_recipient = env.create_light_account();
+    let basic_disclosure_initializer = BasicDisclosure::interface().constructor(disclosure_recipient);
+    let basic_disclosure_address = env
+        .deploy("@basic_disclosure/BasicDisclosure")
+        .with_public_initializer(admin, basic_disclosure_initializer);
+
+    env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
+    env.call_private(
+        guardian,
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_id,
+            CONTENT_TYPE_ZK_KYC,
+            kyc_personal_underage,
+            kyc_address,
+        ),
+    );
+
+    let check_call = CertificateRegistry::at(contract_address).check_certificate_and_requirements(
+        user,
+        0,
+        requirement_checker_addresses(age_check_address),
+        1,
+        disclosure_addresses(basic_disclosure_address, basic_disclosure_address),
+        1,
+        TEST_DISCLOSURE_CONTEXT,
     );
     add_private_authwit_from_call(env, user, user, check_call);
     env.call_private(user, check_call);

@@ -19,6 +19,8 @@ const deployment = getSandboxDeployment();
 
 const certRegistry = deployment.certificateRegistryContract;
 const ageCheckRequirement = deployment.ageCheckRequirementContract;
+const basicDisclosure = deployment.basicDisclosureContract;
+const shamirDisclosure = deployment.shamirDisclosureContract;
 const useCaseExample = deployment.useCaseExampleContract;
 
 /**
@@ -46,6 +48,10 @@ export const SANDBOX_CONFIG: NetworkConfig = {
     ageCheckRequirement?.address ?? PLACEHOLDER_ADDRESS,
   ageCheckRequirementDeploymentSalt:
     ageCheckRequirement?.salt ?? PLACEHOLDER_SALT,
+  basicDisclosureContractAddress: basicDisclosure?.address ?? PLACEHOLDER_ADDRESS,
+  basicDisclosureDeploymentSalt: basicDisclosure?.salt ?? PLACEHOLDER_SALT,
+  shamirDisclosureContractAddress: shamirDisclosure?.address ?? PLACEHOLDER_ADDRESS,
+  shamirDisclosureDeploymentSalt: shamirDisclosure?.salt ?? PLACEHOLDER_SALT,
   useCaseExampleContractAddress: useCaseExample?.address ?? PLACEHOLDER_ADDRESS,
   useCaseExampleDeploymentSalt: useCaseExample?.salt ?? PLACEHOLDER_SALT,
   deployerAddress: deployment.deployer,

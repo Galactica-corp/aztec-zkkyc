@@ -27,6 +27,14 @@ const CONFIG_FIELDS: ConfigField[] = [
     key: 'ageCheckRequirementContractAddress',
     label: 'Age Check Requirement Contract',
   },
+  {
+    key: 'basicDisclosureContractAddress',
+    label: 'Basic Disclosure Contract',
+  },
+  {
+    key: 'shamirDisclosureContractAddress',
+    label: 'Shamir Disclosure Contract',
+  },
   { key: 'useCaseExampleContractAddress', label: 'Use Case Example Contract' },
   { key: 'deployerAddress', label: 'Deployer Address' },
   {
@@ -36,6 +44,14 @@ const CONFIG_FIELDS: ConfigField[] = [
   {
     key: 'ageCheckRequirementDeploymentSalt',
     label: 'Age Check Requirement Salt',
+  },
+  {
+    key: 'basicDisclosureDeploymentSalt',
+    label: 'Basic Disclosure Salt',
+  },
+  {
+    key: 'shamirDisclosureDeploymentSalt',
+    label: 'Shamir Disclosure Salt',
   },
   { key: 'useCaseExampleDeploymentSalt', label: 'Use Case Example Salt' },
   {

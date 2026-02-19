@@ -8,6 +8,8 @@
  * The JSON file must contain:
  *   certificateRegistryContract: { address: string, salt: string }
  *   ageCheckRequirementContract: { address: string, salt: string }
+ *   basicDisclosureContract: { address: string, salt: string }
+ *   shamirDisclosureContract: { address: string, salt: string }
  *   useCaseExampleContract: { address: string, salt: string }
  *   certificateRegistryAdminAddress: string
  *   deployer: string
@@ -28,6 +30,8 @@ const SANDBOX_JSON_PATH = path.join(
 export interface DeploymentPayload {
   certificateRegistryContract: { address: string; salt: string };
   ageCheckRequirementContract: { address: string; salt: string };
+  basicDisclosureContract: { address: string; salt: string };
+  shamirDisclosureContract: { address: string; salt: string };
   useCaseExampleContract: { address: string; salt: string };
   certificateRegistryAdminAddress: string;
   deployer: string;
@@ -53,6 +57,8 @@ function main(): void {
   const {
     certificateRegistryContract,
     ageCheckRequirementContract,
+    basicDisclosureContract,
+    shamirDisclosureContract,
     useCaseExampleContract,
     certificateRegistryAdminAddress,
     deployer,
@@ -68,6 +74,14 @@ function main(): void {
   }
   if (!ageCheckRequirementContract?.address || !ageCheckRequirementContract?.salt) {
     console.error("Payload must include ageCheckRequirementContract.address and .salt");
+    process.exit(1);
+  }
+  if (!basicDisclosureContract?.address || !basicDisclosureContract?.salt) {
+    console.error("Payload must include basicDisclosureContract.address and .salt");
+    process.exit(1);
+  }
+  if (!shamirDisclosureContract?.address || !shamirDisclosureContract?.salt) {
+    console.error("Payload must include shamirDisclosureContract.address and .salt");
     process.exit(1);
   }
   if (!certificateRegistryAdminAddress) {
@@ -97,6 +111,8 @@ function main(): void {
 
   deployment.certificateRegistryContract = certificateRegistryContract;
   deployment.ageCheckRequirementContract = ageCheckRequirementContract;
+  deployment.basicDisclosureContract = basicDisclosureContract;
+  deployment.shamirDisclosureContract = shamirDisclosureContract;
   deployment.useCaseExampleContract = useCaseExampleContract;
   deployment.certificateRegistryAdminAddress = certificateRegistryAdminAddress;
   deployment.deployer = deployer;

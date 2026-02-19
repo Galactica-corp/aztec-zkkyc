@@ -22,6 +22,12 @@ import { UseCaseExampleContract } from '../../../../artifacts/UseCaseExample';
 import { iconSize } from '../utils';
 import { useFeePayment } from '../store/feePayment';
 
+const MAX_REQUIREMENT_CHECKERS = 4;
+const MAX_DISCLOSURES = 4;
+const REQUIREMENT_CHECKER_COUNT = 1;
+const DISCLOSURE_COUNT = 2;
+const DISCLOSURE_CONTEXT = new Fr(777);
+
 const styles = {
   headerRow: 'flex flex-row items-start gap-4',
   headerIcon: 'text-accent',
@@ -104,14 +110,32 @@ export const UseCaseExampleCard: React.FC = () => {
                 check_certificate_and_requirements: (
                   user: typeof userAddress,
                   authwitNonce: Fr,
-                  checkerAddress: AztecAddress
+                  requirementCheckerAddresses: AztecAddress[],
+                  requirementCheckerCount: number,
+                  disclosureAddresses: AztecAddress[],
+                  disclosureCount: number,
+                  disclosureContext: Fr
                 ) => unknown;
               };
             }
           ).methods.check_certificate_and_requirements(
             userAddress,
             nonce,
-            AztecAddress.fromString(currentConfig.ageCheckRequirementContractAddress)
+            Array.from(
+              { length: MAX_REQUIREMENT_CHECKERS },
+              () =>
+                AztecAddress.fromString(
+                  currentConfig.ageCheckRequirementContractAddress
+                )
+            ),
+            REQUIREMENT_CHECKER_COUNT,
+            Array.from({ length: MAX_DISCLOSURES }, (_, i) =>
+              i % 2 === 0
+                ? AztecAddress.fromString(currentConfig.basicDisclosureContractAddress)
+                : AztecAddress.fromString(currentConfig.shamirDisclosureContractAddress)
+            ),
+            DISCLOSURE_COUNT,
+            DISCLOSURE_CONTEXT
           );
           const intent = { caller: useCaseExampleAddress, action };
           const witness = await wallet.createAuthWit(

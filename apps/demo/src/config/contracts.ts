@@ -11,6 +11,12 @@ import {
   getTokenConstructorArgs,
 } from '../contract-registry';
 
+const MAX_REQUIREMENT_CHECKERS = 4;
+const MAX_DISCLOSURES = 4;
+const REQUIREMENT_CHECKER_COUNT = 1;
+const DISCLOSURE_COUNT = 2;
+const DISCLOSURE_CONTEXT = 777;
+
 /**
  * Edit this file to add/remove contracts for your application.
  *
@@ -97,7 +103,18 @@ export const contractsConfig = createContractConfig({
         : getDeployerAddress(config),
       constructorArgs: [
         config.certificateRegistryContractAddress,
-        config.ageCheckRequirementContractAddress,
+        Array.from(
+          { length: MAX_REQUIREMENT_CHECKERS },
+          () => config.ageCheckRequirementContractAddress
+        ),
+        REQUIREMENT_CHECKER_COUNT,
+        Array.from({ length: MAX_DISCLOSURES }, (_, i) =>
+          i % 2 === 0
+            ? config.basicDisclosureContractAddress
+            : config.shamirDisclosureContractAddress
+        ),
+        DISCLOSURE_COUNT,
+        DISCLOSURE_CONTEXT,
       ],
       constructorArtifact: 'constructor',
     }),

@@ -24,6 +24,12 @@ export const DEVNET_CONFIG: NetworkConfig = {
   ageCheckRequirementContractAddress:
     '0x0000000000000000000000000000000000000000000000000000000000000000',
   ageCheckRequirementDeploymentSalt: '0x00',
+  basicDisclosureContractAddress:
+    '0x0000000000000000000000000000000000000000000000000000000000000000',
+  basicDisclosureDeploymentSalt: '0x00',
+  shamirDisclosureContractAddress:
+    '0x0000000000000000000000000000000000000000000000000000000000000000',
+  shamirDisclosureDeploymentSalt: '0x00',
   useCaseExampleContractAddress:
     '0x0000000000000000000000000000000000000000000000000000000000000000',
   useCaseExampleDeploymentSalt: '0x00',

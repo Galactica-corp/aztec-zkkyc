@@ -34,6 +34,10 @@ export interface NetworkConfig {
   certificateRegistryAdminAddress: string;
   ageCheckRequirementContractAddress: string;
   ageCheckRequirementDeploymentSalt: string;
+  basicDisclosureContractAddress: string;
+  basicDisclosureDeploymentSalt: string;
+  shamirDisclosureContractAddress: string;
+  shamirDisclosureDeploymentSalt: string;
   useCaseExampleContractAddress: string;
   useCaseExampleDeploymentSalt: string;
   proverEnabled: boolean;
