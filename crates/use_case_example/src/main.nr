@@ -15,21 +15,16 @@ pub contract UseCaseExample {
     };
     use dep::zk_certificate::CertificateRegistry;
 
-    global MAX_REQUIREMENT_CHECKERS: u32 = 4;
-    global MAX_DISCLOSURES: u32 = 4;
-
     #[storage]
     struct Storage<Context> {
         // Address of the ZK Certificate Registry contract where ZK KYC records proving compliance can be checked
         zk_certificate_registry: PublicImmutable<AztecAddress, Context>,
 
-        // Configurable list of requirement checker contracts
-        requirement_checker_addresses: PublicImmutable<[AztecAddress; MAX_REQUIREMENT_CHECKERS], Context>,
-        requirement_checker_count: PublicImmutable<u32, Context>,
+        // Requirement checker contract address
+        requirement_checker_address: PublicImmutable<AztecAddress, Context>,
 
-        // Configurable list of disclosure contracts
-        disclosure_contract_addresses: PublicImmutable<[AztecAddress; MAX_DISCLOSURES], Context>,
-        disclosure_contract_count: PublicImmutable<u32, Context>,
+        // Disclosure contract address
+        disclosure_contract_address: PublicImmutable<AztecAddress, Context>,
 
         // Context forwarded to the disclosure contracts
         disclosure_context: PublicImmutable<Field, Context>,
@@ -39,23 +34,13 @@ pub contract UseCaseExample {
     #[initializer]
     fn constructor(
         zk_certificate_registry: AztecAddress,
-        requirement_checker_addresses: [AztecAddress; MAX_REQUIREMENT_CHECKERS],
-        requirement_checker_count: u32,
-        disclosure_contract_addresses: [AztecAddress; MAX_DISCLOSURES],
-        disclosure_contract_count: u32,
+        requirement_checker_address: AztecAddress,
+        disclosure_contract_address: AztecAddress,
         disclosure_context: Field,
     ) {
-        assert(
-            requirement_checker_count <= MAX_REQUIREMENT_CHECKERS,
-            "Too many requirement checkers",
-        );
-        assert(disclosure_contract_count <= MAX_DISCLOSURES, "Too many disclosures");
-
         self.storage.zk_certificate_registry.initialize(zk_certificate_registry);
-        self.storage.requirement_checker_addresses.initialize(requirement_checker_addresses);
-        self.storage.requirement_checker_count.initialize(requirement_checker_count);
-        self.storage.disclosure_contract_addresses.initialize(disclosure_contract_addresses);
-        self.storage.disclosure_contract_count.initialize(disclosure_contract_count);
+        self.storage.requirement_checker_address.initialize(requirement_checker_address);
+        self.storage.disclosure_contract_address.initialize(disclosure_contract_address);
         self.storage.disclosure_context.initialize(disclosure_context);
     }
 
@@ -72,10 +57,8 @@ pub contract UseCaseExample {
                 .check_certificate_and_requirements(
                     user,
                     authwit_nonce,
-                    self.storage.requirement_checker_addresses.read(),
-                    self.storage.requirement_checker_count.read(),
-                    self.storage.disclosure_contract_addresses.read(),
-                    self.storage.disclosure_contract_count.read(),
+                    self.storage.requirement_checker_address.read(),
+                    self.storage.disclosure_contract_address.read(),
                     self.storage.disclosure_context.read(),
                 ),
         );

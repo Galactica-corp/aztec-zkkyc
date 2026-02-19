@@ -3,37 +3,10 @@ use crate::content::CONTENT_TYPE_ZK_KYC;
 use crate::test::utils;
 use dep::age_check_requirement::AgeCheckRequirement;
 use dep::basic_disclosure::BasicDisclosure;
-use dep::aztec::protocol_types::address::AztecAddress;
 use dep::aztec::protocol_types::storage::map::derive_storage_slot_in_map;
 use dep::aztec::test::helpers::authwit::add_private_authwit_from_call;
 use dep::shamir_disclosure::ShamirDisclosure;
-
-global MAX_REQUIREMENT_CHECKERS: u32 = 4;
-global MAX_DISCLOSURES: u32 = 4;
 global TEST_DISCLOSURE_CONTEXT: Field = 999;
-
-fn requirement_checker_addresses(
-    checker_address: AztecAddress,
-) -> [AztecAddress; MAX_REQUIREMENT_CHECKERS] {
-    [
-        checker_address,
-        checker_address,
-        checker_address,
-        checker_address,
-    ]
-}
-
-fn disclosure_addresses(
-    first_disclosure: AztecAddress,
-    second_disclosure: AztecAddress,
-) -> [AztecAddress; MAX_DISCLOSURES] {
-    [
-        first_disclosure,
-        second_disclosure,
-        first_disclosure,
-        second_disclosure,
-    ]
-}
 
 // ============================================================================
 // INITIALIZATION TESTS
@@ -249,10 +222,8 @@ unconstrained fn test_user_proof_certificate_existence_with_requirements() {
     let check_call = CertificateRegistry::at(contract_address).check_certificate_and_requirements(
         user,
         0,
-        requirement_checker_addresses(age_check_address),
-        1,
-        disclosure_addresses(basic_disclosure_address, basic_disclosure_address),
-        1,
+        age_check_address,
+        basic_disclosure_address,
         TEST_DISCLOSURE_CONTEXT,
     );
     add_private_authwit_from_call(env, user, user, check_call);
@@ -302,10 +273,8 @@ unconstrained fn test_user_proof_certificate_existence_with_shamir_disclosure() 
     let check_call = CertificateRegistry::at(contract_address).check_certificate_and_requirements(
         user,
         0,
-        requirement_checker_addresses(age_check_address),
-        1,
-        disclosure_addresses(shamir_disclosure_address, shamir_disclosure_address),
-        1,
+        age_check_address,
+        shamir_disclosure_address,
         TEST_DISCLOSURE_CONTEXT,
     );
     add_private_authwit_from_call(env, user, user, check_call);
@@ -368,10 +337,8 @@ unconstrained fn test_fail_requirement_blocks_disclosure_flow() {
     let check_call = CertificateRegistry::at(contract_address).check_certificate_and_requirements(
         user,
         0,
-        requirement_checker_addresses(age_check_address),
-        1,
-        disclosure_addresses(basic_disclosure_address, basic_disclosure_address),
-        1,
+        age_check_address,
+        basic_disclosure_address,
         TEST_DISCLOSURE_CONTEXT,
     );
     add_private_authwit_from_call(env, user, user, check_call);

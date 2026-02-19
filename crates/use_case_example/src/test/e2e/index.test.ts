@@ -25,22 +25,7 @@ const AUTHWIT_NONCE = new Fr(456789);
 const UNIQUE_ID = new Fr(1);
 const REVOCATION_ID = new Fr(1234561);
 const CONTENT_TYPE_ZK_KYC = new Fr(1);
-const MAX_REQUIREMENT_CHECKERS = 4;
-const MAX_DISCLOSURES = 4;
-const REQUIREMENT_CHECKER_COUNT = 1;
-const DISCLOSURE_COUNT = 2;
 const DISCLOSURE_CONTEXT = new Fr(777);
-
-const configuredRequirementCheckerAddresses = (checkerAddress: AztecAddress) =>
-  Array.from({ length: MAX_REQUIREMENT_CHECKERS }, () => checkerAddress);
-
-const configuredDisclosureAddresses = (
-  basicDisclosureAddress: AztecAddress,
-  shamirDisclosureAddress: AztecAddress
-) =>
-  Array.from({ length: MAX_DISCLOSURES }, (_, i) =>
-    i % 2 === 0 ? basicDisclosureAddress : shamirDisclosureAddress
-  );
 
 const hashStringToField = async (value: string): Promise<Fr> =>
   poseidon2Hash([Fr.fromBufferReduce(Buffer.from(value.padEnd(32, "#"), "utf8"))]);
@@ -197,13 +182,8 @@ describe("ZK Certificate and UseCaseExample", () => {
     useCaseExample = await UseCaseExampleContract.deploy(
       wallet,
       certificateRegistry.address,
-      configuredRequirementCheckerAddresses(ageCheckRequirement.address),
-      REQUIREMENT_CHECKER_COUNT,
-      configuredDisclosureAddresses(
-        basicDisclosure.address,
-        shamirDisclosure.address
-      ),
-      DISCLOSURE_COUNT,
+      ageCheckRequirement.address,
+      basicDisclosure.address,
       DISCLOSURE_CONTEXT
     )
       .send({
@@ -241,13 +221,8 @@ describe("ZK Certificate and UseCaseExample", () => {
     const action = certificateRegistry.methods.check_certificate_and_requirements(
       userAccount.address,
       AUTHWIT_NONCE,
-      configuredRequirementCheckerAddresses(ageCheckRequirement.address),
-      REQUIREMENT_CHECKER_COUNT,
-      configuredDisclosureAddresses(
-        basicDisclosure.address,
-        shamirDisclosure.address
-      ),
-      DISCLOSURE_COUNT,
+      ageCheckRequirement.address,
+      basicDisclosure.address,
       DISCLOSURE_CONTEXT
     );
     const witness = await wallet.createAuthWit(userAccount.address, {
@@ -297,13 +272,8 @@ describe("ZK Certificate and UseCaseExample", () => {
     const action = certificateRegistry.methods.check_certificate_and_requirements(
       userAccount.address,
       AUTHWIT_NONCE,
-      configuredRequirementCheckerAddresses(ageCheckRequirement.address),
-      REQUIREMENT_CHECKER_COUNT,
-      configuredDisclosureAddresses(
-        basicDisclosure.address,
-        shamirDisclosure.address
-      ),
-      DISCLOSURE_COUNT,
+      ageCheckRequirement.address,
+      basicDisclosure.address,
       DISCLOSURE_CONTEXT
     );
     const witness = await wallet.createAuthWit(userAccount.address, {

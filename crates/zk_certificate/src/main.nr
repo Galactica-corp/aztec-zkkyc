@@ -47,9 +47,6 @@ pub contract CertificateRegistry {
     use dep::requirement_checker_interface::RequirementCheckerInterface;
 
     global REVOCATION_DELAY: u64 = 12 * 60 * 60; // 12 hours
-    global MAX_REQUIREMENT_CHECKERS: u32 = 4;
-    global MAX_DISCLOSURES: u32 = 4;
-
     #[storage]
     struct Storage<Context> {
         // Contract administrator address
@@ -238,13 +235,11 @@ pub contract CertificateRegistry {
     }
 
     /**
-     * Check if a user has a valid certificate and that all requirement checkers pass.
+     * Check if a user has a valid certificate and that requirement/disclosure checks pass.
      * @param from - The user address whose certificate to check
      * @param authwit_nonce - Nonce for the authwit
-     * @param requirement_checker_addresses - Configured requirement checker addresses
-     * @param requirement_checker_count - Number of active requirement checkers in the list
-     * @param disclosure_contract_addresses - Configured disclosure contract addresses
-     * @param disclosure_contract_count - Number of active disclosure contracts in the list
+     * @param requirement_checker_address - Requirement checker contract address
+     * @param disclosure_contract_address - Disclosure contract address
      * @param context - Use-case specific context passed through to disclosures
      */
     #[authorize_once("from", "authwit_nonce")]
@@ -252,18 +247,10 @@ pub contract CertificateRegistry {
     fn check_certificate_and_requirements(
         from: AztecAddress,
         authwit_nonce: Field,
-        requirement_checker_addresses: [AztecAddress; MAX_REQUIREMENT_CHECKERS],
-        requirement_checker_count: u32,
-        disclosure_contract_addresses: [AztecAddress; MAX_DISCLOSURES],
-        disclosure_contract_count: u32,
+        requirement_checker_address: AztecAddress,
+        disclosure_contract_address: AztecAddress,
         context: Field,
     ) {
-        assert(
-            requirement_checker_count <= MAX_REQUIREMENT_CHECKERS,
-            "Too many requirement checkers",
-        );
-        assert(disclosure_contract_count <= MAX_DISCLOSURES, "Too many disclosures");
-
         let mut options = NoteGetterOptions::new().set_limit(1);
 
         let notes = self.storage.certificates.at(from).pop_notes(options);
@@ -295,33 +282,22 @@ pub contract CertificateRegistry {
         let note_0 = popped_0.get(0);
         let note_1 = popped_1.get(0);
 
-        // Call all requirement checkers (using generic interface for configurable requirement systems)
-        for requirement_index in 0..MAX_REQUIREMENT_CHECKERS {
-            if requirement_index < requirement_checker_count {
-                self.call(
-                    RequirementCheckerInterface::at(
-                        requirement_checker_addresses[requirement_index as u32],
-                    )
-                        .check_requirements(certificate.content_type, note_0.data, note_1.data),
-                );
-            }
-        }
+        // Call requirement checker
+        self.call(
+            RequirementCheckerInterface::at(requirement_checker_address)
+                .check_requirements(certificate.content_type, note_0.data, note_1.data),
+        );
 
-        // Call all disclosure contracts after requirements pass
-        for disclosure_index in 0..MAX_DISCLOSURES {
-            if disclosure_index < disclosure_contract_count {
-                self.call(
-                    DisclosureInterface::at(disclosure_contract_addresses[disclosure_index as u32])
-                        .disclose(
-                            from,
-                            context,
-                            certificate.content_type,
-                            note_0.data,
-                            note_1.data,
-                        ),
-                );
-            }
-        }
+        // Call disclosure contract after requirements pass
+        self.call(
+            DisclosureInterface::at(disclosure_contract_address).disclose(
+                from,
+                context,
+                certificate.content_type,
+                note_0.data,
+                note_1.data,
+            ),
+        );
 
         // Put content notes back
         self.storage.content_notes.at(from).insert(note_0).deliver(

@@ -9,32 +9,7 @@ use dep::zk_certificate::CertificateRegistry;
 
 use crate::UseCaseExample;
 
-pub global MAX_REQUIREMENT_CHECKERS: u32 = 4;
-pub global MAX_DISCLOSURES: u32 = 4;
 pub global DEFAULT_DISCLOSURE_CONTEXT: Field = 777;
-
-pub fn configured_requirement_checker_addresses(
-    age_check_address: AztecAddress,
-) -> [AztecAddress; MAX_REQUIREMENT_CHECKERS] {
-    [
-        age_check_address,
-        age_check_address,
-        age_check_address,
-        age_check_address,
-    ]
-}
-
-pub fn configured_disclosure_addresses(
-    basic_disclosure_address: AztecAddress,
-    shamir_disclosure_address: AztecAddress,
-) -> [AztecAddress; MAX_DISCLOSURES] {
-    [
-        basic_disclosure_address,
-        shamir_disclosure_address,
-        basic_disclosure_address,
-        shamir_disclosure_address,
-    ]
-}
 
 // Setup the test environment including user accounts and smart contracts
 // Returns:
@@ -93,10 +68,8 @@ pub unconstrained fn setup_test_env(
 
     let initializer_call_interface = UseCaseExample::interface().constructor(
         zk_certificate_registry_address,
-        configured_requirement_checker_addresses(age_check_address),
-        1,
-        configured_disclosure_addresses(basic_disclosure_address, shamir_disclosure_address),
-        2,
+        age_check_address,
+        basic_disclosure_address,
         DEFAULT_DISCLOSURE_CONTEXT,
     );
     let use_case_example_address =

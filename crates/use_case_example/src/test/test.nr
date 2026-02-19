@@ -30,15 +30,8 @@ unconstrained fn test_initializer() {
 // Test: Use case can check compliance with a ZK Certificate Registry and age requirement.
 #[test]
 unconstrained fn test_zk_certificate_integration() {
-    let (
-        mut env,
-        zk_certificate_registry_address,
-        use_case_example_address,
-        admin,
-        age_check_address,
-        basic_disclosure_address,
-        shamir_disclosure_address,
-    ) = utils::setup_test_env();
+    let (mut env, zk_certificate_registry_address, use_case_example_address, admin, age_check_address, basic_disclosure_address, _) =
+        utils::setup_test_env();
     let guardian = env.create_light_account();
     let user = env.create_contract_account(); // use contract account to support authwit
     let unique_id = Field::from(1);
@@ -65,15 +58,14 @@ unconstrained fn test_zk_certificate_integration() {
     // Default block timestamp (~2026) is sufficient for adult (birthday 1990-06-15)
 
     // Prepare authwit for checking the certificate and requirements.
-    let check_call = CertificateRegistry::at(zk_certificate_registry_address).check_certificate_and_requirements(
-        user,
-        AUTHWIT_NONCE,
-        utils::configured_requirement_checker_addresses(age_check_address),
-        1,
-        utils::configured_disclosure_addresses(basic_disclosure_address, shamir_disclosure_address),
-        2,
-        utils::DEFAULT_DISCLOSURE_CONTEXT,
-    );
+    let check_call = CertificateRegistry::at(zk_certificate_registry_address)
+        .check_certificate_and_requirements(
+            user,
+            AUTHWIT_NONCE,
+            age_check_address,
+            basic_disclosure_address,
+            utils::DEFAULT_DISCLOSURE_CONTEXT,
+        );
     add_private_authwit_from_call(env, user, use_case_example_address, check_call);
 
     env.call_private(user, UseCaseExample::at(use_case_example_address).use_privately(AUTHWIT_NONCE));
@@ -82,26 +74,18 @@ unconstrained fn test_zk_certificate_integration() {
 // Test: User cannot proof that their certificate does not exist
 #[test(should_fail)]
 unconstrained fn test_fail_user_proof_certificate_non_existence() {
-    let (
-        mut env,
-        zk_certificate_registry_address,
-        use_case_example_address,
-        _,
-        age_check_address,
-        basic_disclosure_address,
-        shamir_disclosure_address,
-    ) = utils::setup_test_env();
+    let (mut env, zk_certificate_registry_address, use_case_example_address, _, age_check_address, basic_disclosure_address, _) =
+        utils::setup_test_env();
     let user = env.create_contract_account(); // use contract account to support authwit
 
-    let check_call = CertificateRegistry::at(zk_certificate_registry_address).check_certificate_and_requirements(
-        user,
-        AUTHWIT_NONCE,
-        utils::configured_requirement_checker_addresses(age_check_address),
-        1,
-        utils::configured_disclosure_addresses(basic_disclosure_address, shamir_disclosure_address),
-        2,
-        utils::DEFAULT_DISCLOSURE_CONTEXT,
-    );
+    let check_call = CertificateRegistry::at(zk_certificate_registry_address)
+        .check_certificate_and_requirements(
+            user,
+            AUTHWIT_NONCE,
+            age_check_address,
+            basic_disclosure_address,
+            utils::DEFAULT_DISCLOSURE_CONTEXT,
+        );
     add_private_authwit_from_call(env, user, use_case_example_address, check_call);
 
     env.call_private(user, UseCaseExample::at(use_case_example_address).use_privately(AUTHWIT_NONCE));
@@ -110,15 +94,8 @@ unconstrained fn test_fail_user_proof_certificate_non_existence() {
 // Test: User with underage KYC data fails the requirement check
 #[test(should_fail)]
 unconstrained fn test_fail_underage_user() {
-    let (
-        mut env,
-        zk_certificate_registry_address,
-        use_case_example_address,
-        admin,
-        age_check_address,
-        basic_disclosure_address,
-        shamir_disclosure_address,
-    ) = utils::setup_test_env();
+    let (mut env, zk_certificate_registry_address, use_case_example_address, admin, age_check_address, basic_disclosure_address, _) =
+        utils::setup_test_env();
     let guardian = env.create_light_account();
     let user = env.create_contract_account();
 
@@ -165,15 +142,14 @@ unconstrained fn test_fail_underage_user() {
 
     // Default block timestamp (~2026): user born 2020-01-01 is 16, under threshold 18
 
-    let check_call = CertificateRegistry::at(zk_certificate_registry_address).check_certificate_and_requirements(
-        user,
-        AUTHWIT_NONCE,
-        utils::configured_requirement_checker_addresses(age_check_address),
-        1,
-        utils::configured_disclosure_addresses(basic_disclosure_address, shamir_disclosure_address),
-        2,
-        utils::DEFAULT_DISCLOSURE_CONTEXT,
-    );
+    let check_call = CertificateRegistry::at(zk_certificate_registry_address)
+        .check_certificate_and_requirements(
+            user,
+            AUTHWIT_NONCE,
+            age_check_address,
+            basic_disclosure_address,
+            utils::DEFAULT_DISCLOSURE_CONTEXT,
+        );
     add_private_authwit_from_call(env, user, use_case_example_address, check_call);
 
     env.call_private(user, UseCaseExample::at(use_case_example_address).use_privately(AUTHWIT_NONCE));
