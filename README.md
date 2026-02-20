@@ -27,7 +27,7 @@ This repo connects to a locally running Aztec local network by default, but can 
 
 ## 🚀 **Getting Started**
 
-Use **Node.js version 22.15.0**.
+Use **Node.js version 24.12.0 or newer**.
 
 [Start your codespace from the codespace dropdown](https://docs.github.com/en/codespaces/getting-started/quickstart).
 
@@ -40,8 +40,8 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-export VERSION=3.0.0-devnet.20251212
-aztec-up && docker pull aztecprotocol/aztec:$VERSION && docker tag aztecprotocol/aztec:$VERSION aztecprotocol/aztec:latest
+VERSION=4.0.0-devnet.2-patch.0 bash -i <(curl -sL https://install.aztec.network/4.0.0-devnet.2-patch.0)
+aztec-up use 4.0.0-devnet.2-patch.0
 ```
 
 ### Environment Configuration

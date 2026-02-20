@@ -40,7 +40,7 @@ pub contract ShamirDisclosure {
     use dep::aztec::{
         macros::{events::event, functions::{external, initializer}, storage::storage},
         messages::message_delivery::MessageDelivery,
-        protocol_types::address::AztecAddress,
+        protocol::address::AztecAddress,
         state_vars::{Map, PublicImmutable},
     };
 
@@ -184,7 +184,7 @@ pub contract ShamirDisclosure {
                     .emit(ShamirDisclosureShardEvent { from, context, shard_x, shard_y })
                     .deliver_to(
                         self.storage.recipients.at(recipient_index).read(),
-                        MessageDelivery.CONSTRAINED_ONCHAIN,
+                        MessageDelivery.ONCHAIN_CONSTRAINED,
                     );
             }
         }

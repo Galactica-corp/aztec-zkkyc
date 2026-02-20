@@ -1,6 +1,6 @@
 use crate::AgeCheckRequirement;
 use dep::aztec::{
-    protocol_types::address::AztecAddress, test::helpers::test_environment::TestEnvironment,
+    protocol::address::AztecAddress, test::helpers::test_environment::TestEnvironment,
 };
 
 // Must match zk_certificate content::CONTENT_TYPE_ZK_KYC

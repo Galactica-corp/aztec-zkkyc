@@ -10,7 +10,7 @@ mod test;
 pub contract UseCaseExample {
     use dep::aztec::{
         macros::{functions::{external, initializer}, storage::storage},
-        protocol_types::address::AztecAddress,
+        protocol::address::AztecAddress,
         state_vars::PublicImmutable,
     };
     use dep::zk_certificate::CertificateRegistry;
@@ -50,7 +50,7 @@ pub contract UseCaseExample {
      */
     #[external("private")]
     fn use_privately(authwit_nonce: Field) {
-        let user = self.context.msg_sender().unwrap();
+        let user = self.msg_sender();
 
         self.call(
             CertificateRegistry::at(self.storage.zk_certificate_registry.read())

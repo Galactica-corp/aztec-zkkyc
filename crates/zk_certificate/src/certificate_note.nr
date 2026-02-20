@@ -1,4 +1,4 @@
-use aztec::{macros::notes::note, protocol_types::{address::AztecAddress, traits::Packable}};
+use aztec::{macros::notes::note, protocol::{address::AztecAddress, traits::Packable}};
 
 // CertificateNote is a private note that stores a certificate of the user as issued by a guardian
 // These notes remain private. Only the owner can read and use it.

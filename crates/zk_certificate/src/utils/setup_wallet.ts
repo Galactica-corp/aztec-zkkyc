@@ -1,12 +1,15 @@
 
 import { createAztecNodeClient } from '@aztec/aztec.js/node';
 import { getAztecNodeUrl, getEnv } from '../../../../config/config.js';
-import { TestWallet } from '@aztec/test-wallet/server';
+import { EmbeddedWallet } from '@aztec/wallets/embedded';
+import { registerInitialLocalNetworkAccountsInWallet } from '@aztec/wallets/testing';
 
-export async function setupWallet(): Promise<TestWallet> {
+export async function setupWallet(): Promise<EmbeddedWallet> {
   const nodeUrl = getAztecNodeUrl();
   const node = createAztecNodeClient(nodeUrl);
-  const proverEnabled = getEnv() !== 'local-network';
-  const wallet = await TestWallet.create(node, { proverEnabled });
+  const wallet = await EmbeddedWallet.create(node);
+  if (getEnv() === 'local-network') {
+    await registerInitialLocalNetworkAccountsInWallet(wallet);
+  }
   return wallet
 }

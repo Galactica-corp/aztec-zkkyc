@@ -6,9 +6,9 @@ import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { AccountManager } from "@aztec/aztec.js/wallet";
-import { TestWallet } from "@aztec/test-wallet/server";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
 
-export async function deploySchnorrAccount(wallet?: TestWallet): Promise<AccountManager> {
+export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<AccountManager> {
   let logger: Logger;
   logger = createLogger('aztec:aztec-starter');
   logger.info('👤 Starting Schnorr account deployment...');
@@ -40,7 +40,10 @@ export async function deploySchnorrAccount(wallet?: TestWallet): Promise<Account
   logger.info('✅ Sponsored fee payment method configured for account deployment');
 
   // Deploy account
-  let tx = await deployMethod.send({ from: AztecAddress.ZERO, fee: { paymentMethod: sponsoredPaymentMethod } }).wait({ timeout: 120000 });
+  const tx = await deployMethod.send({
+    from: AztecAddress.ZERO,
+    fee: { paymentMethod: sponsoredPaymentMethod },
+  }).wait({ timeout: 120000 });
 
   logger.info(`✅ Account deployment transaction successful!`);
   logger.info(`📋 Transaction hash: ${tx.txHash}`);

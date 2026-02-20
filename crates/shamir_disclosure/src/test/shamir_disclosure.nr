@@ -1,6 +1,6 @@
 use crate::ShamirDisclosure;
 use dep::aztec::{
-    protocol_types::address::AztecAddress, test::helpers::test_environment::TestEnvironment,
+    protocol::address::AztecAddress, test::helpers::test_environment::TestEnvironment,
 };
 
 global CONTENT_TYPE_ZK_KYC: Field = 1;

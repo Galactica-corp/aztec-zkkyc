@@ -15,7 +15,7 @@ pub contract BasicDisclosure {
         macros::events::event,
         macros::{functions::{external, initializer}, storage::storage},
         messages::message_delivery::MessageDelivery,
-        protocol_types::address::AztecAddress,
+        protocol::address::AztecAddress,
         state_vars::PublicImmutable,
     };
     use dep::zk_certificate_content::CONTENT_TYPE_ZK_KYC;
@@ -58,7 +58,7 @@ pub contract BasicDisclosure {
 
         self.emit(BasicDisclosureEvent { from, context, guardian, unique_id }).deliver_to(
             recipient,
-            MessageDelivery.CONSTRAINED_ONCHAIN,
+            MessageDelivery.ONCHAIN_CONSTRAINED,
         );
     }
 }

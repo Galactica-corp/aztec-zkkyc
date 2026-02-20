@@ -76,7 +76,7 @@ async function main() {
   logger.info('⏳ Waiting for deployment transaction to be mined...');
   const certificateRegistryContract = await certificateDeployMethod.send({
     from: address,
-    fee: { paymentMethod: sponsoredPaymentMethod }
+    fee: { paymentMethod: sponsoredPaymentMethod },
   }).deployed({ timeout: timeouts.deployTimeout });
   logger.info(`🎉 Certificate Registry Contract deployed successfully!`);
   logger.info(`📍 Contract address: ${certificateRegistryContract.address}`);
@@ -90,7 +90,7 @@ async function main() {
   logger.info('⏳ Waiting for deployment transaction to be mined...');
   const ageCheckRequirementContract = await ageCheckDeployMethod.send({
     from: address,
-    fee: { paymentMethod: sponsoredPaymentMethod }
+    fee: { paymentMethod: sponsoredPaymentMethod },
   }).deployed({ timeout: timeouts.deployTimeout });
   logger.info(`🎉 Age Check Requirement Contract deployed successfully!`);
   logger.info(`📍 Contract address: ${ageCheckRequirementContract.address}`);
@@ -167,7 +167,7 @@ async function main() {
   logger.info('⏳ Waiting for deployment transaction to be mined...');
   const useCaseExampleContract = await useCaseExampleDeployMethod.send({
     from: address,
-    fee: { paymentMethod: sponsoredPaymentMethod }
+    fee: { paymentMethod: sponsoredPaymentMethod },
   }).deployed({ timeout: timeouts.deployTimeout });
   logger.info(`🎉 Use Case Example Contract deployed successfully!`);
   logger.info(`📍 Contract address: ${useCaseExampleContract.address}`);

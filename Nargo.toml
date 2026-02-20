@@ -1,2 +1,2 @@
 [workspace]
-members = ["crates/requirement_checker_interface", "crates/disclosure_interface", "crates/zk_certificate_content", "crates/zk_certificate", "crates/use_case_example", "crates/age_check_requirement", "crates/basic_disclosure", "crates/shamir_disclosure", "apps/demo/contracts/ecdsa_k_eth_signer_account"]
+members = ["crates/requirement_checker_interface", "crates/disclosure_interface", "crates/zk_certificate_content", "crates/zk_certificate", "crates/use_case_example", "crates/age_check_requirement", "crates/basic_disclosure", "crates/shamir_disclosure"]

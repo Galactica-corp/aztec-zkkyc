@@ -34,10 +34,9 @@ pub contract CertificateRegistry {
             note_viewer_options::NoteViewerOptions,
         },
         utils::comparison::Comparator,
-    };
-    use dep::aztec::protocol_types::address::AztecAddress;
-    use dep::aztec::state_vars::{
-        delayed_public_mutable::DelayedPublicMutable, Map, Owned, PrivateSet, PublicMutable,
+        protocol::address::AztecAddress,
+        state_vars::{DelayedPublicMutable, Map, Owned, PrivateSet, PublicMutable},
+        // oracle::logging::debug_log,
     };
 
     use crate::certificate_note::CertificateNote;
@@ -84,7 +83,7 @@ pub contract CertificateRegistry {
      */
     #[external("public")]
     fn whitelist_guardian(guardian: AztecAddress) {
-        assert(self.context.msg_sender().unwrap().eq(self.storage.admin.read()));
+        assert(self.msg_sender().eq(self.storage.admin.read()));
         self.storage.guardian_whitelist.at(guardian).write(true);
     }
 
@@ -94,7 +93,7 @@ pub contract CertificateRegistry {
      */
     #[external("public")]
     fn remove_guardian_from_whitelist(guardian: AztecAddress) {
-        assert(self.context.msg_sender().unwrap().eq(self.storage.admin.read()));
+        assert(self.msg_sender().eq(self.storage.admin.read()));
         self.storage.guardian_whitelist.at(guardian).write(false);
     }
 
@@ -116,14 +115,12 @@ pub contract CertificateRegistry {
         content_note_data_0: [Field; 8],
         content_note_data_1: [Field; 8],
     ) {
-        let guardian = self.context.msg_sender().unwrap();
+        let guardian = self.msg_sender();
 
         self.enqueue_self._check_guardian_whitelisted(guardian);
 
         let certificate = CertificateNote::new(guardian, unique_id, revocation_id, content_type);
-        self.storage.certificates.at(user).insert(certificate).deliver(
-            MessageDelivery.CONSTRAINED_ONCHAIN,
-        );
+        self.storage.certificates.at(user).insert(certificate).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
 
         // Test that the certificate has not been revoked already. This check might miss duplicates in the rare case due to the delay.
         assert_eq(
@@ -135,20 +132,14 @@ pub contract CertificateRegistry {
         // Create content notes for KYC
         if content_type.eq(CONTENT_TYPE_ZK_KYC) {
             let content_note_0 = ContentNote::new(unique_id + 0, content_note_data_0);
-            self.storage.content_notes.at(user).insert(content_note_0).deliver(
-                MessageDelivery.CONSTRAINED_ONCHAIN,
-            );
+            self.storage.content_notes.at(user).insert(content_note_0).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
 
-            let content_note_1 = ContentNote::new(unique_id + 1, content_note_data_1);
-            self.storage.content_notes.at(user).insert(content_note_1).deliver(
-                MessageDelivery.CONSTRAINED_ONCHAIN,
-            );
+            // let content_note_1 = ContentNote::new(unique_id + 1, content_note_data_1);
+            // self.storage.content_notes.at(user).insert(content_note_1).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
         }
 
-        // Give the guardian a copy of the certificate note to remember the revocation-nullifier
-        self.storage.guardian_certificates_copies.at(guardian).insert(certificate).deliver(
-            MessageDelivery.CONSTRAINED_ONCHAIN,
-        );
+        // // Give the guardian a copy of the certificate note to remember the revocation-nullifier
+        // self.storage.guardian_certificates_copies.at(guardian).insert(certificate).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
     }
 
     /**
@@ -171,7 +162,7 @@ pub contract CertificateRegistry {
      */
     #[external("private")]
     fn revoke_certificate(revocation_id: Field) {
-        let guardian = self.context.msg_sender().unwrap();
+        let guardian = self.msg_sender();
         self.enqueue_self._check_guardian_whitelisted(guardian);
 
         let options = NoteGetterOptions::new()
@@ -229,9 +220,7 @@ pub contract CertificateRegistry {
         );
 
         // Put the certificate back into the storage to be used again
-        self.storage.certificates.at(from).insert(notes.get(0)).deliver(
-            MessageDelivery.CONSTRAINED_ONCHAIN,
-        );
+        self.storage.certificates.at(from).insert(notes.get(0)).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
     }
 
     /**
@@ -282,37 +271,31 @@ pub contract CertificateRegistry {
         let note_0 = popped_0.get(0);
         let note_1 = popped_1.get(0);
 
-        // Call requirement checker
-        self.call(
-            RequirementCheckerInterface::at(requirement_checker_address)
-                .check_requirements(certificate.content_type, note_0.data, note_1.data),
-        );
+        // // Call requirement checker
+        // self.call(
+        //     RequirementCheckerInterface::at(requirement_checker_address)
+        //         .check_requirements(certificate.content_type, note_0.data, note_1.data),
+        // );
 
-        // Call disclosure contract after requirements pass
-        self.call(
-            DisclosureInterface::at(disclosure_contract_address).disclose(
-                from,
-                context,
-                certificate.guardian,
-                certificate.unique_id,
-                certificate.content_type,
-                note_0.data,
-                note_1.data,
-            ),
-        );
+        // // Call disclosure contract after requirements pass
+        // self.call(
+        //     DisclosureInterface::at(disclosure_contract_address).disclose(
+        //         from,
+        //         context,
+        //         certificate.guardian,
+        //         certificate.unique_id,
+        //         certificate.content_type,
+        //         note_0.data,
+        //         note_1.data,
+        //     ),
+        // );
 
         // Put content notes back
-        self.storage.content_notes.at(from).insert(note_0).deliver(
-            MessageDelivery.CONSTRAINED_ONCHAIN,
-        );
-        self.storage.content_notes.at(from).insert(note_1).deliver(
-            MessageDelivery.CONSTRAINED_ONCHAIN,
-        );
+        self.storage.content_notes.at(from).insert(note_0).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+        self.storage.content_notes.at(from).insert(note_1).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
 
         // Put the certificate back into the storage to be used again
-        self.storage.certificates.at(from).insert(certificate).deliver(
-            MessageDelivery.CONSTRAINED_ONCHAIN,
-        );
+        self.storage.certificates.at(from).insert(certificate).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
     }
 
     /**
@@ -322,7 +305,7 @@ pub contract CertificateRegistry {
      */
     #[external("private")]
     fn cancel_authwit(inner_hash: Field) {
-        let on_behalf_of = self.msg_sender().unwrap();
+        let on_behalf_of = self.msg_sender();
         let nullifier = compute_authwit_nullifier(on_behalf_of, inner_hash);
         self.context.push_nullifier(nullifier);
     }

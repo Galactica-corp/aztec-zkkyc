@@ -2,7 +2,7 @@
 // Links to a certificate via content_id = unique_id + content_index.
 // Generic: holds an array of Fields for various content types (KYC personal, address, etc.).
 
-use aztec::{macros::notes::note, protocol_types::traits::Packable};
+use aztec::{macros::notes::note, protocol::traits::Packable};
 
 #[derive(Eq, Packable)]
 #[note]
@@ -17,5 +17,6 @@ pub struct ContentNote {
 impl ContentNote {
     pub fn new(content_id: Field, data: [Field; 8]) -> Self {
         Self { content_id, data }
+        // Self { content_id }
     }
 }

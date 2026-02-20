@@ -2,4 +2,4 @@
 name = "zk_certificate_content"
 type = "lib"
 authors = [ "Galactica Network" ]
-compiler_version = ">=0.18.0"
+compiler_version = ">=1.0.0"

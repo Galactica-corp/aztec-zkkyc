@@ -16,7 +16,7 @@ import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
 import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
 import { TxStatus } from "@aztec/stdlib/tx";
-import { TestWallet } from "@aztec/test-wallet/server";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { poseidon2Hash } from "@aztec/foundation/crypto/poseidon";
 import { TxHash } from "@aztec/aztec.js/tx";
@@ -64,7 +64,7 @@ describe("ZK Certificate and UseCaseExample", () => {
   let logger: Logger;
   let sponsoredFPC: ContractInstanceWithAddress;
   let sponsoredPaymentMethod: SponsoredFeePaymentMethod;
-  let wallet: TestWallet;
+  let wallet: EmbeddedWallet;
   let adminAccount: AccountManager;
   let guardianAccount: AccountManager;
   let userAccount: AccountManager;
@@ -144,9 +144,9 @@ describe("ZK Certificate and UseCaseExample", () => {
       })
       .wait({ timeout: getTimeouts().deployTimeout });
 
-    await wallet.registerSender(adminAccount.address);
-    await wallet.registerSender(guardianAccount.address);
-    await wallet.registerSender(userAccount.address);
+    await wallet.registerSender(adminAccount.address, "admin");
+    await wallet.registerSender(guardianAccount.address, "guardian");
+    await wallet.registerSender(userAccount.address, "user");
     logger.info("Accounts created and registered");
 
     // 1. Contract setup: deploy CertificateRegistry then UseCaseExample
@@ -246,7 +246,7 @@ describe("ZK Certificate and UseCaseExample", () => {
     );
     const witness = await wallet.createAuthWit(userAccount.address, {
       caller: useCaseExample.address,
-      action,
+      call: (await action.request()).calls[0],
     });
 
     await expect(
@@ -297,7 +297,7 @@ describe("ZK Certificate and UseCaseExample", () => {
     );
     const witness = await wallet.createAuthWit(userAccount.address, {
       caller: useCaseExample.address,
-      action,
+      call: (await action.request()).calls[0],
     });
 
     const tx = await useCaseExample.methods

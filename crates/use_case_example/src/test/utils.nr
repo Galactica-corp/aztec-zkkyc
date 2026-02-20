@@ -1,5 +1,5 @@
 use dep::aztec::{
-    protocol_types::address::AztecAddress, test::helpers::test_environment::TestEnvironment,
+    protocol::address::AztecAddress, test::helpers::test_environment::TestEnvironment,
 };
 
 use dep::age_check_requirement::AgeCheckRequirement;

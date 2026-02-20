@@ -11,7 +11,7 @@ pub contract EcdsaKEthSignerAccount {
         authwit::{account::AccountActions, entrypoint::app::AppPayload},
         context::PrivateContext,
         macros::{
-            functions::{external, initializer, noinitcheck, nophasecheck, view},
+            functions::{external, initializer, noinitcheck, view},
             storage::storage,
         },
         messages::message_delivery::MessageDelivery,
@@ -44,7 +44,7 @@ pub contract EcdsaKEthSignerAccount {
         // Safety: Comment from above applies here as well.
         unsafe { set_sender_for_tags(self.address) };
         self.storage.signing_public_key.initialize(pub_key_note).deliver(
-            MessageDelivery.CONSTRAINED_ONCHAIN,
+            MessageDelivery.ONCHAIN_CONSTRAINED,
         );
         // Safety: Comment from above applies here as well.
         unsafe { set_sender_for_tags(original_sender) };
@@ -53,7 +53,6 @@ pub contract EcdsaKEthSignerAccount {
     // Main entrypoint for executing transactions
     #[external("private")]
     #[noinitcheck]
-    #[nophasecheck]
     fn entrypoint(app_payload: AppPayload, fee_payment_method: u8, cancellable: bool) {
         // Safety: The sender for tags is only used to compute unconstrained shared secrets for emitting logs.
         // Since this value is only used for unconstrained tagging and not for any constrained logic,

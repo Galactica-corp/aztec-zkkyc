@@ -11,7 +11,7 @@ use dep::aztec::macros::aztec;
 pub contract DisclosureInterface {
     use dep::aztec::{
         macros::{functions::{external, initializer}, storage::storage},
-        protocol_types::address::AztecAddress,
+        protocol::address::AztecAddress,
     };
 
     #[storage]
