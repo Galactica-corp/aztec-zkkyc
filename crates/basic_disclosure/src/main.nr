@@ -1,8 +1,8 @@
 /**
  * Basic selective disclosure implementation.
  *
- * Emits a private event containing the certificate owner and surname
- * to one configured recipient.
+ * Emits a private event containing the certificate owner, issuing guardian,
+ * and certificate unique id to one configured recipient.
  */
 
 use dep::aztec::macros::aztec;
@@ -18,10 +18,7 @@ pub contract BasicDisclosure {
         protocol_types::address::AztecAddress,
         state_vars::PublicImmutable,
     };
-    use dep::zk_certificate_content::{
-        CONTENT_TYPE_ZK_KYC,
-        KYC_PERSONAL_INDEX_SURNAME,
-    };
+    use dep::zk_certificate_content::CONTENT_TYPE_ZK_KYC;
 
     #[storage]
     struct Storage<Context> {
@@ -32,7 +29,8 @@ pub contract BasicDisclosure {
     struct BasicDisclosureEvent {
         from: AztecAddress,
         context: Field,
-        surname: Field,
+        guardian: AztecAddress,
+        unique_id: Field,
     }
 
     #[external("public")]
@@ -45,8 +43,10 @@ pub contract BasicDisclosure {
     fn disclose(
         from: AztecAddress,
         context: Field,
+        guardian: AztecAddress,
+        unique_id: Field,
         content_type: Field,
-        content_note_0: [Field; 8],
+        _content_note_0: [Field; 8],
         _content_note_1: [Field; 8],
     ) {
         assert(
@@ -55,9 +55,8 @@ pub contract BasicDisclosure {
         );
 
         let recipient = self.storage.recipient.read();
-        let surname = content_note_0[KYC_PERSONAL_INDEX_SURNAME];
 
-        self.emit(BasicDisclosureEvent { from, context, surname }).deliver_to(
+        self.emit(BasicDisclosureEvent { from, context, guardian, unique_id }).deliver_to(
             recipient,
             MessageDelivery.CONSTRAINED_ONCHAIN,
         );

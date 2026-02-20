@@ -293,6 +293,8 @@ pub contract CertificateRegistry {
             DisclosureInterface::at(disclosure_contract_address).disclose(
                 from,
                 context,
+                certificate.guardian,
+                certificate.unique_id,
                 certificate.content_type,
                 note_0.data,
                 note_1.data,

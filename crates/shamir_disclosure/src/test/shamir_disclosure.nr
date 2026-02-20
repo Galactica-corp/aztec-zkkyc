@@ -52,12 +52,15 @@ pub unconstrained fn setup_shamir_disclosure() -> (TestEnvironment, AztecAddress
 unconstrained fn test_shamir_disclosure_for_kyc_content() {
     let (mut env, contract_address, admin) = setup_shamir_disclosure();
     let from = env.create_light_account();
+    let guardian = env.create_light_account();
 
     env.call_private(
         admin,
         ShamirDisclosure::at(contract_address).disclose(
             from,
             Field::from(33),
+            guardian,
+            Field::from(1234),
             CONTENT_TYPE_ZK_KYC,
             sample_kyc_personal(),
             sample_kyc_address(),
@@ -69,12 +72,15 @@ unconstrained fn test_shamir_disclosure_for_kyc_content() {
 unconstrained fn test_shamir_disclosure_fails_for_unsupported_content_type() {
     let (mut env, contract_address, admin) = setup_shamir_disclosure();
     let from = env.create_light_account();
+    let guardian = env.create_light_account();
 
     env.call_private(
         admin,
         ShamirDisclosure::at(contract_address).disclose(
             from,
             Field::from(33),
+            guardian,
+            Field::from(1234),
             Field::from(88),
             sample_kyc_personal(),
             sample_kyc_address(),

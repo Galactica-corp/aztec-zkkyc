@@ -308,7 +308,8 @@ describe("ZK Certificate and UseCaseExample", () => {
     const disclosureEvents = await wallet.getPrivateEvents<{
       from: AztecAddress;
       context: Fr;
-      surname: Fr;
+      guardian: AztecAddress;
+      unique_id: Fr;
     }>(BasicDisclosureContract.events.BasicDisclosureEvent, {
       contractAddress: basicDisclosure.address,
       scopes: [adminAccount.address],
@@ -319,7 +320,8 @@ describe("ZK Certificate and UseCaseExample", () => {
     const disclosureEvent = disclosureEvents[0].event;
     expect(disclosureEvent.from.toString()).toBe(userAccount.address.toString());
     expect(asBigInt(disclosureEvent.context)).toBe(asBigInt(DISCLOSURE_CONTEXT));
-    expect(asBigInt(disclosureEvent.surname)).toBe(asBigInt(kycPersonalData[0]));
+    expect(disclosureEvent.guardian.toString()).toBe(guardianAccount.address.toString());
+    expect(asBigInt(disclosureEvent.unique_id)).toBe(asBigInt(UNIQUE_ID));
 
     // Ensure no event is visible to an account that is not the configured recipient.
     const wrongScopeEvents = await wallet.getPrivateEvents(
@@ -338,6 +340,8 @@ describe("ZK Certificate and UseCaseExample", () => {
       .disclose(
         userAccount.address,
         DISCLOSURE_CONTEXT,
+        guardianAccount.address,
+        UNIQUE_ID,
         CONTENT_TYPE_ZK_KYC,
         kycPersonalData,
         kycAddressData

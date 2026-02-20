@@ -25,14 +25,18 @@ pub contract DisclosureInterface {
      * Disclose selected certificate content.
      * @param from - User whose certificate data is being disclosed
      * @param context - Use-case context passed through by the caller contract
+     * @param guardian - Guardian that issued the used certificate
+     * @param unique_id - Unique id of the used certificate
      * @param content_type - Certificate content type (e.g. ZK KYC)
      * @param content_note_0 - First content note payload
-     * @param c_dontent_note_1 - Second content note payload
+     * @param content_note_1 - Second content note payload
      */
     #[external("private")]
     fn disclose(
         _from: AztecAddress,
         _context: Field,
+        _guardian: AztecAddress,
+        _unique_id: Field,
         content_type: Field,
         _content_note_0: [Field; 8],
         _content_note_1: [Field; 8],

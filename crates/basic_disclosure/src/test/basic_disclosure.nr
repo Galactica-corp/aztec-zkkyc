@@ -47,35 +47,38 @@ pub unconstrained fn setup_basic_disclosure() -> (TestEnvironment, AztecAddress,
 unconstrained fn test_basic_disclosure_for_kyc_content() {
     let (mut env, contract_address, admin) = setup_basic_disclosure();
     let from = env.create_light_account();
+    let guardian = env.create_light_account();
+    let context = Field::from(77);
+    let unique_id = Field::from(1234);
 
     env.call_private(
         admin,
         BasicDisclosure::at(contract_address).disclose(
             from,
-            Field::from(77),
+            context,
+            guardian,
+            unique_id,
             CONTENT_TYPE_ZK_KYC,
             sample_kyc_personal(),
             sample_kyc_address(),
         ),
     );
 
-    env.discover_note_at(contract_address, BasicDisclosureEvent { from, context, surname });
-    let note = env.get_note_at(contract_address, BasicDisclosureEvent { from, context, surname });
-    assert_eq(note.content_type, CONTENT_TYPE_ZK_KYC);
-    assert_eq(note.content_note_0, sample_kyc_personal());
-    assert_eq(note.content_note_1, sample_kyc_address());
 }
 
 #[test(should_fail)]
 unconstrained fn test_basic_disclosure_fails_for_unsupported_content_type() {
     let (mut env, contract_address, admin) = setup_basic_disclosure();
     let from = env.create_light_account();
+    let guardian = env.create_light_account();
 
     env.call_private(
         admin,
         BasicDisclosure::at(contract_address).disclose(
             from,
             Field::from(77),
+            guardian,
+            Field::from(1234),
             Field::from(99),
             sample_kyc_personal(),
             sample_kyc_address(),

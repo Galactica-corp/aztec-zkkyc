@@ -51,6 +51,8 @@ pub contract ShamirDisclosure {
     fn disclose(
         from: AztecAddress,
         context: Field,
+        _guardian: AztecAddress,
+        _unique_id: Field,
         content_type: Field,
         content_note_0: [Field; 8],
         _content_note_1: [Field; 8],
