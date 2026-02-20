@@ -114,9 +114,16 @@ async function main() {
   logger.info("🏎️  Starting shamir disclosure contract deployment...");
   const shamirDisclosureDeployMethod = ShamirDisclosureContract.deploy(
     wallet,
+    3,
+    2,
     address,
     adminAddress,
-    ageCheckRequirementContract.address
+    ageCheckRequirementContract.address,
+    address,
+    address,
+    address,
+    address,
+    address
   );
   logger.info("⏳ Waiting for deployment transaction to be mined...");
   const shamirDisclosureContract = await shamirDisclosureDeployMethod
@@ -128,9 +135,16 @@ async function main() {
   logger.info("🎉 Shamir Disclosure Contract deployed successfully!");
   logger.info(`📍 Contract address: ${shamirDisclosureContract.address}`);
   await logContractInstantiationData(shamirDisclosureDeployMethod, [
+    "3",
+    "2",
     address.toString(),
     adminAddress.toString(),
     ageCheckRequirementContract.address.toString(),
+    address.toString(),
+    address.toString(),
+    address.toString(),
+    address.toString(),
+    address.toString(),
   ]);
 
 

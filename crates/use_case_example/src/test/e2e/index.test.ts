@@ -179,9 +179,16 @@ describe("ZK Certificate and UseCaseExample", () => {
     logger.info("Deploying ShamirDisclosure...");
     shamirDisclosure = await ShamirDisclosureContract.deploy(
       wallet,
+      3,
+      2,
       adminAccount.address,
       guardianAccount.address,
-      userAccount.address
+      userAccount.address,
+      AztecAddress.ZERO,
+      AztecAddress.ZERO,
+      AztecAddress.ZERO,
+      AztecAddress.ZERO,
+      AztecAddress.ZERO
     )
       .send({
         from: adminAccount.address,
