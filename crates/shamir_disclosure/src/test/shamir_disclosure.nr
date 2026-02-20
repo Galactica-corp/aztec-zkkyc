@@ -4,6 +4,7 @@ use dep::aztec::{
 };
 
 global CONTENT_TYPE_ZK_KYC: Field = 1;
+global MAX_RECIPIENTS: u32 = 8;
 
 fn sample_kyc_personal() -> [Field; 8] {
     [
@@ -34,12 +35,31 @@ fn sample_kyc_address() -> [Field; 8] {
 pub unconstrained fn setup_shamir_disclosure() -> (TestEnvironment, AztecAddress, AztecAddress) {
     let mut env = TestEnvironment::new();
     let admin = env.create_light_account();
-    let recipient_0 = env.create_light_account();
-    let recipient_1 = env.create_light_account();
-    let recipient_2 = env.create_light_account();
+    let recipients: [AztecAddress; MAX_RECIPIENTS] = [
+        env.create_light_account(),
+        env.create_light_account(),
+        env.create_light_account(),
+        env.create_light_account(),
+        env.create_light_account(),
+        env.create_light_account(),
+        env.create_light_account(),
+        env.create_light_account(),
+    ];
+    let recipient_count = 5;
+    let threshold = 3;
 
-    let initializer_call_interface =
-        ShamirDisclosure::interface().constructor(recipient_0, recipient_1, recipient_2);
+    let initializer_call_interface = ShamirDisclosure::interface().constructor(
+        recipient_count,
+        threshold,
+        recipients[0],
+        recipients[1],
+        recipients[2],
+        recipients[3],
+        recipients[4],
+        recipients[5],
+        recipients[6],
+        recipients[7],
+    );
     let contract_address = env.deploy("ShamirDisclosure").with_public_initializer(
         admin,
         initializer_call_interface,
