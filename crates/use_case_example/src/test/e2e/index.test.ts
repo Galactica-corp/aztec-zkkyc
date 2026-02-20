@@ -19,6 +19,7 @@ import { TxStatus } from "@aztec/stdlib/tx";
 import { TestWallet } from "@aztec/test-wallet/server";
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { poseidon2Hash } from "@aztec/foundation/crypto/poseidon";
+import { TxHash } from "@aztec/aztec.js/tx";
 
 // Test constants (aligned with Noir tests)
 const AUTHWIT_NONCE = new Fr(456789);
@@ -29,6 +30,16 @@ const DISCLOSURE_CONTEXT = new Fr(777);
 
 const hashStringToField = async (value: string): Promise<Fr> =>
   poseidon2Hash([Fr.fromBufferReduce(Buffer.from(value.padEnd(32, "#"), "utf8"))]);
+
+const asBigInt = (value: unknown): bigint => {
+  if (typeof value === "bigint") return value;
+  if (typeof value === "number") return BigInt(value);
+  if (typeof value === "string") return BigInt(value);
+  if (value && typeof value === "object" && "toBigInt" in value) {
+    return (value as { toBigInt: () => bigint }).toBigInt();
+  }
+  throw new Error(`Unable to parse bigint from value: ${String(value)}`);
+};
 
 const KYC_SAMPLE = {
   personal: {
@@ -292,6 +303,81 @@ describe("ZK Certificate and UseCaseExample", () => {
 
     expect(tx.status).toBe(TxStatus.SUCCESS);
     logger.info("User used certificate with authwit successfully");
+
+    // Assert BasicDisclosure emitted one private event scoped to the configured recipient.
+    const disclosureEvents = await wallet.getPrivateEvents<{
+      from: AztecAddress;
+      context: Fr;
+      surname: Fr;
+    }>(BasicDisclosureContract.events.BasicDisclosureEvent, {
+      contractAddress: basicDisclosure.address,
+      scopes: [adminAccount.address],
+      txHash: tx.txHash,
+    });
+
+    expect(disclosureEvents).toHaveLength(1);
+    const disclosureEvent = disclosureEvents[0].event;
+    expect(disclosureEvent.from.toString()).toBe(userAccount.address.toString());
+    expect(asBigInt(disclosureEvent.context)).toBe(asBigInt(DISCLOSURE_CONTEXT));
+    expect(asBigInt(disclosureEvent.surname)).toBe(asBigInt(kycPersonalData[0]));
+
+    // Ensure no event is visible to an account that is not the configured recipient.
+    const wrongScopeEvents = await wallet.getPrivateEvents(
+      BasicDisclosureContract.events.BasicDisclosureEvent,
+      {
+        contractAddress: basicDisclosure.address,
+        scopes: [guardianAccount.address],
+        txHash: tx.txHash,
+      }
+    );
+    expect(wrongScopeEvents).toHaveLength(0);
+  }, 600000);
+
+  it("Shamir disclosure emits correct shards to configured recipients", async () => {
+    const tx = await shamirDisclosure.methods
+      .disclose(
+        userAccount.address,
+        DISCLOSURE_CONTEXT,
+        CONTENT_TYPE_ZK_KYC,
+        kycPersonalData,
+        kycAddressData
+      )
+      .send({
+        from: userAccount.address,
+        fee: { paymentMethod: sponsoredPaymentMethod },
+      })
+      .wait({ timeout: getTimeouts().txTimeout });
+
+    expect(tx.status).toBe(TxStatus.SUCCESS);
+
+    const recipients = [
+      { scope: adminAccount.address, expectedX: 1n },
+      { scope: guardianAccount.address, expectedX: 2n },
+      { scope: userAccount.address, expectedX: 3n },
+    ];
+
+    const secret = asBigInt(kycPersonalData[0]);
+    const coeff = asBigInt(DISCLOSURE_CONTEXT) + 17n;
+
+    for (const recipient of recipients) {
+      const shardEvents = await wallet.getPrivateEvents<{
+        from: AztecAddress;
+        context: Fr;
+        shard_x: Fr;
+        shard_y: Fr;
+      }>(ShamirDisclosureContract.events.ShamirDisclosureShardEvent, {
+        contractAddress: shamirDisclosure.address,
+        scopes: [recipient.scope],
+        txHash: tx.txHash as TxHash,
+      });
+
+      expect(shardEvents).toHaveLength(1);
+      const shardEvent = shardEvents[0].event;
+      expect(shardEvent.from.toString()).toBe(userAccount.address.toString());
+      expect(asBigInt(shardEvent.context)).toBe(asBigInt(DISCLOSURE_CONTEXT));
+      expect(asBigInt(shardEvent.shard_x)).toBe(recipient.expectedX);
+      expect(asBigInt(shardEvent.shard_y)).toBe(secret + coeff * recipient.expectedX);
+    }
   }, 600000);
 
   it("Guardian revokes the certificate", async () => {
