@@ -37,10 +37,8 @@ pub unconstrained fn setup_basic_disclosure() -> (TestEnvironment, AztecAddress,
     let recipient = env.create_light_account();
 
     let initializer_call_interface = BasicDisclosure::interface().constructor(recipient);
-    let contract_address = env.deploy("BasicDisclosure").with_public_initializer(
-        admin,
-        initializer_call_interface,
-    );
+    let contract_address =
+        env.deploy("BasicDisclosure").with_public_initializer(admin, initializer_call_interface);
 
     (env, contract_address, admin)
 }
@@ -60,6 +58,12 @@ unconstrained fn test_basic_disclosure_for_kyc_content() {
             sample_kyc_address(),
         ),
     );
+
+    env.discover_note_at(contract_address, BasicDisclosureEvent { from, context, surname });
+    let note = env.get_note_at(contract_address, BasicDisclosureEvent { from, context, surname });
+    assert_eq(note.content_type, CONTENT_TYPE_ZK_KYC);
+    assert_eq(note.content_note_0, sample_kyc_personal());
+    assert_eq(note.content_note_1, sample_kyc_address());
 }
 
 #[test(should_fail)]
