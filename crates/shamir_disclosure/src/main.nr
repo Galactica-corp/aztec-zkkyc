@@ -10,6 +10,31 @@ use dep::aztec::macros::aztec;
 
 mod test;
 
+fn derive_coefficient(disclosure_context: Field, degree_index: u32, coefficient_salt: u32) -> Field {
+    disclosure_context + Field::from(coefficient_salt + degree_index)
+}
+
+fn evaluate_shard(
+    secret: Field,
+    disclosure_context: Field,
+    threshold: u32,
+    shard_x: Field,
+    coefficient_salt: u32,
+) -> Field {
+    let mut shard_y = secret;
+    let mut x_power = shard_x;
+
+    for degree_index in 0..8 {
+        if degree_index + 1 < threshold {
+            let coeff = derive_coefficient(disclosure_context, degree_index, coefficient_salt);
+            shard_y = shard_y + coeff * x_power;
+        }
+        x_power = x_power * shard_x;
+    }
+
+    shard_y
+}
+
 #[aztec]
 pub contract ShamirDisclosure {
     use dep::aztec::{
@@ -147,16 +172,13 @@ pub contract ShamirDisclosure {
         for recipient_index in 0..MAX_RECIPIENTS {
             if recipient_index < recipient_count {
                 let shard_x = Field::from(recipient_index + 1);
-
-                let mut shard_y = secret;
-                let mut x_power = shard_x;
-                for degree_index in 0..MAX_RECIPIENTS {
-                    if degree_index + 1 < threshold {
-                        let coeff = context + Field::from(SHARD_COEFF_SALT + degree_index);
-                        shard_y = shard_y + coeff * x_power;
-                    }
-                    x_power = x_power * shard_x;
-                }
+                let shard_y = crate::evaluate_shard(
+                    secret,
+                    context,
+                    threshold,
+                    shard_x,
+                    SHARD_COEFF_SALT,
+                );
 
                 self
                     .emit(ShamirDisclosureShardEvent { from, context, shard_x, shard_y })
