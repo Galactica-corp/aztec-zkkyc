@@ -20,6 +20,7 @@ import { TestWallet } from "@aztec/test-wallet/server";
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { poseidon2Hash } from "@aztec/foundation/crypto/poseidon";
 import { TxHash } from "@aztec/aztec.js/tx";
+import { decryptShamirSecret } from "../../../../shamir_disclosure/utils/shamir_decrypt.js";
 
 // Test constants (aligned with Noir tests)
 const AUTHWIT_NONCE = new Fr(456789);
@@ -369,6 +370,7 @@ describe("ZK Certificate and UseCaseExample", () => {
 
     const secret = asBigInt(kycPersonalData[0]);
     const coeff = asBigInt(DISCLOSURE_CONTEXT) + 17n;
+    const shardList: { x: bigint; y: bigint }[] = [];
 
     for (const recipient of recipients) {
       const shardEvents = await wallet.getPrivateEvents<{
@@ -388,7 +390,14 @@ describe("ZK Certificate and UseCaseExample", () => {
       expect(asBigInt(shardEvent.context)).toBe(asBigInt(DISCLOSURE_CONTEXT));
       expect(asBigInt(shardEvent.shard_x)).toBe(recipient.expectedX);
       expect(asBigInt(shardEvent.shard_y)).toBe(secret + coeff * recipient.expectedX);
+      shardList.push({
+        x: asBigInt(shardEvent.shard_x),
+        y: asBigInt(shardEvent.shard_y),
+      });
     }
+
+    expect(decryptShamirSecret(3, 2, shardList.slice(0, 2))).toBe(secret);
+    expect(decryptShamirSecret(3, 2, [shardList[0], shardList[2]])).toBe(secret);
   }, 600000);
 
   it("Guardian revokes the certificate", async () => {
