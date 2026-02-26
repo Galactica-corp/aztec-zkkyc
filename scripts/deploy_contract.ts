@@ -14,6 +14,27 @@ import { ShamirDisclosureContract } from "../artifacts/ShamirDisclosure.js";
 import { UseCaseExampleContract } from "../artifacts/UseCaseExample.js";
 import { ContractBase, DeployMethod } from "@aztec/aztec.js/contracts";
 import { updateDemoSandboxDeployment } from "./utils/update-demo-sandbox.js";
+import { inspect } from "util";
+
+/** Serialize any thrown value for logging (handles null-prototype and non-Error). */
+function serializeError(err: unknown): string {
+    if (err instanceof Error) {
+        return err.stack ?? `${err.message}`;
+    }
+    if (typeof err === "object" && err !== null) {
+        return inspect(err, { depth: 4 });
+    }
+    return String(err);
+}
+
+process.on("uncaughtException", (err: unknown) => {
+    console.error("Uncaught exception:", serializeError(err));
+    process.exit(1);
+});
+process.on("unhandledRejection", (reason: unknown) => {
+    console.error("Unhandled rejection:", serializeError(reason));
+    process.exit(1);
+});
 
 const AGE_CHECK_MINIMUM_AGE = 18;
 const MAX_REQUIREMENT_CHECKERS = 4;
@@ -77,7 +98,8 @@ async function main() {
   const certificateRegistryContract = await certificateDeployMethod.send({
     from: address,
     fee: { paymentMethod: sponsoredPaymentMethod },
-  }).deployed({ timeout: timeouts.deployTimeout });
+    wait: { timeout: timeouts.deployTimeout },
+  });
   logger.info(`🎉 Certificate Registry Contract deployed successfully!`);
   logger.info(`📍 Contract address: ${certificateRegistryContract.address}`);
   await logContractInstantiationData(certificateDeployMethod, [adminAddress.toString()]);
@@ -91,7 +113,8 @@ async function main() {
   const ageCheckRequirementContract = await ageCheckDeployMethod.send({
     from: address,
     fee: { paymentMethod: sponsoredPaymentMethod },
-  }).deployed({ timeout: timeouts.deployTimeout });
+    wait: { timeout: timeouts.deployTimeout },
+  });
   logger.info(`🎉 Age Check Requirement Contract deployed successfully!`);
   logger.info(`📍 Contract address: ${ageCheckRequirementContract.address}`);
   await logContractInstantiationData(ageCheckDeployMethod, [AGE_CHECK_MINIMUM_AGE.toString()]);
@@ -100,12 +123,11 @@ async function main() {
   logger.info("🏎️  Starting basic disclosure contract deployment...");
   const basicDisclosureDeployMethod = BasicDisclosureContract.deploy(wallet, address);
   logger.info("⏳ Waiting for deployment transaction to be mined...");
-  const basicDisclosureContract = await basicDisclosureDeployMethod
-    .send({
-      from: address,
-      fee: { paymentMethod: sponsoredPaymentMethod },
-    })
-    .deployed({ timeout: timeouts.deployTimeout });
+  const basicDisclosureContract = await basicDisclosureDeployMethod.send({
+    from: address,
+    fee: { paymentMethod: sponsoredPaymentMethod },
+    wait: { timeout: timeouts.deployTimeout },
+  });
   logger.info("🎉 Basic Disclosure Contract deployed successfully!");
   logger.info(`📍 Contract address: ${basicDisclosureContract.address}`);
   await logContractInstantiationData(basicDisclosureDeployMethod, [address.toString()]);
@@ -126,12 +148,11 @@ async function main() {
     address
   );
   logger.info("⏳ Waiting for deployment transaction to be mined...");
-  const shamirDisclosureContract = await shamirDisclosureDeployMethod
-    .send({
-      from: address,
-      fee: { paymentMethod: sponsoredPaymentMethod },
-    })
-    .deployed({ timeout: timeouts.deployTimeout });
+  const shamirDisclosureContract = await shamirDisclosureDeployMethod.send({
+    from: address,
+    fee: { paymentMethod: sponsoredPaymentMethod },
+    wait: { timeout: timeouts.deployTimeout },
+  });
   logger.info("🎉 Shamir Disclosure Contract deployed successfully!");
   logger.info(`📍 Contract address: ${shamirDisclosureContract.address}`);
   await logContractInstantiationData(shamirDisclosureDeployMethod, [
@@ -153,22 +174,16 @@ async function main() {
   const useCaseExampleDeployMethod = UseCaseExampleContract.deploy(
     wallet,
     certificateRegistryContract.address,
-    Array.from(
-      { length: MAX_REQUIREMENT_CHECKERS },
-      () => ageCheckRequirementContract.address
-    ),
-    REQUIREMENT_CHECKER_COUNT,
-    Array.from({ length: MAX_DISCLOSURES }, (_, i) =>
-      i % 2 === 0 ? basicDisclosureContract.address : shamirDisclosureContract.address
-    ),
-    DISCLOSURE_COUNT,
+    ageCheckRequirementContract.address,
+    basicDisclosureContract.address,
     DISCLOSURE_CONTEXT
   );
   logger.info('⏳ Waiting for deployment transaction to be mined...');
   const useCaseExampleContract = await useCaseExampleDeployMethod.send({
     from: address,
     fee: { paymentMethod: sponsoredPaymentMethod },
-  }).deployed({ timeout: timeouts.deployTimeout });
+    wait: { timeout: timeouts.deployTimeout },
+  });
   logger.info(`🎉 Use Case Example Contract deployed successfully!`);
   logger.info(`📍 Contract address: ${useCaseExampleContract.address}`);
   await logContractInstantiationData(useCaseExampleDeployMethod, [
@@ -234,9 +249,9 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  const logger = createLogger('aztec:aztec-starter');
-  logger.error(`❌ Deployment failed: ${error.message}`);
-  logger.error(`📋 Error details: ${error.stack}`);
-  process.exit(1);
+main().catch((error: unknown) => {
+    const logger = createLogger('aztec:aztec-starter');
+    logger.error(`❌ Deployment failed: ${error instanceof Error ? error.message : serializeError(error)}`);
+    logger.error(`📋 Error details: ${serializeError(error)}`);
+    process.exit(1);
 });
