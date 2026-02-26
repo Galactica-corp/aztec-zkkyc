@@ -8,3 +8,7 @@ codegenCache.json
 store/
 .tsbuildinfo
 .env
+
+# ignore local testing data 
+pxe_data_*
+wallet_data_*

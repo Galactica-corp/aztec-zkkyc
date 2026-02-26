@@ -29,10 +29,10 @@ fn sample_kyc_content_adult() -> ([Field; 7], [Field; 7]) {
     (personal_data, address_data)
 }
 
-// Birthday: 2010-01-01 00:00:00 UTC = 1262304000
+// Birthday: 2020-01-01 00:00:00 UTC = 1577833200
 fn sample_kyc_content_underage() -> ([Field; 7], [Field; 7]) {
     let (mut personal_data, address_data) = sample_kyc_content_adult();
-    personal_data[3] = Field::from(1262304000);
+    personal_data[3] = Field::from(1577833200);
     (personal_data, address_data)
 }
 

@@ -315,7 +315,7 @@ unconstrained fn test_fail_requirement_blocks_disclosure_flow() {
     let revocation_id = Field::from(1234562);
 
     let (mut kyc_personal_underage, kyc_address) = utils::sample_kyc_content();
-    kyc_personal_underage[3] = Field::from(1577836800);
+    kyc_personal_underage[3] = Field::from(1577833200);
 
     let age_check_initializer = AgeCheckRequirement::interface().constructor(18u32);
     let age_check_address = env

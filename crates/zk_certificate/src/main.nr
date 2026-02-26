@@ -134,12 +134,12 @@ pub contract CertificateRegistry {
             let content_note_0 = ContentNote::new(unique_id + 0, content_note_data_0);
             self.storage.content_notes.at(user).insert(content_note_0).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
 
-            // let content_note_1 = ContentNote::new(unique_id + 1, content_note_data_1);
-            // self.storage.content_notes.at(user).insert(content_note_1).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+            let content_note_1 = ContentNote::new(unique_id + 1, content_note_data_1);
+            self.storage.content_notes.at(user).insert(content_note_1).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
         }
 
-        // // Give the guardian a copy of the certificate note to remember the revocation-nullifier
-        // self.storage.guardian_certificates_copies.at(guardian).insert(certificate).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+        // Give the guardian a copy of the certificate note to remember the revocation-nullifier
+        self.storage.guardian_certificates_copies.at(guardian).insert(certificate).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
     }
 
     /**
@@ -271,24 +271,24 @@ pub contract CertificateRegistry {
         let note_0 = popped_0.get(0);
         let note_1 = popped_1.get(0);
 
-        // // Call requirement checker
-        // self.call(
-        //     RequirementCheckerInterface::at(requirement_checker_address)
-        //         .check_requirements(certificate.content_type, note_0.data, note_1.data),
-        // );
+        // Call requirement checker
+        self.call(
+            RequirementCheckerInterface::at(requirement_checker_address)
+                .check_requirements(certificate.content_type, note_0.data, note_1.data),
+        );
 
-        // // Call disclosure contract after requirements pass
-        // self.call(
-        //     DisclosureInterface::at(disclosure_contract_address).disclose(
-        //         from,
-        //         context,
-        //         certificate.guardian,
-        //         certificate.unique_id,
-        //         certificate.content_type,
-        //         note_0.data,
-        //         note_1.data,
-        //     ),
-        // );
+        // Call disclosure contract after requirements pass
+        self.call(
+            DisclosureInterface::at(disclosure_contract_address).disclose(
+                from,
+                context,
+                certificate.guardian,
+                certificate.unique_id,
+                certificate.content_type,
+                note_0.data,
+                note_1.data,
+            ),
+        );
 
         // Put content notes back
         self.storage.content_notes.at(from).insert(note_0).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
