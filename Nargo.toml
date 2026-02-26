@@ -6,6 +6,7 @@ members = [
   "crates/zk_certificate",
   "crates/use_case_example",
   "crates/age_check_requirement",
+  "crates/sanction_list_requirement",
   "crates/basic_disclosure",
   "crates/shamir_disclosure",
   "apps/demo/contracts/ecdsa_k_eth_signer_account"
