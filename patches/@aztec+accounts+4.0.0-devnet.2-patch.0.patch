@@ -1,0 +1,22 @@
+diff --git a/node_modules/@aztec/accounts/dest/schnorr/lazy.js b/node_modules/@aztec/accounts/dest/schnorr/lazy.js
+index 0724821..c1e1b1c 100644
+--- a/node_modules/@aztec/accounts/dest/schnorr/lazy.js
++++ b/node_modules/@aztec/accounts/dest/schnorr/lazy.js
+@@ -16,7 +16,7 @@ import { SchnorrBaseAccountContract } from './account_contract.js';
+     // Even if now supported by al major browsers, the MIME type is replaced with
+     // "text/javascript"
+     // In the meantime, this lazy import is INCOMPATIBLE WITH NODEJS
+-    const { default: schnorrAccountContractJson } = await import('../../artifacts/SchnorrAccount.json');
++    const { default: schnorrAccountContractJson } = await import('../../artifacts/SchnorrAccount.json', { with: { type: 'json' } });
+     return loadContractArtifact(schnorrAccountContractJson);
+ }
+ /**
+@@ -24,7 +24,7 @@ import { SchnorrBaseAccountContract } from './account_contract.js';
+  * verified against a Grumpkin public key stored in an immutable encrypted note.
+  * Lazily loads the contract artifact
+  */ export class SchnorrAccountContract extends SchnorrBaseAccountContract {
+-    constructor(signingPrivateKey){
++    constructor(signingPrivateKey) {
+         super(signingPrivateKey);
+     }
+     getContractArtifact() {

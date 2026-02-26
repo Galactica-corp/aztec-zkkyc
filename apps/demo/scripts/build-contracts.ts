@@ -229,7 +229,7 @@ function compileLocalContracts(projectRoot: string, forceOverwrite: boolean): bo
 
 async function main() {
   const forceOverwrite = process.argv.includes('--force');
-  const projectRoot = process.cwd();
+  const projectRoot = process.cwd().concat('/../..');
 
   console.log(`
 ╔════════════════════════════════════════════════════════════════╗

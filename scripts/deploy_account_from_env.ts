@@ -33,10 +33,10 @@ export async function deploySchnorrAccountFromEnv(wallet?: EmbeddedWallet): Prom
   const tx = await deployMethod.send({
     from: AztecAddress.ZERO,
     fee: { paymentMethod: sponsoredPaymentMethod },
-  }).wait({ timeout: 120000 });
+  });
 
   logger.info(`✅ Account deployment transaction successful!`);
-  logger.info(`📋 Transaction hash: ${tx.txHash}`);
+  logger.info(`📋 Account address: ${tx.address}`);
 
   return account;
 }
