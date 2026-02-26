@@ -7,8 +7,8 @@ use dep::aztec::{
 global CONTENT_TYPE_ZK_KYC: Field = 1;
 
 // Birthday: 1990-06-15 00:00:00 UTC = 645494400
-fn sample_kyc_personal_adult() -> [Field; 8] {
-    [
+fn sample_kyc_content_adult() -> ([Field; 7], [Field; 7]) {
+    let personal_data: [Field; 7] = [
         Field::from(1),
         Field::from(2),
         Field::from(0),
@@ -16,26 +16,8 @@ fn sample_kyc_personal_adult() -> [Field; 8] {
         Field::from(3),
         Field::from(1),
         Field::from(0),
-        Field::from(0),
-    ]
-}
-
-// Birthday: 2010-01-01 00:00:00 UTC = 1262304000
-fn sample_kyc_personal_underage() -> [Field; 8] {
-    [
-        Field::from(1),
-        Field::from(2),
-        Field::from(0),
-        Field::from(1262304000),
-        Field::from(3),
-        Field::from(1),
-        Field::from(0),
-        Field::from(0),
-    ]
-}
-
-fn sample_kyc_address() -> [Field; 8] {
-    [
+    ];
+    let address_data: [Field; 7] = [
         Field::from(11),
         Field::from(12),
         Field::from(0),
@@ -43,8 +25,15 @@ fn sample_kyc_address() -> [Field; 8] {
         Field::from(0),
         Field::from(0),
         Field::from(0),
-        Field::from(0),
-    ]
+    ];
+    (personal_data, address_data)
+}
+
+// Birthday: 2010-01-01 00:00:00 UTC = 1262304000
+fn sample_kyc_content_underage() -> ([Field; 7], [Field; 7]) {
+    let (mut personal_data, address_data) = sample_kyc_content_adult();
+    personal_data[3] = Field::from(1262304000);
+    (personal_data, address_data)
 }
 
 // Setup: deploy AgeCheckRequirement with threshold
@@ -69,11 +58,12 @@ pub unconstrained fn setup_age_check(
 #[test]
 unconstrained fn test_age_check_passes_adult() {
     let (mut env, contract_address, admin) = setup_age_check(18u32);
+    let (kyc_personal, kyc_address) = sample_kyc_content_adult();
 
     let call = AgeCheckRequirement::at(contract_address).check_requirements(
         CONTENT_TYPE_ZK_KYC,
-        sample_kyc_personal_adult(),
-        sample_kyc_address(),
+        kyc_personal,
+        kyc_address,
     );
     env.call_private(admin, call);
 }
@@ -82,11 +72,12 @@ unconstrained fn test_age_check_passes_adult() {
 #[test(should_fail)]
 unconstrained fn test_age_check_fails_underage() {
     let (mut env, contract_address, admin) = setup_age_check(18u32);
+    let (kyc_personal, kyc_address) = sample_kyc_content_underage();
 
     let call = AgeCheckRequirement::at(contract_address).check_requirements(
         CONTENT_TYPE_ZK_KYC,
-        sample_kyc_personal_underage(),
-        sample_kyc_address(),
+        kyc_personal,
+        kyc_address,
     );
     env.call_private(admin, call);
 }
@@ -95,12 +86,13 @@ unconstrained fn test_age_check_fails_underage() {
 #[test(should_fail)]
 unconstrained fn test_age_check_fails_unsupported_content_type() {
     let (mut env, contract_address, admin) = setup_age_check(18u32);
+    let (kyc_personal, kyc_address) = sample_kyc_content_adult();
 
     let unsupported_content_type = Field::from(99);
     let call = AgeCheckRequirement::at(contract_address).check_requirements(
         unsupported_content_type,
-        sample_kyc_personal_adult(),
-        sample_kyc_address(),
+        kyc_personal,
+        kyc_address,
     );
     env.call_private(admin, call);
 }

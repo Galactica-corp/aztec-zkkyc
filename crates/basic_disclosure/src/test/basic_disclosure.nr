@@ -5,21 +5,17 @@ use dep::aztec::{
 
 global CONTENT_TYPE_ZK_KYC: Field = 1;
 
-fn sample_kyc_personal() -> [Field; 8] {
-    [
-        Field::from(111),
+fn sample_kyc_content() -> ([Field; 7], [Field; 7]) {
+    let personal_data: [Field; 7] = [
+        Field::from(1),
         Field::from(2),
         Field::from(0),
         Field::from(645494400),
         Field::from(3),
         Field::from(1),
         Field::from(0),
-        Field::from(0),
-    ]
-}
-
-fn sample_kyc_address() -> [Field; 8] {
-    [
+    ];
+    let address_data: [Field; 7] = [
         Field::from(11),
         Field::from(12),
         Field::from(0),
@@ -27,8 +23,8 @@ fn sample_kyc_address() -> [Field; 8] {
         Field::from(0),
         Field::from(0),
         Field::from(0),
-        Field::from(0),
-    ]
+    ];
+    (personal_data, address_data)
 }
 
 pub unconstrained fn setup_basic_disclosure() -> (TestEnvironment, AztecAddress, AztecAddress) {
@@ -46,6 +42,7 @@ pub unconstrained fn setup_basic_disclosure() -> (TestEnvironment, AztecAddress,
 #[test]
 unconstrained fn test_basic_disclosure_for_kyc_content() {
     let (mut env, contract_address, admin) = setup_basic_disclosure();
+    let (kyc_personal, kyc_address) = sample_kyc_content();
     let from = env.create_light_account();
     let guardian = env.create_light_account();
     let context = Field::from(77);
@@ -59,8 +56,8 @@ unconstrained fn test_basic_disclosure_for_kyc_content() {
             guardian,
             unique_id,
             CONTENT_TYPE_ZK_KYC,
-            sample_kyc_personal(),
-            sample_kyc_address(),
+            kyc_personal,
+            kyc_address,
         ),
     );
 
@@ -69,6 +66,7 @@ unconstrained fn test_basic_disclosure_for_kyc_content() {
 #[test(should_fail)]
 unconstrained fn test_basic_disclosure_fails_for_unsupported_content_type() {
     let (mut env, contract_address, admin) = setup_basic_disclosure();
+    let (kyc_personal, kyc_address) = sample_kyc_content();
     let from = env.create_light_account();
     let guardian = env.create_light_account();
 
@@ -80,8 +78,8 @@ unconstrained fn test_basic_disclosure_fails_for_unsupported_content_type() {
             guardian,
             Field::from(1234),
             Field::from(99),
-            sample_kyc_personal(),
-            sample_kyc_address(),
+            kyc_personal,
+            kyc_address,
         ),
     );
 }

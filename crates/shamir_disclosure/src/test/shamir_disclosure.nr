@@ -6,21 +6,17 @@ use dep::aztec::{
 global CONTENT_TYPE_ZK_KYC: Field = 1;
 global MAX_RECIPIENTS: u32 = 8;
 
-fn sample_kyc_personal() -> [Field; 8] {
-    [
-        Field::from(111),
+fn sample_kyc_content() -> ([Field; 7], [Field; 7]) {
+    let personal_data: [Field; 7] = [
+        Field::from(1),
         Field::from(2),
         Field::from(0),
         Field::from(645494400),
         Field::from(3),
         Field::from(1),
         Field::from(0),
-        Field::from(0),
-    ]
-}
-
-fn sample_kyc_address() -> [Field; 8] {
-    [
+    ];
+    let address_data: [Field; 7] = [
         Field::from(11),
         Field::from(12),
         Field::from(0),
@@ -28,8 +24,8 @@ fn sample_kyc_address() -> [Field; 8] {
         Field::from(0),
         Field::from(0),
         Field::from(0),
-        Field::from(0),
-    ]
+    ];
+    (personal_data, address_data)
 }
 
 pub unconstrained fn setup_shamir_disclosure() -> (TestEnvironment, AztecAddress, AztecAddress) {
@@ -76,6 +72,7 @@ pub unconstrained fn setup_shamir_disclosure_with_params(
 #[test]
 unconstrained fn test_shamir_disclosure_for_kyc_content() {
     let (mut env, contract_address, admin) = setup_shamir_disclosure();
+    let (kyc_personal, kyc_address) = sample_kyc_content();
     let from = env.create_light_account();
     let guardian = env.create_light_account();
 
@@ -87,8 +84,8 @@ unconstrained fn test_shamir_disclosure_for_kyc_content() {
             guardian,
             Field::from(1234),
             CONTENT_TYPE_ZK_KYC,
-            sample_kyc_personal(),
-            sample_kyc_address(),
+            kyc_personal,
+            kyc_address,
         ),
     );
 }
@@ -96,6 +93,7 @@ unconstrained fn test_shamir_disclosure_for_kyc_content() {
 #[test]
 unconstrained fn test_shamir_disclosure_for_1_of_1() {
     let (mut env, contract_address, admin) = setup_shamir_disclosure_with_params(1, 1);
+    let (kyc_personal, kyc_address) = sample_kyc_content();
     let from = env.create_light_account();
     let guardian = env.create_light_account();
 
@@ -107,8 +105,8 @@ unconstrained fn test_shamir_disclosure_for_1_of_1() {
             guardian,
             Field::from(1234),
             CONTENT_TYPE_ZK_KYC,
-            sample_kyc_personal(),
-            sample_kyc_address(),
+            kyc_personal,
+            kyc_address,
         ),
     );
 }
@@ -116,6 +114,7 @@ unconstrained fn test_shamir_disclosure_for_1_of_1() {
 #[test]
 unconstrained fn test_shamir_disclosure_for_8_of_8() {
     let (mut env, contract_address, admin) = setup_shamir_disclosure_with_params(8, 8);
+    let (kyc_personal, kyc_address) = sample_kyc_content();
     let from = env.create_light_account();
     let guardian = env.create_light_account();
 
@@ -127,8 +126,8 @@ unconstrained fn test_shamir_disclosure_for_8_of_8() {
             guardian,
             Field::from(1234),
             CONTENT_TYPE_ZK_KYC,
-            sample_kyc_personal(),
-            sample_kyc_address(),
+            kyc_personal,
+            kyc_address,
         ),
     );
 }
@@ -136,6 +135,7 @@ unconstrained fn test_shamir_disclosure_for_8_of_8() {
 #[test(should_fail)]
 unconstrained fn test_shamir_disclosure_fails_for_unsupported_content_type() {
     let (mut env, contract_address, admin) = setup_shamir_disclosure();
+    let (kyc_personal, kyc_address) = sample_kyc_content();
     let from = env.create_light_account();
     let guardian = env.create_light_account();
 
@@ -147,8 +147,8 @@ unconstrained fn test_shamir_disclosure_fails_for_unsupported_content_type() {
             guardian,
             Field::from(1234),
             Field::from(88),
-            sample_kyc_personal(),
-            sample_kyc_address(),
+            kyc_personal,
+            kyc_address,
         ),
     );
 }

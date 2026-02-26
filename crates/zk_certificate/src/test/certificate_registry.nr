@@ -314,26 +314,8 @@ unconstrained fn test_fail_requirement_blocks_disclosure_flow() {
     let unique_id = Field::from(2);
     let revocation_id = Field::from(1234562);
 
-    let kyc_personal_underage: [Field; 8] = [
-        Field::from(1),
-        Field::from(2),
-        Field::from(0),
-        Field::from(1577836800),
-        Field::from(3),
-        Field::from(1),
-        Field::from(0),
-        Field::from(0),
-    ];
-    let kyc_address: [Field; 8] = [
-        Field::from(11),
-        Field::from(12),
-        Field::from(0),
-        Field::from(0),
-        Field::from(0),
-        Field::from(0),
-        Field::from(0),
-        Field::from(0),
-    ];
+    let (mut kyc_personal_underage, kyc_address) = utils::sample_kyc_content();
+    kyc_personal_underage[3] = Field::from(1577836800);
 
     let age_check_initializer = AgeCheckRequirement::interface().constructor(18u32);
     let age_check_address = env
