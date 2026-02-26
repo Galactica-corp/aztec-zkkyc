@@ -405,7 +405,7 @@ const { getContract } = useContracts();
 const dripper = await getContract('dripper'); // Typed, cached
 
 // Access methods
-await dripper.methods.drip(recipient).send().wait();
+await dripper.methods.drip(recipient).send();
 const balance = await token.methods.balance_of_public(address).simulate();
 ```
 
@@ -525,7 +525,7 @@ Cross-Origin-Resource-Policy: cross-origin
 ```typescript
 const { getContract } = useContracts();
 const myContract = await getContract('your_contract');
-await myContract.methods.myMethod(args).send().wait();
+await myContract.methods.myMethod(args).send();
 ```
 
 ### Testing Strategy

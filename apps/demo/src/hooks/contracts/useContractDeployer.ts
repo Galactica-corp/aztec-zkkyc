@@ -108,22 +108,27 @@ export const useContractDeployer = () => {
             connector.getSponsoredFeePaymentMethod(),
         });
 
-        const receipt = await deployMethod
-          .send({
-            from: account.getAddress(),
-            contractAddressSalt: salt,
-            fee: { paymentMethod },
-            universalDeploy: true,
-            skipInitialization: false,
-          })
-          .wait({ timeout: 900 });
+        const receipt = await deployMethod.send({
+          from: account.getAddress(),
+          contractAddressSalt: salt,
+          fee: { paymentMethod },
+          universalDeploy: true,
+          skipInitialization: false,
+        });
 
-        const deployedAddress = receipt.contract.address.toString();
+        const deployedAddress =
+          (receipt as { contract?: { address: { toString: () => string } } })
+            .contract?.address?.toString() ??
+          (receipt as { address?: { toString: () => string } }).address?.toString() ??
+          '';
+
+        const txHash = (receipt as { txHash?: { toString: () => string } })
+          .txHash?.toString();
 
         return {
           success: true,
           address: deployedAddress,
-          txHash: receipt.txHash?.toString(),
+          txHash,
         };
       } catch (err) {
         const errorMsg =

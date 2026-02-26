@@ -233,7 +233,7 @@ async function createAccount(pxe: PXE, node: AztecNode) {
       skipPublicDeployment: true,
     };
     const deployMethod = await manager.getDeployMethod();
-    await deployMethod.send(deployOpts).wait({ timeout: DEPLOY_TIMEOUT });
+    await deployMethod.send(deployOpts);
     console.log('   ✅ Account deployed');
   } else {
     console.log('   ✅ Account already deployed');
@@ -294,22 +294,25 @@ async function deployDripperContract(
   );
 
   try {
-    const receipt = await deployMethod
-      .send({
-        ...options,
-        contractAddressSalt: salt,
-        fee: {
-          paymentMethod: await getSponsoredFeePaymentMethod(),
-        },
-        universalDeploy: true,
-        skipInitialization: false,
-      })
-      .wait({ timeout: DEPLOY_TIMEOUT });
+    const receipt = await deployMethod.send({
+      ...options,
+      contractAddressSalt: salt,
+      fee: {
+        paymentMethod: await getSponsoredFeePaymentMethod(),
+      },
+      universalDeploy: true,
+      skipInitialization: false,
+    });
 
-    console.log(`   Mined at block: ${receipt.blockNumber}`);
-    console.log(`   Tx hash: ${receipt.txHash}`);
-
-    const contract = receipt.contract;
+    const contract =
+      (receipt as { contract?: { address: { toString: () => string } } })
+        .contract ?? receipt;
+    console.log(
+      `   Mined at block: ${(receipt as { blockNumber?: number }).blockNumber ?? '—'}`
+    );
+    console.log(
+      `   Tx hash: ${(receipt as { txHash?: unknown }).txHash ?? '—'}`
+    );
     console.log(`   ✅ Dripper deployed at: ${contract.address.toString()}`);
 
     // Contract is already registered during deployment via DeployMethod
@@ -400,22 +403,25 @@ async function deployTokenContract(
   );
 
   try {
-    const receipt = await deployMethod
-      .send({
-        ...options,
-        contractAddressSalt: salt,
-        fee: {
-          paymentMethod: await getSponsoredFeePaymentMethod(),
-        },
-        universalDeploy: true,
-        skipInitialization: false,
-      })
-      .wait({ timeout: DEPLOY_TIMEOUT });
+    const receipt = await deployMethod.send({
+      ...options,
+      contractAddressSalt: salt,
+      fee: {
+        paymentMethod: await getSponsoredFeePaymentMethod(),
+      },
+      universalDeploy: true,
+      skipInitialization: false,
+    });
 
-    console.log(`   Mined at block: ${receipt.blockNumber}`);
-    console.log(`   Tx hash: ${receipt.txHash}`);
-
-    const contract = receipt.contract;
+    const contract =
+      (receipt as { contract?: { address: { toString: () => string } } })
+        .contract ?? receipt;
+    console.log(
+      `   Mined at block: ${(receipt as { blockNumber?: number }).blockNumber ?? '—'}`
+    );
+    console.log(
+      `   Tx hash: ${(receipt as { txHash?: unknown }).txHash ?? '—'}`
+    );
     console.log(`   ✅ Token deployed at: ${contract.address.toString()}`);
 
     // Contract is already registered during deployment via DeployMethod

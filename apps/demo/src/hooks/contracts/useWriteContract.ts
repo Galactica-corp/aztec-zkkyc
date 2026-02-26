@@ -228,19 +228,13 @@ export const useWriteContract = (options: UseWriteContractOptions = {}) => {
             };
           }
 
-          const sentTx = (
-            tx as {
-              send: (opts: unknown) => {
-                wait: (opts: unknown) => Promise<unknown>;
-              };
-            }
+          const result = await (
+            tx as { send: (opts: unknown) => Promise<unknown> }
           ).send({
             from: account.getAddress(),
             fee: { paymentMethod },
             ...(authWitnesses?.length ? { authWitnesses } : {}),
           });
-
-          const result = await sentTx.wait({ timeout });
 
           return {
             success: true,

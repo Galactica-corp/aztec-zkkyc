@@ -212,11 +212,10 @@ export const useDynamicContractCaller = (
           });
 
           const tx = method(...args);
-          const sentTx = tx.send({
+          const receipt = await tx.send({
             from: account.getAddress(),
             fee: { paymentMethod },
           });
-          const receipt = await sentTx.wait({ timeout: 900 });
 
           return { success: true, data: receipt };
         }
