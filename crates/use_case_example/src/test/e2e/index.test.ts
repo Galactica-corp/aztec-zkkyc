@@ -10,12 +10,11 @@ import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { getSponsoredFPCInstance } from "../../../../zk_certificate/src/utils/sponsored_fpc.js";
 import { setupWallet } from "../../../../zk_certificate/src/utils/setup_wallet.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { getTimeouts } from "../../../../../config/config.js";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
 import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
-import { TxStatus } from "@aztec/stdlib/tx";
+import { TxExecutionResult } from "@aztec/stdlib/tx";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { poseidon2Hash } from "@aztec/foundation/crypto/poseidon";
@@ -119,8 +118,7 @@ describe("ZK Certificate and UseCaseExample", () => {
       .send({
         from: AztecAddress.ZERO,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      })
-      .wait({ timeout: getTimeouts().deployTimeout });
+      });
 
     const secret2 = Fr.random();
     const signingKey2 = GrumpkinScalar.random();
@@ -130,8 +128,7 @@ describe("ZK Certificate and UseCaseExample", () => {
       .send({
         from: AztecAddress.ZERO,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      })
-      .wait({ timeout: getTimeouts().deployTimeout });
+      });
 
     const secret3 = Fr.random();
     const signingKey3 = GrumpkinScalar.random();
@@ -141,13 +138,10 @@ describe("ZK Certificate and UseCaseExample", () => {
       .send({
         from: AztecAddress.ZERO,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      })
-      .wait({ timeout: getTimeouts().deployTimeout });
-
+      });
     await wallet.registerSender(adminAccount.address, "admin");
     await wallet.registerSender(guardianAccount.address, "guardian");
     await wallet.registerSender(userAccount.address, "user");
-    logger.info("Accounts created and registered");
 
     // 1. Contract setup: deploy CertificateRegistry then UseCaseExample
     logger.info("Deploying CertificateRegistry...");
@@ -158,24 +152,21 @@ describe("ZK Certificate and UseCaseExample", () => {
       .send({
         from: adminAccount.address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      })
-      .deployed({ timeout: getTimeouts().deployTimeout });
+      });
 
     logger.info("Deploying AgeCheckRequirement...");
     ageCheckRequirement = await AgeCheckRequirementContract.deploy(wallet, 18)
       .send({
         from: adminAccount.address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      })
-      .deployed({ timeout: getTimeouts().deployTimeout });
+      });
 
     logger.info("Deploying BasicDisclosure...");
     basicDisclosure = await BasicDisclosureContract.deploy(wallet, adminAccount.address)
       .send({
         from: adminAccount.address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      })
-      .deployed({ timeout: getTimeouts().deployTimeout });
+      });
 
     logger.info("Deploying ShamirDisclosure...");
     shamirDisclosure = await ShamirDisclosureContract.deploy(
@@ -194,8 +185,7 @@ describe("ZK Certificate and UseCaseExample", () => {
       .send({
         from: adminAccount.address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      })
-      .deployed({ timeout: getTimeouts().deployTimeout });
+      });
 
     logger.info("Deploying UseCaseExample...");
     useCaseExample = await UseCaseExampleContract.deploy(
@@ -208,8 +198,7 @@ describe("ZK Certificate and UseCaseExample", () => {
       .send({
         from: adminAccount.address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      })
-      .deployed({ timeout: getTimeouts().deployTimeout });
+      });
 
     logger.info(
       `CertificateRegistry at ${certificateRegistry.address.toString()}, UseCaseExample at ${useCaseExample.address.toString()}`
@@ -229,10 +218,9 @@ describe("ZK Certificate and UseCaseExample", () => {
       .send({
         from: adminAccount.address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      })
-      .wait({ timeout: getTimeouts().txTimeout });
+      });
 
-    expect(tx.status).toBe(TxStatus.SUCCESS);
+    expect(tx.executionResult).toBe(TxExecutionResult.SUCCESS);
     logger.info("Guardian whitelisted");
   }, 600000);
 
@@ -272,10 +260,9 @@ describe("ZK Certificate and UseCaseExample", () => {
       .send({
         from: guardianAccount.address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      })
-      .wait({ timeout: getTimeouts().txTimeout });
+      });
 
-    expect(tx.status).toBe(TxStatus.SUCCESS);
+    expect(tx.executionResult).toBe(TxExecutionResult.SUCCESS);
     logger.info("Certificate issued");
   }, 600000);
 
@@ -306,10 +293,9 @@ describe("ZK Certificate and UseCaseExample", () => {
         from: userAccount.address,
         authWitnesses: [witness],
         fee: { paymentMethod: sponsoredPaymentMethod },
-      })
-      .wait({ timeout: getTimeouts().txTimeout });
+      });
 
-    expect(tx.status).toBe(TxStatus.SUCCESS);
+    expect(tx.executionResult).toBe(TxExecutionResult.SUCCESS);
     logger.info("User used certificate with authwit successfully");
 
     // Assert BasicDisclosure emitted one private event scoped to the configured recipient.
@@ -357,10 +343,9 @@ describe("ZK Certificate and UseCaseExample", () => {
       .send({
         from: userAccount.address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      })
-      .wait({ timeout: getTimeouts().txTimeout });
+      });
 
-    expect(tx.status).toBe(TxStatus.SUCCESS);
+    expect(tx.executionResult).toBe(TxExecutionResult.SUCCESS);
 
     const recipients = [
       { scope: adminAccount.address, expectedX: 1n },
@@ -406,10 +391,9 @@ describe("ZK Certificate and UseCaseExample", () => {
       .send({
         from: guardianAccount.address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      })
-      .wait({ timeout: getTimeouts().txTimeout });
+      });
 
-    expect(tx.status).toBe(TxStatus.SUCCESS);
+    expect(tx.executionResult).toBe(TxExecutionResult.SUCCESS);
     logger.info("Certificate revoked (takes effect after REVOCATION_DELAY)");
   }, 600000);
 
