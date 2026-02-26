@@ -29,6 +29,11 @@ export const queryKeys = {
     list: (contractAddress: string, ownerAddress: string) =>
       [...queryKeys.certificates.all, contractAddress, ownerAddress] as const,
   },
+  disclosureEvents: {
+    all: ['disclosureEvents'] as const,
+    list: (contractAddress: string, scopeAddress: string) =>
+      [...queryKeys.disclosureEvents.all, contractAddress, scopeAddress] as const,
+  },
 } as const;
 
 /**

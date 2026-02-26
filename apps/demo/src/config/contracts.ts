@@ -1,6 +1,7 @@
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { Fr } from '@aztec/aztec.js/fields';
 import { AgeCheckRequirementContract } from '../../../../artifacts/AgeCheckRequirement';
+import { BasicDisclosureContract } from '../../../../artifacts/BasicDisclosure';
 import { CertificateRegistryContract } from '../../../../artifacts/CertificateRegistry';
 import { UseCaseExampleContract } from '../../../../artifacts/UseCaseExample';
 import {
@@ -35,6 +36,24 @@ export const contractsConfig = createContractConfig({
         ? AztecAddress.fromString(config.deployerAddress)
         : getDeployerAddress(config),
       constructorArgs: [config.certificateRegistryAdminAddress],
+      constructorArtifact: 'constructor',
+    }),
+  },
+
+  basicDisclosure: {
+    artifact: BasicDisclosureContract.artifact,
+    contract: BasicDisclosureContract,
+    address: (config) => config.basicDisclosureContractAddress,
+    deployParams: (config) => ({
+      salt: Fr.fromString(config.basicDisclosureDeploymentSalt),
+      deployer: config.deployerAddress
+        ? AztecAddress.fromString(config.deployerAddress)
+        : getDeployerAddress(config),
+      constructorArgs: [
+        config.deployerAddress
+          ? AztecAddress.fromString(config.deployerAddress)
+          : getDeployerAddress(config),
+      ],
       constructorArtifact: 'constructor',
     }),
   },
