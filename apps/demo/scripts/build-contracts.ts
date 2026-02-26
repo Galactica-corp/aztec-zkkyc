@@ -83,15 +83,34 @@ function copyFiles(
 }
 
 /**
- * Remove old .ts wrapper files (not .d.ts) to prevent tsx resolution conflicts
- * When we copy .js files from npm, old .ts files can cause issues
+ * Strip the __aztec_nr_internals__ prefix from function names in compiled artifact JSONs.
+ * Replicates the Docker-only strip_aztec_nr_prefix.sh script.
  */
-function cleanOldTsWrappers(artifactsDir: string, contracts: string[]): void {
-  for (const contract of contracts) {
-    const tsFile = path.join(artifactsDir, `${contract}.ts`);
-    if (fs.existsSync(tsFile)) {
-      fs.unlinkSync(tsFile);
-      console.log(`   🗑️ Removed old ${contract}.ts (using .js instead)`);
+function stripAztecNrPrefix(targetDir: string): void {
+  if (!fs.existsSync(targetDir)) return;
+
+  const PREFIX = '__aztec_nr_internals__';
+  const jsonFiles = fs
+    .readdirSync(targetDir)
+    .filter((f) => f.endsWith('.json'));
+
+  for (const file of jsonFiles) {
+    const filePath = path.join(targetDir, file);
+    const artifact = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+    if (!Array.isArray(artifact.functions)) continue;
+
+    let modified = false;
+    for (const fn of artifact.functions) {
+      if (typeof fn.name === 'string' && fn.name.startsWith(PREFIX)) {
+        fn.name = fn.name.slice(PREFIX.length);
+        modified = true;
+      }
+    }
+
+    if (modified) {
+      fs.writeFileSync(filePath, JSON.stringify(artifact));
+      console.log(`   🔧 Stripped __aztec_nr_internals__ prefix from ${file}`);
     }
   }
 }
@@ -116,9 +135,6 @@ function copyAztecStandardsArtifacts(projectRoot: string, forceOverwrite: boolea
 
   // Copy TypeScript wrappers from artifacts/
   const artifactsDir = path.join(projectRoot, ARTIFACTS_OUTPUT_DIR);
-
-  // Remove old .ts files first to avoid tsx resolution conflicts
-  cleanOldTsWrappers(artifactsDir, ['Dripper', 'Token']);
 
   console.log(`\n   📁 Copying TypeScript wrappers to ${ARTIFACTS_OUTPUT_DIR}/`);
   copyFiles(
@@ -154,24 +170,58 @@ function compileLocalContracts(projectRoot: string, forceOverwrite: boolean): bo
 
   console.log('\n🔨 Compiling contracts from workspace...');
 
+  // Remove stale v3 artifacts from node_modules that can crash the v4 barretenberg post-processor
+  const staleTargetDir = path.join(projectRoot, NPM_PACKAGE_PATH, 'target');
+  if (fs.existsSync(staleTargetDir)) {
+    fs.rmSync(staleTargetDir, { recursive: true, force: true });
+    console.log('   🗑️ Removed stale artifacts from node_modules aztec-standards');
+  }
+
   // Compile all contracts from workspace root
   if (!tryRun(`cd "${projectRoot}" && aztec compile`)) {
     console.error('   ❌ Failed to compile contracts');
     return false;
   }
 
+  const compiledTarget = path.join(projectRoot, 'target');
+  const hasArtifacts =
+    fs.existsSync(compiledTarget) &&
+    fs.readdirSync(compiledTarget).some((f) => f.endsWith('.json'));
+  if (!hasArtifacts) {
+    console.error('   ❌ Failed to compile contracts — no artifacts generated');
+    return false;
+  }
+
   console.log('   ✅ Contracts compiled successfully');
 
+  // Postprocess: transpile public bytecode (ACIR → AVM) and generate VKs (required by aztec codegen)
+  console.log('   🔧 Postprocessing contracts (transpile + VK generation)...');
+  const bbCmd = [
+    `cd "${projectRoot}"`,
+    `&& for f in target/*.json; do flags="$flags -i $f"; done;`,
+    'bb aztec_process $flags',
+  ].join(' ');
+  if (!tryRun(bbCmd)) {
+    console.error('   ❌ Failed to postprocess contracts');
+    return false;
+  }
+  console.log('   ✅ Contracts postprocessed successfully');
 
-  // TODO: This might not be needed because `yarn codegen` takes care of using a path relative to the target/
-  // Copy artifacts from target/ to src/artifacts/
-  const targetDir = path.join(projectRoot, 'target');
-  const artifactsDir = path.join(projectRoot, ARTIFACTS_OUTPUT_DIR);
+  // Strip __aztec_nr_internals__ prefix from function names
+  stripAztecNrPrefix(compiledTarget);
 
-  if (fs.existsSync(targetDir)) {
-    copyFiles(targetDir, artifactsDir, forceOverwrite, (file) =>
-      file.endsWith('.json') && !file.endsWith('.bak')
-    );
+  // Copy target JSONs to src/target for codegen
+  const targetOutputDir = path.join(projectRoot, TARGET_OUTPUT_DIR);
+  ensureDir(targetOutputDir);
+  copyFiles(compiledTarget, targetOutputDir, forceOverwrite, (file) =>
+    file.endsWith('.json') && !file.endsWith('.bak')
+  );
+
+  // Generate TypeScript wrappers from src/target to src/artifacts
+  console.log('   📝 Generating TypeScript bindings...');
+  if (!tryRun(`cd "${projectRoot}" && aztec codegen ${TARGET_OUTPUT_DIR} --outdir ${ARTIFACTS_OUTPUT_DIR} -f`)) {
+    console.error('   ❌ Codegen failed');
+    return false;
   }
 
   return true;
