@@ -46,8 +46,8 @@ pub contract BasicDisclosure {
         guardian: AztecAddress,
         unique_id: Field,
         content_type: Field,
-        _content_note_0: [Field; 8],
-        _content_note_1: [Field; 8],
+        _content_note_0: [Field; 7],
+        _content_note_1: [Field; 7],
     ) {
         assert(
             content_type.eq(CONTENT_TYPE_ZK_KYC),

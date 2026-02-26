@@ -10,12 +10,12 @@ pub struct ContentNote {
     // Links to certificate: unique_id + content_index
     pub content_id: Field,
 
-    // Generic payload (8 fields to stay within 10-field note limit)
-    pub data: [Field; 8],
+    // Generic payload (7 fields to stay within 8-field note limit)
+    pub data: [Field; 7],
 }
 
 impl ContentNote {
-    pub fn new(content_id: Field, data: [Field; 8]) -> Self {
+    pub fn new(content_id: Field, data: [Field; 7]) -> Self {
         Self { content_id, data }
         // Self { content_id }
     }

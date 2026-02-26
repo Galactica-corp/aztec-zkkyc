@@ -103,8 +103,8 @@ pub contract CertificateRegistry {
      * @param unique_id - Unique identifier for the certificate
      * @param revocation_id - Id for revocation (must be unique)
      * @param content_type - Content type (e.g. CONTENT_TYPE_ZK_KYC for gip1)
-     * @param content_note_data_0 - First content note payload (8 fields). E.g. KYC personal when content_type is ZK_KYC.
-     * @param content_note_data_1 - Second content note payload (8 fields). E.g. KYC address when content_type is ZK_KYC.
+     * @param content_note_data_0 - First content note payload (7 fields). E.g. KYC personal when content_type is ZK_KYC.
+     * @param content_note_data_1 - Second content note payload (7 fields). E.g. KYC address when content_type is ZK_KYC.
      */
     #[external("private")]
     fn issue_certificate(
@@ -112,8 +112,8 @@ pub contract CertificateRegistry {
         unique_id: Field,
         revocation_id: Field,
         content_type: Field,
-        content_note_data_0: [Field; 8],
-        content_note_data_1: [Field; 8],
+        content_note_data_0: [Field; 7],
+        content_note_data_1: [Field; 7],
     ) {
         let guardian = self.msg_sender();
 

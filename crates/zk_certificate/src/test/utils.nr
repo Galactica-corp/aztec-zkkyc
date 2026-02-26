@@ -21,8 +21,8 @@ pub unconstrained fn setup_certificate_registry() -> (TestEnvironment, AztecAddr
 
 // Re-export sample_kyc_content for tests
 // Birthday: 1990-06-15 00:00:00 UTC = 645494400 (divisible by 86400)
-pub unconstrained fn sample_kyc_content() -> ([Field; 8], [Field; 8]) {
-    let personal_data: [Field; 8] = [
+pub unconstrained fn sample_kyc_content() -> ([Field; 7], [Field; 7]) {
+    let personal_data: [Field; 7] = [
         Field::from(1),
         Field::from(2),
         Field::from(0),
@@ -30,12 +30,10 @@ pub unconstrained fn sample_kyc_content() -> ([Field; 8], [Field; 8]) {
         Field::from(3),
         Field::from(1),
         Field::from(0),
-        Field::from(0),
     ];
-    let address_data = [
+    let address_data: [Field; 7] = [
         Field::from(11),
         Field::from(12),
-        Field::from(0),
         Field::from(0),
         Field::from(0),
         Field::from(0),

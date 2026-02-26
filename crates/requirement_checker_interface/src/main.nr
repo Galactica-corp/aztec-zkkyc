@@ -33,8 +33,8 @@ pub contract RequirementCheckerInterface {
     #[external("private")]
     fn check_requirements(
         content_type: Field,
-        content_note_0: [Field; 8],
-        content_note_1: [Field; 8],
+        content_note_0: [Field; 7],
+        content_note_1: [Field; 7],
     ) {
         // Dummy check that is supposed to fail. However and obvious fail leads to a compile error
         // (Assertion failed: (!result.empty()) Reason   : split_into_mul_quad_gates: resulted in zero gates. This means that there is an expression with no  multiplication terms and no linear terms.)

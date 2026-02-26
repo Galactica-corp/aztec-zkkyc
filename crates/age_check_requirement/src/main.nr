@@ -44,8 +44,8 @@ pub contract AgeCheckRequirement {
     #[external("private")]
     fn check_requirements(
         content_type: Field,
-        content_note_0: [Field; 8],
-        content_note_1: [Field; 8],
+        content_note_0: [Field; 7],
+        content_note_1: [Field; 7],
     ) {
         assert(
             content_type.eq(FIELD_CONTENT_TYPE_ZK_KYC),

@@ -38,8 +38,8 @@ pub contract DisclosureInterface {
         _guardian: AztecAddress,
         _unique_id: Field,
         content_type: Field,
-        _content_note_0: [Field; 8],
-        _content_note_1: [Field; 8],
+        _content_note_0: [Field; 7],
+        _content_note_1: [Field; 7],
     ) {
         // Dummy check that is expected to fail if called directly.
         assert_eq(

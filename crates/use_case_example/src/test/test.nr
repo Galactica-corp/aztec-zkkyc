@@ -103,7 +103,7 @@ unconstrained fn test_fail_underage_user() {
     let revocation_nullifier = Field::from(1234562);
 
     // Underage: birthday 2020-01-01 = 1577836800
-    let kyc_personal_underage: [Field; 8] = [
+    let kyc_personal_underage: [Field; 7] = [
         Field::from(1),
         Field::from(2),
         Field::from(0),
@@ -111,12 +111,10 @@ unconstrained fn test_fail_underage_user() {
         Field::from(3),
         Field::from(1),
         Field::from(0),
-        Field::from(0),
     ];
-    let kyc_address: [Field; 8] = [
+    let kyc_address: [Field; 7] = [
         Field::from(11),
         Field::from(12),
-        Field::from(0),
         Field::from(0),
         Field::from(0),
         Field::from(0),

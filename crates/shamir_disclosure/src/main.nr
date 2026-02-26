@@ -154,8 +154,8 @@ pub contract ShamirDisclosure {
         _guardian: AztecAddress,
         _unique_id: Field,
         content_type: Field,
-        content_note_0: [Field; 8],
-        _content_note_1: [Field; 8],
+        content_note_0: [Field; 7],
+        _content_note_1: [Field; 7],
     ) {
         assert(
             content_type.eq(FIELD_CONTENT_TYPE_ZK_KYC),
