@@ -3,8 +3,6 @@ import { Fr } from '@aztec/aztec.js/fields';
 import { AgeCheckRequirementContract } from '../../../../artifacts/AgeCheckRequirement';
 import { CertificateRegistryContract } from '../../../../artifacts/CertificateRegistry';
 import { UseCaseExampleContract } from '../../../../artifacts/UseCaseExample';
-import { DripperContract } from '../artifacts/Dripper.js';
-import { TokenContract } from '../artifacts/Token.js';
 import {
   createContractConfig,
   getDeployerAddress,
@@ -24,38 +22,6 @@ const DISCLOSURE_CONTEXT = 777;
  * Set `lazyRegister: true` on a contract to only register it on-demand.
  */
 export const contractsConfig = createContractConfig({
-  /**
-   * Dripper contract - Mints tokens to users
-   */
-  dripper: {
-    artifact: DripperContract.artifact,
-    contract: DripperContract,
-    address: (config) => config.dripperContractAddress,
-    deployParams: (config) => ({
-      salt: Fr.fromString(config.dripperDeploymentSalt),
-      deployer: getDeployerAddress(config),
-      constructorArgs: [],
-      constructorArtifact: 'constructor',
-    }),
-    lazyRegister: true,
-  },
-
-  /**
-   * Token contract - Yield Token (YT)
-   */
-  token: {
-    artifact: TokenContract.artifact,
-    contract: TokenContract,
-    address: (config) => config.tokenContractAddress,
-    deployParams: (config) => ({
-      salt: Fr.fromString(config.tokenDeploymentSalt),
-      deployer: getDeployerAddress(config),
-      constructorArgs: [...getTokenConstructorArgs(config)],
-      constructorArtifact: 'constructor_with_minter',
-    }),
-    lazyRegister: true,
-  },
-
   /**
    * Certificate Registry, Age Check Requirement, and Use Case Example are deployed by the root script
    * (scripts/deploy_contract.ts) with a real deployer account, not universal deploy.

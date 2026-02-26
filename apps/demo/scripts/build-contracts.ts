@@ -190,9 +190,9 @@ async function main() {
   try {
     // 1) Copy aztec-standards artifacts from node_modules
     console.log('='.repeat(60));
-    console.log('📦 Step 1: Copy aztec-standards artifacts');
+    console.log('📦 Step 1: Copy aztec-standards artifacts (skipped)');
     console.log('='.repeat(60));
-    copyAztecStandardsArtifacts(projectRoot, forceOverwrite);
+    // copyAztecStandardsArtifacts(projectRoot, forceOverwrite);
 
     // 2) Compile local contracts (e.g., ECDSA account contract)
     console.log('\n' + '='.repeat(60));

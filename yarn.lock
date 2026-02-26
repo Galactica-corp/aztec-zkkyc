@@ -1563,14 +1563,13 @@
   resolved "https://registry.yarnpkg.com/@csstools/css-tokenizer/-/css-tokenizer-4.0.0.tgz#798a33950d11226a0ebb6acafa60f5594424967f"
   integrity sha512-QxULHAm7cNu72w97JUNCBFODFaXpbDg+dP8b/oWFAZ2MTRppA3U00Y2L1HqaS4J6yBqxwa/Y3nMBaxVKbB/NsA==
 
-"@defi-wonderland/aztec-fee-payment@github:defi-wonderland/aztec-fee-payment#dev":
-  version "3.0.0-devnet.6-patch.1"
-  resolved "https://codeload.github.com/defi-wonderland/aztec-fee-payment/tar.gz/0447a47d927ab9dbe51b7c1ce928f05962747073"
+"@defi-wonderland/aztec-fee-payment@https://github.com/defi-wonderland/aztec-fee-payment/releases/download/prerelease-3cda7fa/defi-wonderland-aztec-fee-payment-4.0.0-devnet.1-patch.0-prerelease.3cda7fa.tgz":
+  version "4.0.0-devnet.1-patch.0-prerelease.3cda7fa"
+  resolved "https://github.com/defi-wonderland/aztec-fee-payment/releases/download/prerelease-3cda7fa/defi-wonderland-aztec-fee-payment-4.0.0-devnet.1-patch.0-prerelease.3cda7fa.tgz#aa5e4859b4f72abf051157e4dedbb8c46a485b27"
 
-"@defi-wonderland/aztec-standards@0.0.0-11cd7319":
-  version "0.0.0-11cd7319"
-  resolved "https://registry.yarnpkg.com/@defi-wonderland/aztec-standards/-/aztec-standards-0.0.0-11cd7319.tgz#cfa78dd8bb2253163fd305e69b344f0b1c3f535d"
-  integrity sha512-QSWm+YRs7CpDNUDzQXTzviKadF59uzSpFrjb5B1K59Jz8jiHHJeMpQ2iFhTFSqTrBySfubHLg/U9CCbPTAddRA==
+"@defi-wonderland/aztec-standards@https://github.com/defi-wonderland/aztec-standards/releases/download/prerelease-81f5ec2/defi-wonderland-aztec-standards-4.0.0-devnet.1-patch.0-prerelease.81f5ec2.tgz":
+  version "4.0.0-devnet.1-patch.0-prerelease.81f5ec2"
+  resolved "https://github.com/defi-wonderland/aztec-standards/releases/download/prerelease-81f5ec2/defi-wonderland-aztec-standards-4.0.0-devnet.1-patch.0-prerelease.81f5ec2.tgz#90a3a7ad1b158c3f23ee110fea7d727bb8bd8f1a"
 
 "@emnapi/core@^1.7.1":
   version "1.8.1"
