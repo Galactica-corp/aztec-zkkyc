@@ -19,6 +19,7 @@ mod certificate_note;
 mod content_note;
 pub mod content;
 mod test;
+mod utility_returns;
 
 // Re-export for dependents' tests (e.g. use_case_example)
 pub use test::utils::sample_kyc_content;
@@ -35,6 +36,7 @@ pub contract CertificateRegistry {
         },
         utils::comparison::Comparator,
         protocol::address::AztecAddress,
+        protocol::traits::ToField,
         state_vars::{DelayedPublicMutable, Map, Owned, PrivateSet, PublicMutable},
         // oracle::logging::debug_log,
     };
@@ -42,6 +44,7 @@ pub contract CertificateRegistry {
     use crate::certificate_note::CertificateNote;
     use crate::content::CONTENT_TYPE_ZK_KYC;
     use crate::content_note::ContentNote;
+    use crate::utility_returns::{GuardianCertificatesPage, UserCertificatesPage};
     use dep::disclosure_interface::DisclosureInterface;
     use dep::requirement_checker_interface::RequirementCheckerInterface;
 
@@ -196,6 +199,133 @@ pub contract CertificateRegistry {
         let owned_certificates =
             self.storage.certificates.at(owner).view_notes(NoteViewerOptions::new());
         owned_certificates.len()
+    }
+
+    /**
+     * Get one certificate and its content notes (paginated by page_index).
+     * For content_type ZK_KYC, includes the two associated content notes.
+     * @param owner - The user address whose certificates to fetch
+     * @param page_index - Zero-based page index for pagination
+     * @return UserCertificatesPage with one certificate and up to two content notes
+     */
+    #[external("utility")]
+    unconstrained fn get_user_certificates_and_content(
+        owner: AztecAddress,
+        page_index: u32,
+    ) -> pub UserCertificatesPage {
+        let offset = page_index;
+        let options = NoteViewerOptions::new().set_offset(offset).set_limit(2);
+        let certs = self.storage.certificates.at(owner).view_notes(options);
+
+        let count = if certs.len() > 0 { 1 } else { 0 };
+        let has_more = certs.len() > 1;
+
+        if count == 0 {
+            UserCertificatesPage {
+                count: 0,
+                guardian: 0,
+                unique_id: 0,
+                revocation_id: 0,
+                content_type: 0,
+                content_0_id: 0,
+                content_0_data: [0; 7],
+                content_1_id: 0,
+                content_1_data: [0; 7],
+                has_more: false,
+            }
+        } else {
+            let cert = certs.get(0);
+            let mut content_0_id = 0;
+            let mut content_0_data = [0; 7];
+            let mut content_1_id = 0;
+            let mut content_1_data = [0; 7];
+
+            if cert.content_type.eq(CONTENT_TYPE_ZK_KYC) {
+                let opts_0 = NoteViewerOptions::new()
+                    .select(ContentNote::properties().content_id, Comparator.EQ, cert.unique_id + 0)
+                    .set_limit(1);
+                let opts_1 = NoteViewerOptions::new()
+                    .select(ContentNote::properties().content_id, Comparator.EQ, cert.unique_id + 1)
+                    .set_limit(1);
+                let notes_0 = self.storage.content_notes.at(owner).view_notes(opts_0);
+                let notes_1 = self.storage.content_notes.at(owner).view_notes(opts_1);
+                if notes_0.len() > 0 {
+                    let n0 = notes_0.get(0);
+                    content_0_id = n0.content_id;
+                    content_0_data = n0.data;
+                }
+                if notes_1.len() > 0 {
+                    let n1 = notes_1.get(0);
+                    content_1_id = n1.content_id;
+                    content_1_data = n1.data;
+                }
+            }
+
+            UserCertificatesPage {
+                count: 1,
+                guardian: cert.guardian.to_field(),
+                unique_id: cert.unique_id,
+                revocation_id: cert.revocation_id,
+                content_type: cert.content_type,
+                content_0_id,
+                content_0_data,
+                content_1_id,
+                content_1_data,
+                has_more,
+            }
+        }
+    }
+
+    /**
+     * Get one guardian certificate copy (paginated by page_index).
+     * @param guardian - The guardian address whose certificate copies to fetch
+     * @param page_index - Zero-based page index for pagination
+     * @return GuardianCertificatesPage with one certificate
+     */
+    #[external("utility")]
+    unconstrained fn get_guardian_certificate_copies(
+        guardian: AztecAddress,
+        page_index: u32,
+    ) -> pub GuardianCertificatesPage {
+        let offset = page_index;
+        let options = NoteViewerOptions::new().set_offset(offset).set_limit(2);
+        let certs = self.storage.guardian_certificates_copies.at(guardian).view_notes(options);
+
+        let count = if certs.len() > 0 { 1 } else { 0 };
+        let has_more = certs.len() > 1;
+
+        if count == 0 {
+            GuardianCertificatesPage {
+                count: 0,
+                guardian: 0,
+                unique_id: 0,
+                revocation_id: 0,
+                content_type: 0,
+                has_more: false,
+            }
+        } else {
+            let cert = certs.get(0);
+            GuardianCertificatesPage {
+                count: 1,
+                guardian: cert.guardian.to_field(),
+                unique_id: cert.unique_id,
+                revocation_id: cert.revocation_id,
+                content_type: cert.content_type,
+                has_more,
+            }
+        }
+    }
+
+    /**
+     * Get the number of certificate copies held by a guardian.
+     * @param guardian - The guardian address
+     * @return The number of certificate copies
+     */
+    #[external("utility")]
+    unconstrained fn get_guardian_certificate_copies_count(guardian: AztecAddress) -> pub u32 {
+        let notes =
+            self.storage.guardian_certificates_copies.at(guardian).view_notes(NoteViewerOptions::new());
+        notes.len()
     }
 
     /**

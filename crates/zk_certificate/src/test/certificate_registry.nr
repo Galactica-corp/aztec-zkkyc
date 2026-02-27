@@ -1,10 +1,12 @@
 use crate::CertificateRegistry;
 use crate::content::CONTENT_TYPE_ZK_KYC;
 use crate::test::utils;
+use crate::utility_returns::{GuardianCertificatesPage, UserCertificatesPage};
 use dep::age_check_requirement::AgeCheckRequirement;
 use dep::basic_disclosure::BasicDisclosure;
 use dep::aztec::protocol::address::AztecAddress;
 use dep::aztec::protocol::storage::map::derive_storage_slot_in_map;
+use dep::aztec::protocol::traits::ToField;
 use dep::aztec::test::helpers::authwit::add_private_authwit_from_call;
 use dep::shamir_disclosure::ShamirDisclosure;
 global TEST_DISCLOSURE_CONTEXT: Field = 999;
@@ -153,6 +155,81 @@ unconstrained fn test_whitelisted_guardian_issue_certificate() {
     let certificates_count =
         env.simulate_utility(CertificateRegistry::at(contract_address).get_certificate_count(user));
     assert_eq(certificates_count, 1);
+
+    let guardian_copies_count = env.simulate_utility(
+        CertificateRegistry::at(contract_address).get_guardian_certificate_copies_count(guardian),
+    );
+    assert_eq(guardian_copies_count, 1);
+}
+
+// Test: get_user_certificates_and_content returns correct data after a certificate is issued
+#[test]
+unconstrained fn test_get_user_certificates_and_content_returns_correct_data() {
+    let (mut env, contract_address, admin) = utils::setup_certificate_registry();
+    let guardian = env.create_light_account();
+    let user = env.create_light_account();
+    let unique_id = Field::from(1);
+    let revocation_id = Field::from(1234562);
+    let (kyc_personal, kyc_address) = utils::sample_kyc_content();
+
+    env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
+    env.call_private(
+        guardian,
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_id,
+            CONTENT_TYPE_ZK_KYC,
+            kyc_personal,
+            kyc_address,
+        ),
+    );
+
+    let result: UserCertificatesPage = env.simulate_utility(
+        CertificateRegistry::at(contract_address).get_user_certificates_and_content(user, 0),
+    );
+    assert_eq(result.count, 1);
+    assert_eq(result.guardian, guardian.to_field());
+    assert_eq(result.unique_id, unique_id);
+    assert_eq(result.revocation_id, revocation_id);
+    assert_eq(result.content_type, CONTENT_TYPE_ZK_KYC);
+    assert_eq(result.content_0_id, unique_id + 0);
+    assert_eq(result.content_1_id, unique_id + 1);
+    assert_eq(result.has_more, false);
+}
+
+// Test: get_guardian_certificate_copies returns correct data after a certificate is issued
+#[test]
+unconstrained fn test_get_guardian_certificate_copies_returns_correct_data() {
+    let (mut env, contract_address, admin) = utils::setup_certificate_registry();
+    let guardian = env.create_light_account();
+    let user = env.create_light_account();
+    let unique_id = Field::from(1);
+    let revocation_id = Field::from(1234562);
+    let (kyc_personal, kyc_address) = utils::sample_kyc_content();
+
+    env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
+    env.call_private(
+        guardian,
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_id,
+            CONTENT_TYPE_ZK_KYC,
+            kyc_personal,
+            kyc_address,
+        ),
+    );
+
+    let result: GuardianCertificatesPage = env.simulate_utility(
+        CertificateRegistry::at(contract_address).get_guardian_certificate_copies(guardian, 0),
+    );
+    assert_eq(result.count, 1);
+    assert_eq(result.guardian, guardian.to_field());
+    assert_eq(result.unique_id, unique_id);
+    assert_eq(result.revocation_id, revocation_id);
+    assert_eq(result.content_type, CONTENT_TYPE_ZK_KYC);
+    assert_eq(result.has_more, false);
 }
 
 // ============================================================================
@@ -422,6 +499,11 @@ unconstrained fn test_guardian_revoke_certificate() {
             kyc_address,
         ),
     );
+
+    let guardian_copies_count = env.simulate_utility(
+        CertificateRegistry::at(contract_address).get_guardian_certificate_copies_count(guardian),
+    );
+    assert_eq(guardian_copies_count, 1);
 
     env.call_private(
         guardian,

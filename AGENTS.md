@@ -14,7 +14,8 @@ Follow these guidelines when contributing:
 - Do not commit generated artifacts (`src/artifacts`, `target`, or `store` folders).
 
 ## Testing
-- Run `yarn test` and ensure it passes before committing.  This runs both the TypeScript tests and Noir tests.
+- Run `yarn test` and ensure it passes before committing. This runs both the TypeScript tests and Noir tests.
+- For Noir contracts, use `aztec test --workspace` (or `yarn test:nr`); do not use `nargo test`.
 
 ## Pull Requests
 - Use clear commit messages and provide a concise description in the PR body about the change.
