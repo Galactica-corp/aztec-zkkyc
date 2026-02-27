@@ -170,7 +170,7 @@ export interface WalletGroupsConfig {
  * @example Simple config (recommended)
  * ```ts
  * const config = createAztecWalletConfig({
- *   networks: [{ name: 'devnet', nodeUrl: 'https://devnet.aztec.network' }],
+ *   networks: [{ name: 'devnet', nodeUrl: 'https://v4-devnet-2.aztec-labs.com/' }],
  *   walletGroups: {
  *     embedded: true,
  *     evmWallets: ['metamask', 'rabby'],

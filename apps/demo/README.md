@@ -51,7 +51,7 @@ import { createAztecWalletConfig } from '../aztec-wallet';
 export const aztecWalletConfig = createAztecWalletConfig({
   // Networks to support
   networks: [
-    { name: 'devnet', nodeUrl: 'https://devnet.aztec.network' },
+    { name: 'devnet', nodeUrl: 'https://v4-devnet-2.aztec-labs.com/' },
     { name: 'sandbox', nodeUrl: 'http://localhost:8080' },
   ],
 
@@ -428,7 +428,7 @@ Make sure to properly export your adapter from:
 
 | Network | Node URL                         | Chain ID           |
 | ------- | -------------------------------- | ------------------ |
-| Devnet  | `https://devnet.aztec-labs.com/` | `aztec:1674512022` |
+| Devnet  | `https://v4-devnet-2.aztec-labs.com/` | `aztec:1654394782` |
 | Sandbox | `http://localhost:8080`          | `aztec:0`          |
 
 ---

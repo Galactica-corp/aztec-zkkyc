@@ -24,6 +24,8 @@ This repo is based on the [Aztec starter](https://github.com/AztecProtocol/aztec
 
 This repo connects to a locally running Aztec local network by default, but can be configured to connect to the devnet by specifying `AZTEC_ENV=devnet` in a `.env` file or by prefixing a command e.g. `AZTEC_ENV=devnet yarn deploy`.
 
+The demo app and scripts use the current Aztec v4 devnet node at `https://v4-devnet-2.aztec-labs.com/`. See [Setting up for Devnet](https://docs.aztec.network/developers/getting_started_on_devnet) for details.
+
 
 ## 🚀 **Getting Started**
 
@@ -40,8 +42,8 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-VERSION=4.0.0-devnet.2-patch.0 bash -i <(curl -sL https://install.aztec.network/4.0.0-devnet.2-patch.0)
-aztec-up use 4.0.0-devnet.2-patch.0
+VERSION=4.0.0-devnet.2-patch.1 bash -i <(curl -sL https://install.aztec.network/4.0.0-devnet.2-patch.1)
+aztec-up use 4.0.0-devnet.2-patch.1
 ```
 
 ### Environment Configuration
@@ -67,8 +69,14 @@ Run scripts and tests with default local network configuration:
 
 ```bash
 yarn compile && yarn codegen  # Compile contract and generate TS
-yarn deploy       # Deploy to local network
+yarn deploy::sandbox       # Deploy to local network
 yarn test         # Run tests on local network
+```
+
+To run the demo:
+```bash
+cd apps/demo
+yarn dev
 ```
 
 ### Running on Devnet
