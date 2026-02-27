@@ -16,13 +16,13 @@
  * name_key internally.
  */
 
-use dep::aztec::macros::aztec;
+use ::aztec::macros::aztec;
 
 mod test;
 
 #[aztec]
 pub contract SanctionListRequirement {
-    use dep::aztec::{
+    use ::aztec::{
         macros::{functions::{external, initializer}, storage::storage},
         protocol::{address::AztecAddress, hash::poseidon2_hash_with_separator},
         state_vars::{DelayedPublicMutable, Map, PublicImmutable},

@@ -3,11 +3,11 @@
 // personal_sign signatures using keccak256 with the standard Ethereum message prefix.
 //
 // This enables MetaMask to be used as an external signer without exposing private keys to the browser.
-use dep::aztec::macros::aztec;
+use ::aztec::macros::aztec;
 
 #[aztec]
 pub contract EcdsaKEthSignerAccount {
-    use dep::aztec::{
+    use ::aztec::{
         authwit::{account::AccountActions, entrypoint::app::AppPayload},
         context::PrivateContext,
         macros::{

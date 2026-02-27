@@ -13,7 +13,7 @@
  * - ZK KYC is the primary use case, but the same certificate registry can also be used for other use cases, e.g. representing educational certificates.
  */
 
-use dep::aztec::macros::aztec;
+use ::aztec::macros::aztec;
 
 mod certificate_note;
 mod content_note;
@@ -26,7 +26,7 @@ pub use test::utils::sample_kyc_content;
 
 #[aztec]
 pub contract CertificateRegistry {
-    use dep::aztec::{
+    use ::aztec::{
         authwit::auth::compute_authwit_nullifier,
         macros::{functions::{authorize_once, external, initializer, only_self}, storage::storage},
         messages::message_delivery::MessageDelivery,

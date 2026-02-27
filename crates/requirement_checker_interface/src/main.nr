@@ -8,11 +8,11 @@
  * Interface: check_requirements(content_type, content_note_0, content_note_1)
  */
 
-use dep::aztec::macros::aztec;
+use ::aztec::macros::aztec;
 
 #[aztec]
 pub contract RequirementCheckerInterface {
-    use dep::aztec::macros::{functions::{external, initializer}, storage::storage};
+    use ::aztec::macros::{functions::{external, initializer}, storage::storage};
 
     #[storage]
     struct Storage<Context> {}

@@ -1,6 +1,6 @@
 // Return types for utility functions (one certificate per page, deserializable in Noir tests).
 
-use dep::aztec::protocol::traits::{Deserialize, Serialize};
+use ::aztec::protocol::traits::{Deserialize, Serialize};
 
 #[derive(Deserialize, Eq, Serialize)]
 pub struct UserCertificatesPage {

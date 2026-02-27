@@ -2,13 +2,13 @@
  * Use case example of a smart contract using the ZK Certificate Registry contract for compliance checks.
  */
 
-use dep::aztec::macros::aztec;
+use ::aztec::macros::aztec;
 
 mod test;
 
 #[aztec]
 pub contract UseCaseExample {
-    use dep::aztec::{
+    use ::aztec::{
         macros::{functions::{external, initializer}, storage::storage},
         protocol::address::AztecAddress,
         state_vars::PublicImmutable,

@@ -6,7 +6,7 @@
  * controls the polynomial degree (`threshold - 1`) used for shard generation.
  */
 
-use dep::aztec::macros::aztec;
+use ::aztec::macros::aztec;
 
 mod test;
 
@@ -37,7 +37,7 @@ fn evaluate_shard(
 
 #[aztec]
 pub contract ShamirDisclosure {
-    use dep::aztec::{
+    use ::aztec::{
         macros::{events::event, functions::{external, initializer}, storage::storage},
         messages::message_delivery::MessageDelivery,
         protocol::address::AztecAddress,

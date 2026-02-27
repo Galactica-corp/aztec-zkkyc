@@ -5,13 +5,13 @@
  * and certificate unique id to one configured recipient.
  */
 
-use dep::aztec::macros::aztec;
+use ::aztec::macros::aztec;
 
 mod test;
 
 #[aztec]
 pub contract BasicDisclosure {
-    use dep::aztec::{
+    use ::aztec::{
         macros::events::event,
         macros::{functions::{external, initializer}, storage::storage},
         messages::message_delivery::MessageDelivery,

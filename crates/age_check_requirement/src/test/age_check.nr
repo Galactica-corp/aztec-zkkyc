@@ -1,5 +1,5 @@
 use crate::AgeCheckRequirement;
-use dep::aztec::{
+use ::aztec::{
     protocol::address::AztecAddress, test::helpers::test_environment::TestEnvironment,
 };
 

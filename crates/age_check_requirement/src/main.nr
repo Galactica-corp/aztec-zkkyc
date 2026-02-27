@@ -6,13 +6,13 @@
  * Uses block timestamp from context for the reference date.
  */
 
-use dep::aztec::macros::aztec;
+use ::aztec::macros::aztec;
 
 mod test;
 
 #[aztec]
 pub contract AgeCheckRequirement {
-    use dep::aztec::{
+    use ::aztec::{
         macros::{functions::{external, initializer}, storage::storage},
         state_vars::PublicImmutable,
         utils::comparison::Comparator,
@@ -62,7 +62,7 @@ pub contract AgeCheckRequirement {
         let required_seconds = Field::from((threshold as u64) * SECONDS_PER_YEAR);
         // TODO: consider the day difference from leap years
         assert(
-            dep::aztec::utils::comparison::compare(age_seconds, Comparator.GTE, required_seconds),
+            ::aztec::utils::comparison::compare(age_seconds, Comparator.GTE, required_seconds),
             "Age requirement not met",
         );
     }
