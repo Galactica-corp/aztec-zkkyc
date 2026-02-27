@@ -1,36 +1,65 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
-import type { Fr } from '@aztec/aztec.js/fields';
-import type { NoteDao } from '@aztec/stdlib/note';
+import { Contract } from '@aztec/aztec.js/contracts';
+import { Fr } from '@aztec/aztec.js/fields';
 import { CertificateRegistryContract } from '../../../../../artifacts/CertificateRegistry';
 import { useAztecWallet, hasAppManagedPXE } from '../../aztec-wallet';
 import { contractsConfig } from '../../config/contracts';
-import {
-  decodeCertificateNotes,
-  decodeContentNotes,
-  deduplicateContentNotesById,
-  getExpectedContentNoteIds,
-} from '../../domain/certificates';
 import { queuePxeCall } from '../../utils';
 import { queryKeys } from './queryKeys';
-import type { CertificateData } from '../../domain/certificates';
+import type { CertificateData, ContentNoteData } from '../../domain/certificates';
 
 export type { CertificateData } from '../../domain/certificates';
 
-const CERTIFICATES_STORAGE_SLOT = CertificateRegistryContract.storage.certificates.slot;
-const CONTENT_NOTES_STORAGE_SLOT = CertificateRegistryContract.storage.content_notes.slot;
+/** Simulated return type of get_user_certificates_and_content (UserCertificatesPage). */
+interface UserCertificatesPageResult {
+  count: number;
+  guardian: bigint;
+  unique_id: bigint;
+  revocation_id: bigint;
+  content_type: bigint;
+  content_0_id: bigint;
+  content_0_data: bigint[];
+  content_1_id: bigint;
+  content_1_data: bigint[];
+  has_more: boolean;
+}
 
-/** Builds a PXE notes filter for contractAddress + owner + storageSlot (Aztec v4 debug.getNotes). */
-function createNotesFilter(
-  contractAddress: AztecAddress,
-  owner: AztecAddress,
-  storageSlot: Fr
-) {
+function fieldToString(value: bigint): string {
+  return value.toString();
+}
+
+/** True if the page contains a real certificate (count > 0 and non-zero ids). */
+function isNotEmptyPage(page: UserCertificatesPageResult): boolean {
+  if (page.count === 0) return false;
+  return page.unique_id !== 0n || page.guardian !== 0n || page.revocation_id !== 0n;
+}
+
+function pageToCertificateData(
+  page: UserCertificatesPageResult,
+  owner: string
+): CertificateData {
+  const guardianAddress = AztecAddress.fromField(new Fr(page.guardian)).toString();
+  const contentNotes: ContentNoteData[] = [];
+  if (page.content_0_id !== 0n) {
+    contentNotes.push({
+      contentId: fieldToString(page.content_0_id),
+      data: page.content_0_data.map(fieldToString),
+    });
+  }
+  if (page.content_1_id !== 0n) {
+    contentNotes.push({
+      contentId: fieldToString(page.content_1_id),
+      data: page.content_1_data.map(fieldToString),
+    });
+  }
   return {
-    contractAddress,
     owner,
-    storageSlot,
-    scopes: [owner] as AztecAddress[],
+    guardian: guardianAddress,
+    uniqueId: fieldToString(page.unique_id),
+    revocationId: fieldToString(page.revocation_id),
+    contentType: fieldToString(page.content_type),
+    contentNotes,
   };
 }
 
@@ -48,9 +77,9 @@ interface UseCertificatesReturn {
 }
 
 /**
- * Fetches certificates owned by the current account from the Certificate Registry contract.
- * Uses PXE debug.getNotes (embedded or external signer wallet only). For a production-ready
- * approach, prefer a contract utility that returns certificate data.
+ * Fetches certificates owned by the current account via the Certificate Registry
+ * contract utility get_user_certificates_and_content (paginated). Requires
+ * embedded or external signer wallet.
  */
 export const useCertificates = (
   options: UseCertificatesOptions = {}
@@ -75,24 +104,40 @@ export const useCertificates = (
   const query = useQuery({
     queryKey: queryKeys.certificates.list(registryAddress ?? '', ownerAddress),
     queryFn: async (): Promise<CertificateData[]> => {
-      const pxe = connector!.getPXE();
-      if (!pxe || !registryAddress || !account) {
+      const wallet = connector!.getWallet();
+      if (!wallet || !registryAddress || !account) {
         return [];
       }
       const contractAddress = AztecAddress.fromString(registryAddress);
       const owner = account.getAddress();
 
-      let notes: NoteDao[];
       try {
-        notes = await queuePxeCall(() =>
-          pxe.debug.getNotes(
-            createNotesFilter(
-              contractAddress,
-              owner,
-              CERTIFICATES_STORAGE_SLOT
-            )
-          )
+        const contract = await Contract.at(
+          contractAddress,
+          CertificateRegistryContract.artifact,
+          wallet
         );
+
+        const certificates: CertificateData[] = [];
+        let pageIndex = 0;
+
+        while (true) {
+          const page = await queuePxeCall(() =>
+            contract.methods
+              .get_user_certificates_and_content(owner, pageIndex)
+              .simulate({ from: owner })
+          ) as UserCertificatesPageResult;
+
+          if (page.count === 0) break;
+          if (!isNotEmptyPage(page)) break;
+
+          certificates.push(pageToCertificateData(page, ownerAddress));
+
+          if (!page.has_more) break;
+          pageIndex += 1;
+        }
+
+        return certificates;
       } catch (err) {
         const message =
           err instanceof Error ? err.message : 'Unknown error';
@@ -100,39 +145,6 @@ export const useCertificates = (
           cause: err instanceof Error ? err : undefined,
         });
       }
-
-      let contentNotes: NoteDao[] = [];
-      try {
-        contentNotes = await queuePxeCall(() =>
-          pxe.debug.getNotes(
-            createNotesFilter(
-              contractAddress,
-              owner,
-              CONTENT_NOTES_STORAGE_SLOT
-            )
-          )
-        );
-      } catch {
-        // Certificates are still shown; content (e.g. KYC fields) will be missing
-      }
-
-      const decodedCertificates = decodeCertificateNotes(notes);
-      const decodedContentNotes = decodeContentNotes(contentNotes);
-      const contentById = deduplicateContentNotesById(decodedContentNotes);
-
-      return decodedCertificates.map((certificate) => {
-        const linkedContentNotes = getExpectedContentNoteIds(
-          certificate.uniqueId,
-          certificate.contentType
-        )
-          .map((contentId) => contentById.get(contentId))
-          .filter((note) => note !== undefined);
-
-        return {
-          ...certificate,
-          contentNotes: linkedContentNotes,
-        };
-      });
     },
     enabled: canFetch,
     staleTime: 30_000,

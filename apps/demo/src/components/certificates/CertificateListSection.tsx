@@ -5,6 +5,11 @@ import { Button, Tooltip, TooltipContent, TooltipTrigger } from '../ui';
 import { CertificateListItem } from './CertificateListItem';
 import type { CertificateData } from '../../domain/certificates';
 
+/** Excludes placeholder/empty certificates (count > 0 but zero uniqueId/revocationId). */
+function isNonEmptyCertificate(cert: CertificateData): boolean {
+  return cert.uniqueId !== '0' || cert.revocationId !== '0';
+}
+
 const styles = {
   section:
     'rounded-xl border border-default bg-surface-secondary shadow-theme p-4 mb-4',
@@ -73,21 +78,24 @@ export const CertificateListSection: React.FC<CertificateListSectionProps> = ({
           <div className={styles.loadingSpinner} />
           <span>Loading certificates...</span>
         </div>
-      ) : certificates.length === 0 ? (
-        <p className={styles.empty}>
-          No certificates yet. Get one issued by a whitelisted guardian.
-        </p>
-      ) : (
-        <div className={styles.list}>
-          {certificates.map((certificate, index) => (
-            <CertificateListItem
-              key={`${certificate.revocationId}-${index}`}
-              certificate={certificate}
-              index={index}
-            />
-          ))}
-        </div>
-      )}
+      ) : (() => {
+        const visible = certificates.filter(isNonEmptyCertificate);
+        return visible.length === 0 ? (
+          <p className={styles.empty}>
+            No certificates yet. Get one issued by a whitelisted guardian.
+          </p>
+        ) : (
+          <div className={styles.list}>
+            {visible.map((certificate, index) => (
+              <CertificateListItem
+                key={`${certificate.revocationId}-${index}`}
+                certificate={certificate}
+                index={index}
+              />
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 };
