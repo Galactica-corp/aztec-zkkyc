@@ -163,7 +163,10 @@ export class ContractRegistry<T extends ContractConfigMap>
     // 1. Sync from storage first (mark already-registered contracts as ready)
     await this.syncFromStorage(contractNames);
 
-    // 2. Register any contracts still not ready
+    // 2. Yield so any IndexedDB read transactions can fully close before writes
+    await this.yieldToEventLoop();
+
+    // 3. Register any contracts still not ready
     const toRegister = contractNames.filter((name) => !this.isRegistered(name));
 
     if (toRegister.length === 0) {
@@ -177,9 +180,18 @@ export class ContractRegistry<T extends ContractConfigMap>
 
     for (const name of toRegister) {
       await this.register(name);
+      await this.yieldToEventLoop();
     }
 
     logger.info('All contracts registered successfully');
+  }
+
+  /**
+   * Yield to the event loop so IndexedDB transactions can commit.
+   * Prevents TransactionInactiveError when doing rapid read-then-write.
+   */
+  private yieldToEventLoop(): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, 0));
   }
 
   /**
