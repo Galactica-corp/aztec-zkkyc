@@ -6,12 +6,12 @@ import {
 import type { Wallet } from '@aztec/aztec.js/wallet';
 import type { LogFn } from '@aztec/foundation/log';
 import { SponsoredFPCContract } from '@aztec/noir-contracts.js/SponsoredFPC';
+import { SPONSORED_FPC_SALT } from '@aztec/constants';
 
-const SPONSORED_FPC_SALT = new Fr(0);
 
 export async function getSponsoredFPCInstance(): Promise<ContractInstanceWithAddress> {
   return await getContractInstanceFromInstantiationParams(SponsoredFPCContract.artifact, {
-    salt: SPONSORED_FPC_SALT,
+    salt: new Fr(SPONSORED_FPC_SALT),
   });
 }
 
@@ -24,7 +24,7 @@ export async function setupSponsoredFPC(deployer: Wallet, log: LogFn) {
   const deployed = await SponsoredFPCContract.deploy(deployer)
     .send({
       from,
-      contractAddressSalt: SPONSORED_FPC_SALT,
+      contractAddressSalt: new Fr(SPONSORED_FPC_SALT),
       universalDeploy: true,
     });
 

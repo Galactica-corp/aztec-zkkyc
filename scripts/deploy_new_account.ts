@@ -7,6 +7,7 @@ import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js"
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
+import { getTimeouts } from "../config/config.js";
 
 export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<AccountManager> {
   let logger: Logger;
@@ -43,7 +44,8 @@ export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<Acc
   const tx = await deployMethod.send({
     from: AztecAddress.ZERO,
     fee: { paymentMethod: sponsoredPaymentMethod },
-  }).wait({ timeout: 120000 });
+    wait: { timeout: getTimeouts().txTimeout, returnReceipt: true },
+  });
 
   logger.info(`✅ Account deployment transaction successful!`);
   logger.info(`📋 Transaction hash: ${tx.txHash}`);

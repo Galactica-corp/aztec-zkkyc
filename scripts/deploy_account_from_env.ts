@@ -1,6 +1,6 @@
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 import { getSponsoredFPCInstance } from "../crates/zk_certificate/src/utils/sponsored_fpc.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
@@ -26,19 +26,18 @@ export async function deploySchnorrAccountFromEnv(wallet?: EmbeddedWallet): Prom
   logger.info(`💰 Sponsored FPC instance obtained at: ${sponsoredFPC.address}`);
 
   logger.info('📝 Registering sponsored FPC contract with PXE...');
-  await activeWallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
+  await activeWallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
   const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
   logger.info('✅ Sponsored fee payment method configured for account deployment');
 
   // Deploy account (use config timeouts; devnet first tx can take longer for proving keys)
-  const { txTimeout } = getTimeouts();
-  const sentTx = await deployMethod.send({
+  const receipt = await deployMethod.send({
     from: AztecAddress.ZERO,
     fee: { paymentMethod: sponsoredPaymentMethod },
+    wait: { timeout: getTimeouts().txTimeout, returnReceipt: true },
   });
 
   try {
-    const receipt = await sentTx.wait({ timeout: txTimeout });
     logger.info(`✅ Account deployment transaction successful!`);
     logger.info(`📋 Account address: ${account.address}`);
     logger.info(`📋 Transaction hash: ${receipt.txHash}`);
@@ -57,4 +56,8 @@ export async function deploySchnorrAccountFromEnv(wallet?: EmbeddedWallet): Prom
   return account;
 }
 
-deploySchnorrAccountFromEnv();
+deploySchnorrAccountFromEnv().catch((err: unknown) => {
+  console.error("Deploy failed:", err instanceof Error ? err.message : String(err));
+  if (err instanceof Error && err.stack) console.error(err.stack);
+  process.exit(1);
+});

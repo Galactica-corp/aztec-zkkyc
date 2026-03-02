@@ -4,7 +4,7 @@ This repository contains TypeScript scripts and Noir contracts for the Aztec loc
 Follow these guidelines when contributing:
 
 ## Setup
-- Use **Node.js v22** with Yarn.
+- Use **Node.js v24** with Yarn.
 - Install dependencies with `yarn install`.
 - Start the Aztec local network using `aztec start --local-network` before running tests or scripts.
 
