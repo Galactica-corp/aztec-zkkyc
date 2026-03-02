@@ -18,29 +18,25 @@ import { inspect } from "util";
 
 /** Serialize any thrown value for logging (handles null-prototype and non-Error). */
 function serializeError(err: unknown): string {
-    if (err instanceof Error) {
-        return err.stack ?? `${err.message}`;
-    }
-    if (typeof err === "object" && err !== null) {
-        return inspect(err, { depth: 4 });
-    }
-    return String(err);
+  if (err instanceof Error) {
+    return err.stack ?? `${err.message}`;
+  }
+  if (typeof err === "object" && err !== null) {
+    return inspect(err, { depth: 4 });
+  }
+  return String(err);
 }
 
 process.on("uncaughtException", (err: unknown) => {
-    console.error("Uncaught exception:", serializeError(err));
-    process.exit(1);
+  console.error("Uncaught exception:", serializeError(err));
+  process.exit(1);
 });
 process.on("unhandledRejection", (reason: unknown) => {
-    console.error("Unhandled rejection:", serializeError(reason));
-    process.exit(1);
+  console.error("Unhandled rejection:", serializeError(reason));
+  process.exit(1);
 });
 
 const AGE_CHECK_MINIMUM_AGE = 18;
-const MAX_REQUIREMENT_CHECKERS = 4;
-const MAX_DISCLOSURES = 4;
-const REQUIREMENT_CHECKER_COUNT = 1;
-const DISCLOSURE_COUNT = 2;
 const DISCLOSURE_CONTEXT = 777;
 
 async function main() {
@@ -250,8 +246,8 @@ async function main() {
 }
 
 main().catch((error: unknown) => {
-    const logger = createLogger('aztec:aztec-starter');
-    logger.error(`❌ Deployment failed: ${error instanceof Error ? error.message : serializeError(error)}`);
-    logger.error(`📋 Error details: ${serializeError(error)}`);
-    process.exit(1);
+  const logger = createLogger('aztec:aztec-starter');
+  logger.error(`❌ Deployment failed: ${error instanceof Error ? error.message : serializeError(error)}`);
+  logger.error(`📋 Error details: ${serializeError(error)}`);
+  process.exit(1);
 });

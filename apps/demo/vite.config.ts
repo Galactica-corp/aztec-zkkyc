@@ -5,6 +5,24 @@ import wasm from 'vite-plugin-wasm';
 import topLevelAwait from 'vite-plugin-top-level-await';
 
 /**
+ * Plugin to strip sourcemap comments from @aztec/bb.js so Vite doesn't warn
+ * about "points to missing source files" (the package ships .js but not the .ts sources).
+ */
+const stripBbJsSourcemaps = (): Plugin => ({
+  name: 'strip-bbjs-sourcemaps',
+  enforce: 'pre',
+  transform(code, id) {
+    if (id.includes('@aztec/bb.js') && id.endsWith('.js')) {
+      return {
+        code: code.replace(/\n?\s*\/\/# sourceMappingURL=.*$/m, ''),
+        map: null,
+      };
+    }
+    return null;
+  },
+});
+
+/**
  * Plugin to fix static class field initialization issue with Rollup bundling.
  * When Rollup bundles classes, it transforms `class Foo {}` to `let Foo; Foo = class {}`
  * This breaks static initializers like `static ZERO = new AztecAddress(...)` because
@@ -96,6 +114,7 @@ const nodeBuiltinsShim = (): Plugin => ({
 
 export default defineConfig({
   plugins: [
+    stripBbJsSourcemaps(), // Strip @aztec/bb.js sourcemaps to avoid "missing source" warnings
     nodeBuiltinsShim(), // Must be first to intercept before nodePolyfills
     react(),
     wasm(),

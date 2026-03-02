@@ -17,6 +17,7 @@ import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
 import { TxExecutionResult } from "@aztec/stdlib/tx";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { AccountManager } from "@aztec/aztec.js/wallet";
+import { Fr as FoundationFr } from "@aztec/foundation/curves/bn254";
 import { poseidon2Hash } from "@aztec/foundation/crypto/poseidon";
 import { TxHash } from "@aztec/aztec.js/tx";
 import { decryptShamirSecret } from "../../../../shamir_disclosure/utils/shamir_decrypt.js";
@@ -28,8 +29,12 @@ const REVOCATION_ID = new Fr(1234561);
 const CONTENT_TYPE_ZK_KYC = new Fr(1);
 const DISCLOSURE_CONTEXT = new Fr(777);
 
-const hashStringToField = async (value: string): Promise<Fr> =>
-  poseidon2Hash([Fr.fromBufferReduce(Buffer.from(value.padEnd(32, "#"), "utf8"))]);
+const hashStringToField = async (value: string): Promise<Fr> => {
+  const hash = await poseidon2Hash([
+    FoundationFr.fromBufferReduce(Buffer.from(value.padEnd(32, "#"), "utf8")),
+  ]);
+  return new Fr(hash.toBigInt());
+};
 
 const asBigInt = (value: unknown): bigint => {
   if (typeof value === "bigint") return value;
@@ -78,7 +83,7 @@ describe("ZK Certificate and UseCaseExample", () => {
   beforeAll(async () => {
     logger = createLogger("aztec:zkkyc:e2e");
     logger.info("ZK Certificate + UseCaseExample e2e tests running.");
-    wallet = await setupWallet();
+    wallet = await setupWallet({ ephemeral: true, registerInitialAccounts: false });
 
     // KYC layout mapping (see crates/zk_certificate/src/content/kyc_layout.nr):
     // personal: [surname, forename, middlename, birthday, citizenship, verification_level]
