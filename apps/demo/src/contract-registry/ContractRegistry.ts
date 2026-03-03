@@ -204,10 +204,6 @@ export class ContractRegistry<T extends ContractConfigMap>
       `🔍 Checking storage for ${names.length} contracts: [${names.map(String).join(', ')}]`
     );
 
-    const { getContractInstanceFromInstantiationParams } = await import(
-      '@aztec/aztec.js/contracts'
-    );
-
     let syncedCount = 0;
 
     for (const name of names) {
@@ -227,19 +223,15 @@ export class ContractRegistry<T extends ContractConfigMap>
           contractConfig.address(this.config)
         );
 
-        const isInStorage = await this.isRegisteredInStorage(expectedAddress);
+        const storedInstance = await this.pxe.getContractInstance(expectedAddress);
 
-        if (isInStorage) {
-          const deployParams = contractConfig.deployParams(this.config);
-          const instance = await getContractInstanceFromInstantiationParams(
-            contractConfig.artifact,
-            {
-              salt: deployParams.salt,
-              deployer: deployParams.deployer,
-              constructorArgs: deployParams.constructorArgs,
-              constructorArtifact: deployParams.constructorArtifact,
-            }
-          );
+        if (storedInstance) {
+          // Reuse the instance currently known by PXE at this exact address.
+          // Recomputing from deploy params can diverge after migrations.
+          const instance = {
+            ...storedInstance,
+            address: expectedAddress,
+          } as ContractInstanceWithAddress;
 
           this.updateCache(name, { status: 'ready', instance });
           syncedCount++;
@@ -306,18 +298,6 @@ export class ContractRegistry<T extends ContractConfigMap>
 
       logger.error(`❌ Contract "${String(name)}" - REGISTRATION FAILED`, err);
       throw err;
-    }
-  }
-
-  /**
-   * Check if a contract is already registered in PXE's storage (IndexedDB)
-   */
-  private async isRegisteredInStorage(address: AztecAddress): Promise<boolean> {
-    try {
-      const instance = await this.pxe.getContractInstance(address);
-      return instance !== undefined;
-    } catch {
-      return false;
     }
   }
 

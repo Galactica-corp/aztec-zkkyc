@@ -162,7 +162,8 @@ export const CertificateRegistryCard: React.FC = () => {
     enabled: Boolean(
       (Boolean(account) ||
         connectors.some((c) => c.getStatus().status === 'connected')) &&
-        isPXEInitialized
+        isPXEInitialized &&
+        contractsReady
     ),
   });
 
@@ -176,7 +177,8 @@ export const CertificateRegistryCard: React.FC = () => {
     enabled: Boolean(
       (Boolean(account) ||
         connectors.some((c) => c.getStatus().status === 'connected')) &&
-        isPXEInitialized
+        isPXEInitialized &&
+        contractsReady
     ),
   });
 

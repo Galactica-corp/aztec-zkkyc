@@ -105,13 +105,50 @@ export const useCertificates = (
     queryKey: queryKeys.certificates.list(registryAddress ?? '', ownerAddress),
     queryFn: async (): Promise<CertificateData[]> => {
       const wallet = connector!.getWallet();
-      if (!wallet || !registryAddress || !account) {
+      const pxe = connector!.getPXE();
+      if (!wallet || !pxe || !registryAddress || !account || !currentConfig) {
         return [];
       }
       const contractAddress = AztecAddress.fromString(registryAddress);
       const owner = account.getAddress();
 
       try {
+        // Ensure contract is known to PXE before any read simulation.
+        let registeredInstance;
+        try {
+          registeredInstance = await pxe.getContractInstance(contractAddress);
+        } catch {
+          registeredInstance = undefined;
+        }
+
+        if (!registeredInstance) {
+          const deployParams =
+            contractsConfig.certificateRegistry.deployParams(currentConfig);
+          const { getContractInstanceFromInstantiationParams } = await import(
+            '@aztec/aztec.js/contracts'
+          );
+          const instance = await getContractInstanceFromInstantiationParams(
+            CertificateRegistryContract.artifact,
+            {
+              salt: deployParams.salt,
+              deployer: deployParams.deployer,
+              constructorArgs: deployParams.constructorArgs,
+              constructorArtifact: deployParams.constructorArtifact,
+            }
+          );
+
+          if (!instance.address.equals(contractAddress)) {
+            throw new Error(
+              `CertificateRegistry instantiation mismatch: expected ${contractAddress.toString()}, got ${instance.address.toString()}`
+            );
+          }
+
+          await pxe.registerContract({
+            instance,
+            artifact: CertificateRegistryContract.artifact,
+          });
+        }
+
         const contract = await Contract.at(
           contractAddress,
           CertificateRegistryContract.artifact,
