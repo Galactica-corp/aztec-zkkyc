@@ -47,3 +47,26 @@ export function getBasicDisclosureRecipientAddress(
     );
   }
 }
+
+/**
+ * Reads required Shamir Disclosure recipient address from env.
+ * Expects SHAMIR_DISCLOSURE_RECIPIENT_{index}_ADDRESS for index 0..2.
+ */
+export function getShamirDisclosureRecipientAddress(index: 0 | 1 | 2): AztecAddress {
+  const envKey = `SHAMIR_DISCLOSURE_RECIPIENT_${index}_ADDRESS`;
+  const value = process.env[envKey];
+
+  if (!value) {
+    throw new Error(
+      `${envKey} environment variable is required. Please set it in your .env file.`
+    );
+  }
+
+  try {
+    return AztecAddress.fromString(value);
+  } catch (error) {
+    throw new Error(
+      `Invalid ${envKey} format. Please ensure it is a valid hex string (e.g. "0x..."). ${error}`
+    );
+  }
+}
