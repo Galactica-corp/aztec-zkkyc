@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileCheck, Puzzle, Wrench, Settings, Layers } from 'lucide-react';
+import { FileCheck, Puzzle, Wrench, Settings, Eye } from 'lucide-react';
 import { useAztecWallet, isEmbeddedConnector } from '../aztec-wallet';
 import { Tabs, SecurityWarning } from '../components';
 import { TabConfig, TabType } from '../types';
@@ -7,8 +7,8 @@ import { iconSize } from '../utils';
 import { CertificateRegistryCard } from './CertificateRegistryCard';
 import { ContractInteractionCard } from './ContractInteractionCard';
 import { UseCaseExampleCard } from './UseCaseExampleCard';
+import { DisclosuresCard } from './DisclosuresCard';
 import { SettingsCard } from './SettingsCard';
-import { UIComponentsShowcase } from './UIComponentsShowcase';
 
 const styles = {
   main: 'flex flex-col gap-6',
@@ -31,6 +31,12 @@ export const MainContent: React.FC = () => {
       component: <CertificateRegistryCard />,
     },
     {
+      id: 'disclosures',
+      label: 'Disclosures',
+      icon: <Eye size={iconSize('md')} />,
+      component: <DisclosuresCard />,
+    },
+    {
       id: 'use-case-example',
       label: 'Use Case Example',
       icon: <Puzzle size={iconSize('md')} />,
@@ -47,12 +53,6 @@ export const MainContent: React.FC = () => {
       label: 'Settings',
       icon: <Settings size={iconSize('md')} />,
       component: <SettingsCard />,
-    },
-    {
-      id: 'components',
-      label: 'UI Components',
-      icon: <Layers size={iconSize('md')} />,
-      component: <UIComponentsShowcase />,
     },
   ];
 

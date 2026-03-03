@@ -29,13 +29,11 @@ import { contractsConfig } from '../config/contracts';
 import {
   useRequiredContracts,
   useCertificates,
-  useDisclosureEvents,
 } from '../hooks';
 import { useToast } from '../hooks';
-import { hasAppManagedPXE } from '../aztec-wallet';
 import { useWriteContract } from '../hooks/contracts';
 import { useFeePayment } from '../store/feePayment';
-import { cn, iconSize, truncateAddress } from '../utils';
+import { cn, iconSize } from '../utils';
 
 const styles = {
   headerRow: 'flex flex-row items-start gap-4',
@@ -73,14 +71,6 @@ const styles = {
   inputWithIconContainer: 'relative',
   inputWithIcon: 'pr-12',
   inputInlineButton: 'absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2',
-  // Disclosure events list
-  eventList: 'space-y-2',
-  eventRow:
-    'flex flex-wrap items-center gap-x-2 gap-y-1 text-sm rounded border border-default bg-surface-tertiary p-2',
-  eventLabel: 'text-muted shrink-0',
-  eventValue: 'font-mono text-default break-all',
-  disclosureUnsupported: 'text-sm text-muted',
-  disclosureRefreshButton: 'mt-2',
 } as const;
 
 const CONTENT_TYPE_ZK_KYC = 1n;
@@ -159,21 +149,6 @@ export const CertificateRegistryCard: React.FC = () => {
     isFetching: certificatesFetching,
     refetch: refetchCertificates,
   } = useCertificates({
-    enabled: Boolean(
-      (Boolean(account) ||
-        connectors.some((c) => c.getStatus().status === 'connected')) &&
-        isPXEInitialized &&
-        contractsReady
-    ),
-  });
-
-  const {
-    events: disclosureEvents,
-    isLoading: disclosureEventsLoading,
-    isError: disclosureEventsError,
-    error: disclosureEventsErrorDetail,
-    refetch: refetchDisclosureEvents,
-  } = useDisclosureEvents({
     enabled: Boolean(
       (Boolean(account) ||
         connectors.some((c) => c.getStatus().status === 'connected')) &&
@@ -1093,95 +1068,6 @@ export const CertificateRegistryCard: React.FC = () => {
                   >
                     Issue certificate
                   </Button>
-                </section>
-                <section className={styles.section}>
-                  <h3 className={styles.sectionTitle}>Disclosure events</h3>
-                  {currentConfig?.basicDisclosureContractAddress &&
-                  connector &&
-                  hasAppManagedPXE(connector) ? (
-                    <>
-                      {disclosureEventsLoading ? (
-                        <div className={styles.loadingContainer}>
-                          <div className={styles.loadingSpinner} />
-                          <p className={styles.loadingText}>Loading…</p>
-                        </div>
-                      ) : disclosureEventsError ? (
-                        <p className={styles.errorText}>
-                          {disclosureEventsErrorDetail?.message ??
-                            'Failed to load disclosure events'}
-                        </p>
-                      ) : (
-                        <>
-                          <div className={styles.eventList}>
-                            {disclosureEvents.length === 0 ? (
-                              <p className={styles.disclosureUnsupported}>
-                                No disclosure events for this account yet.
-                              </p>
-                            ) : (
-                              disclosureEvents.map((item, index) => (
-                                <div
-                                  key={`${item.event.unique_id?.toString?.() ?? index}-${index}`}
-                                  className={styles.eventRow}
-                                >
-                                  <span className={styles.eventLabel}>
-                                    from:
-                                  </span>
-                                  <span
-                                    className={styles.eventValue}
-                                    title={item.event.from?.toString?.() ?? ''}
-                                  >
-                                    {truncateAddress(
-                                      item.event.from?.toString?.()
-                                    )}
-                                  </span>
-                                  <span className={styles.eventLabel}>
-                                    context:
-                                  </span>
-                                  <span className={styles.eventValue}>
-                                    {item.event.context?.toString?.() ??
-                                      String(item.event.context)}
-                                  </span>
-                                  <span className={styles.eventLabel}>
-                                    guardian:
-                                  </span>
-                                  <span
-                                    className={styles.eventValue}
-                                    title={
-                                      item.event.guardian?.toString?.() ?? ''
-                                    }
-                                  >
-                                    {truncateAddress(
-                                      item.event.guardian?.toString?.()
-                                    )}
-                                  </span>
-                                  <span className={styles.eventLabel}>
-                                    unique_id:
-                                  </span>
-                                  <span className={styles.eventValue}>
-                                    {item.event.unique_id?.toString?.() ??
-                                      String(item.event.unique_id)}
-                                  </span>
-                                </div>
-                              ))
-                            )}
-                          </div>
-                          <Button
-                            variant="secondary"
-                            onClick={() => refetchDisclosureEvents()}
-                            disabled={disclosureEventsLoading}
-                            className={styles.disclosureRefreshButton}
-                          >
-                            Refresh
-                          </Button>
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <p className={styles.disclosureUnsupported}>
-                      Disclosure events are only available when using Embedded or
-                      External Signer wallet.
-                    </p>
-                  )}
                 </section>
                 <section className={styles.section}>
                   <h3 className={styles.sectionTitle}>Revoke certificate</h3>

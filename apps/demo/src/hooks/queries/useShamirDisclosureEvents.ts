@@ -2,24 +2,24 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { Fr } from '@aztec/aztec.js/fields';
 import type { PrivateEvent } from '@aztec/aztec.js/wallet';
-import { BasicDisclosureContract } from '../../../../../artifacts/BasicDisclosure';
+import { ShamirDisclosureContract } from '../../../../../artifacts/ShamirDisclosure';
 import { useAztecWallet, hasAppManagedPXE } from '../../aztec-wallet';
 import { queuePxeCall } from '../../utils';
 import { queryKeys } from './queryKeys';
 
-export type BasicDisclosureEventPayload = {
+export type ShamirDisclosureShardEventPayload = {
   from: AztecAddress;
   context: Fr;
-  guardian: AztecAddress;
-  unique_id: Fr;
+  shard_x: Fr;
+  shard_y: Fr;
 };
 
-interface UseDisclosureEventsOptions {
+interface UseShamirDisclosureEventsOptions {
   enabled?: boolean;
 }
 
-interface UseDisclosureEventsReturn {
-  events: PrivateEvent<BasicDisclosureEventPayload>[];
+interface UseShamirDisclosureEventsReturn {
+  events: PrivateEvent<ShamirDisclosureShardEventPayload>[];
   isLoading: boolean;
   isFetching: boolean;
   isError: boolean;
@@ -27,23 +27,31 @@ interface UseDisclosureEventsReturn {
   refetch: () => Promise<void>;
 }
 
+const isUnknownContractError = (error: unknown): boolean => {
+  const message = error instanceof Error ? error.message : String(error);
+  return (
+    message.includes('Unknown contract') &&
+    message.includes('add it to PXE by calling server.addContracts')
+  );
+};
+
 const isEmptyBlockRangeError = (error: unknown): boolean => {
   const message = error instanceof Error ? error.message : String(error);
   return message.includes('toBlock must be strictly greater than fromBlock');
 };
 
 /**
- * Fetches BasicDisclosure private events scoped to the current account (recipient).
+ * Fetches ShamirDisclosure private events scoped to the current account (recipient).
  * Only available when using Embedded or External Signer wallet (getPrivateEvents on Wallet).
  */
-export const useDisclosureEvents = (
-  options: UseDisclosureEventsOptions = {}
-): UseDisclosureEventsReturn => {
+export const useShamirDisclosureEvents = (
+  options: UseShamirDisclosureEventsOptions = {}
+): UseShamirDisclosureEventsReturn => {
   const { account, connector, currentConfig, isPXEInitialized } =
     useAztecWallet();
   const queryClient = useQueryClient();
 
-  const contractAddress = currentConfig?.basicDisclosureContractAddress;
+  const contractAddress = currentConfig?.shamirDisclosureContractAddress;
   const scopeAddress = account?.getAddress().toString() ?? '';
 
   const canFetch =
@@ -56,7 +64,7 @@ export const useDisclosureEvents = (
 
   const query = useQuery({
     queryKey: queryKeys.disclosureEvents.list(contractAddress ?? '', scopeAddress),
-    queryFn: async (): Promise<PrivateEvent<BasicDisclosureEventPayload>[]> => {
+    queryFn: async (): Promise<PrivateEvent<ShamirDisclosureShardEventPayload>[]> => {
       const wallet = connector!.getWallet();
       if (!wallet || !contractAddress || !account) {
         return [];
@@ -67,15 +75,16 @@ export const useDisclosureEvents = (
       };
       try {
         const events = await queuePxeCall(() =>
-          wallet.getPrivateEvents<BasicDisclosureEventPayload>(
-            BasicDisclosureContract.events.BasicDisclosureEvent,
+          wallet.getPrivateEvents<ShamirDisclosureShardEventPayload>(
+            ShamirDisclosureContract.events.ShamirDisclosureShardEvent,
             filter
           )
         );
         return events;
       } catch (error) {
-        // PXE can throw for an empty block interval while indexing catches up.
-        if (isEmptyBlockRangeError(error)) {
+        // Some deployments do not pre-register ShamirDisclosure in PXE.
+        // Treat this as "no events available" instead of hard-failing the UI.
+        if (isUnknownContractError(error) || isEmptyBlockRangeError(error)) {
           return [];
         }
         throw error;

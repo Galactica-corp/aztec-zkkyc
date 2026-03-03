@@ -4,6 +4,7 @@
 
 export type TabType =
   | 'certificate-registry'
+  | 'disclosures'
   | 'use-case-example'
   | 'settings'
   | 'contract'
