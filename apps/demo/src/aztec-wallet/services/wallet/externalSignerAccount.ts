@@ -10,6 +10,7 @@ import {
 } from './deployAccount';
 import {
   AccountCreationError,
+  AccountDeploymentError,
   PXEInitError,
   SignerConnectionError,
 } from './errors';
@@ -111,6 +112,19 @@ export async function createExternalSignerAccount(
     const artifact = await accountManager
       .getAccountContract()
       .getContractArtifact();
+    const accountFunctionNames = ((artifact as { functions?: { name: string }[] })
+      .functions ?? [])
+      .map((fn) => fn.name)
+      .sort();
+    console.debug(
+      '[externalSignerAccount] account artifact function names:',
+      accountFunctionNames
+    );
+    if (!accountFunctionNames.includes('sync_state')) {
+      console.warn(
+        '[externalSignerAccount] Account artifact is missing sync_state. This usually indicates an aztec version mismatch between Noir deps and JS packages.'
+      );
+    }
     await wallet.registerContract(
       instance,
       artifact,
@@ -118,14 +132,9 @@ export async function createExternalSignerAccount(
     );
     wallet.addAccount(account);
 
-    // Deploy if needed (don't throw on deployment failure)
-    let deployment: DeployAccountResult;
-    try {
-      deployment = await deployAccountIfNotExists(accountManager, pxeInstance);
-    } catch {
-      // Account created but deployment failed - still usable
-      deployment = { deployed: false, address: accountManager.address };
-    }
+    // External signer accounts must be initialized on-chain.
+    // If deployment fails, fail connection early with a clear error.
+    const deployment = await deployAccountIfNotExists(accountManager, pxeInstance);
 
     return {
       account,
@@ -137,7 +146,8 @@ export async function createExternalSignerAccount(
   } catch (cause) {
     if (
       cause instanceof PXEInitError ||
-      cause instanceof SignerConnectionError
+      cause instanceof SignerConnectionError ||
+      cause instanceof AccountDeploymentError
     ) {
       throw cause;
     }

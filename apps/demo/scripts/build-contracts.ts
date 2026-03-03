@@ -6,9 +6,9 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Output directory for artifacts (TypeScript wrappers)
+// Output directory for artifacts (TypeScript wrappers), relative to app root
 const ARTIFACTS_OUTPUT_DIR = 'src/artifacts';
-// Output directory for target JSONs (relative to src/, used by wrappers)
+// Output directory for target JSONs (relative to app root, used by wrappers)
 const TARGET_OUTPUT_DIR = 'src/target';
 // Local contracts directory
 const LOCAL_CONTRACTS_DIR = 'contracts';
@@ -160,30 +160,34 @@ function copyAztecStandardsArtifacts(projectRoot: string, forceOverwrite: boolea
 /**
  * Compile local contracts using workspace Nargo.toml at root level
  */
-function compileLocalContracts(projectRoot: string, forceOverwrite: boolean): boolean {
-  const workspaceNargo = path.join(projectRoot, 'Nargo.toml');
+function compileLocalContracts(
+  workspaceRoot: string,
+  appRoot: string,
+  forceOverwrite: boolean
+): boolean {
+  const workspaceNargo = path.join(workspaceRoot, 'Nargo.toml');
 
   if (!fs.existsSync(workspaceNargo)) {
-    console.error(`❌ No workspace Nargo.toml found at ${projectRoot}`);
+    console.error(`❌ No workspace Nargo.toml found at ${workspaceRoot}`);
     return false;
   }
 
   console.log('\n🔨 Compiling contracts from workspace...');
 
   // Remove stale v3 artifacts from node_modules that can crash the v4 barretenberg post-processor
-  const staleTargetDir = path.join(projectRoot, NPM_PACKAGE_PATH, 'target');
+  const staleTargetDir = path.join(workspaceRoot, NPM_PACKAGE_PATH, 'target');
   if (fs.existsSync(staleTargetDir)) {
     fs.rmSync(staleTargetDir, { recursive: true, force: true });
     console.log('   🗑️ Removed stale artifacts from node_modules aztec-standards');
   }
 
   // Compile all contracts from workspace root
-  if (!tryRun(`cd "${projectRoot}" && aztec compile`)) {
+  if (!tryRun(`cd "${workspaceRoot}" && aztec compile`)) {
     console.error('   ❌ Failed to compile contracts');
     return false;
   }
 
-  const compiledTarget = path.join(projectRoot, 'target');
+  const compiledTarget = path.join(workspaceRoot, 'target');
   const hasArtifacts =
     fs.existsSync(compiledTarget) &&
     fs.readdirSync(compiledTarget).some((f) => f.endsWith('.json'));
@@ -211,7 +215,7 @@ function compileLocalContracts(projectRoot: string, forceOverwrite: boolean): bo
   stripAztecNrPrefix(compiledTarget);
 
   // Copy target JSONs to src/target for codegen
-  const targetOutputDir = path.join(projectRoot, TARGET_OUTPUT_DIR);
+  const targetOutputDir = path.join(appRoot, TARGET_OUTPUT_DIR);
   ensureDir(targetOutputDir);
   copyFiles(compiledTarget, targetOutputDir, forceOverwrite, (file) =>
     file.endsWith('.json') && !file.endsWith('.bak')
@@ -219,7 +223,7 @@ function compileLocalContracts(projectRoot: string, forceOverwrite: boolean): bo
 
   // Generate TypeScript wrappers from src/target to src/artifacts
   console.log('   📝 Generating TypeScript bindings...');
-  if (!tryRun(`cd "${projectRoot}" && aztec codegen ${TARGET_OUTPUT_DIR} --outdir ${ARTIFACTS_OUTPUT_DIR} -f`)) {
+  if (!tryRun(`cd "${appRoot}" && aztec codegen ${TARGET_OUTPUT_DIR} --outdir ${ARTIFACTS_OUTPUT_DIR} -f`)) {
     console.error('   ❌ Codegen failed');
     return false;
   }
@@ -229,7 +233,8 @@ function compileLocalContracts(projectRoot: string, forceOverwrite: boolean): bo
 
 async function main() {
   const forceOverwrite = process.argv.includes('--force');
-  const projectRoot = process.cwd().concat('/../..');
+  const appRoot = process.cwd();
+  const workspaceRoot = path.resolve(appRoot, '../..');
 
   console.log(`
 ╔════════════════════════════════════════════════════════════════╗
@@ -249,7 +254,7 @@ async function main() {
     console.log('📦 Step 2: Compile local contracts');
     console.log('='.repeat(60));
 
-    if (!compileLocalContracts(projectRoot, forceOverwrite)) {
+    if (!compileLocalContracts(workspaceRoot, appRoot, forceOverwrite)) {
       console.warn('\n⚠️ Some local contracts failed to compile');
     } else {
       console.log('\n✅ All local contracts compiled successfully');

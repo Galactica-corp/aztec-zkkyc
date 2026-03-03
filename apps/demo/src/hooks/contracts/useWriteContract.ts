@@ -189,6 +189,11 @@ export const useWriteContract = (options: UseWriteContractOptions = {}) => {
               methods: Record<string, (...args: unknown[]) => unknown>;
             }
           ).methods[String(functionName)];
+          const availableMethods = Object.keys(
+            (contract as unknown as {
+              methods: Record<string, (...args: unknown[]) => unknown>;
+            }).methods
+          ).sort();
 
           if (!method) {
             const errorMsg = `Method ${String(functionName)} not found on contract`;
@@ -220,6 +225,16 @@ export const useWriteContract = (options: UseWriteContractOptions = {}) => {
             console.error(
               `[useWriteContract] Simulation failed for ${String(functionName)}:`,
               simErr
+            );
+            console.error(
+              '[useWriteContract] Debug context:',
+              {
+                contractAddress: address,
+                functionName: String(functionName),
+                availableMethods,
+                from: account.getAddress().toString(),
+                authWitnessCount: authWitnesses?.length ?? 0,
+              }
             );
             setError(simErrorMsg);
             return {

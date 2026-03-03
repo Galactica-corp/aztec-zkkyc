@@ -11,7 +11,7 @@ pub contract EcdsaKEthSignerAccount {
         authwit::{account::AccountActions, entrypoint::app::AppPayload},
         context::PrivateContext,
         macros::{
-            functions::{external, initializer, noinitcheck, view},
+            functions::{allow_phase_change, external, initializer, noinitcheck, view},
             storage::storage,
         },
         messages::message_delivery::MessageDelivery,
@@ -29,6 +29,7 @@ pub contract EcdsaKEthSignerAccount {
     // Creates a new account out of an ECDSA public key to use for signature verification
     #[external("private")]
     #[initializer]
+    #[allow_phase_change]
     fn constructor(signing_pub_key_x: [u8; 32], signing_pub_key_y: [u8; 32]) {
         let pub_key_note = EcdsaPublicKeyNote { x: signing_pub_key_x, y: signing_pub_key_y };
 
@@ -53,6 +54,7 @@ pub contract EcdsaKEthSignerAccount {
     // Main entrypoint for executing transactions
     #[external("private")]
     #[noinitcheck]
+    #[allow_phase_change]
     fn entrypoint(app_payload: AppPayload, fee_payment_method: u8, cancellable: bool) {
         // Safety: The sender for tags is only used to compute unconstrained shared secrets for emitting logs.
         // Since this value is only used for unconstrained tagging and not for any constrained logic,

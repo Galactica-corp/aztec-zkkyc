@@ -21,8 +21,10 @@ export interface DeployAccountResult {
 
 const DEFAULT_OPTIONS: Required<DeployAccountOptions> = {
   timeout: 120,
-  skipClassPublication: true,
-  skipInstancePublication: true,
+  // For custom account contracts (e.g. external signer accounts), publication
+  // may be required on first deployment.
+  skipClassPublication: false,
+  skipInstancePublication: false,
 };
 
 /**
@@ -44,8 +46,7 @@ export async function deployAccountIfNotExists(
   const accountAddress = accountManager.address;
 
   try {
-    const metadata =
-      await pxeInstance.wallet.getContractMetadata(accountAddress);
+    const metadata = await pxeInstance.wallet.getContractMetadata(accountAddress);
 
     if (metadata.isContractInitialized) {
       return { deployed: false, address: accountAddress };
@@ -53,13 +54,38 @@ export async function deployAccountIfNotExists(
 
     const deployMethod = await accountManager.getDeployMethod();
     const paymentMethod = await pxeInstance.getSponsoredFeePaymentMethod();
-
-    await deployMethod.send({
-      from: AztecAddress.ZERO,
+    const sendOptions = {
       fee: { paymentMethod },
       skipClassPublication: opts.skipClassPublication,
       skipInstancePublication: opts.skipInstancePublication,
-    });
+      wait: { timeout: opts.timeout * 1000 },
+    };
+
+    try {
+      // Keep ZERO as primary sender for gas-sponsored account bootstrap.
+      await deployMethod.send({
+        from: AztecAddress.ZERO,
+        ...sendOptions,
+      });
+    } catch (zeroSenderError) {
+      console.warn(
+        `[deployAccountIfNotExists] Deployment from ZERO failed for ${accountAddress.toString()}, retrying from account address`,
+        zeroSenderError
+      );
+      // Fallback for environments where ZERO sender deployment is rejected.
+      await deployMethod.send({
+        from: accountAddress,
+        ...sendOptions,
+      });
+    }
+
+    const postDeployMetadata =
+      await pxeInstance.wallet.getContractMetadata(accountAddress);
+    if (!postDeployMetadata.isContractInitialized) {
+      throw new Error(
+        `Deployment sent but account ${accountAddress.toString()} is still not initialized`
+      );
+    }
 
     return { deployed: true, address: accountAddress };
   } catch (cause) {

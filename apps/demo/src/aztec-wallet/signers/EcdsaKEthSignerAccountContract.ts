@@ -2,7 +2,7 @@ import { DefaultAccountContract } from '@aztec/accounts/defaults';
 import type { ContractArtifact } from '@aztec/aztec.js/abi';
 import type { AuthWitnessProvider } from '@aztec/aztec.js/account';
 import type { CompleteAddress } from '@aztec/aztec.js/addresses';
-import { EcdsaKEthSignerAccountContractArtifact } from '../../artifacts/EcdsaKEthSignerAccount';
+import { EcdsaKEthSignerAccountContractArtifact } from '../../../../../artifacts/EcdsaKEthSignerAccount';
 
 /**
  * Account contract for ECDSA K accounts that use MetaMask's personal_sign for authentication.
