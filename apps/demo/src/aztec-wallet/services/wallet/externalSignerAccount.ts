@@ -92,8 +92,9 @@ export async function createExternalSignerAccount(
 
     // Derive secret key and salt from signer
     const secretKeyBuffer = await signer.deriveSecretKey();
-    const secretKey = await poseidon2Hash([Fr.fromBuffer(secretKeyBuffer)]);
-    const salt = Fr.fromBuffer(signer.deriveSalt());
+    const secretKeyInput = Fr.fromBufferReduce(secretKeyBuffer);
+    const secretKey = await poseidon2Hash([secretKeyInput]);
+    const salt = Fr.fromBufferReduce(signer.deriveSalt());
 
     // Create account manager
     const wallet = pxeInstance.wallet;

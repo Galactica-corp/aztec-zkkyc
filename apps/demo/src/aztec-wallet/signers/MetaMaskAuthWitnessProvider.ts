@@ -37,9 +37,14 @@ export class MetaMaskAuthWitnessProvider implements AuthWitnessProvider {
    * @param messageHash - The outer_hash from Aztec (Poseidon hash of the action)
    * @returns AuthWitness containing the signature fields (r and s as Fr array)
    */
-  async createAuthWit(messageHash: Fr): Promise<AuthWitness> {
-    // Convert Fr to 32-byte buffer for MetaMask
-    const messageBytes = messageHash.toBuffer();
+  async createAuthWit(messageHash: Fr | Buffer): Promise<AuthWitness> {
+    // Aztec v4 entrypoints can pass either Fr or raw 32-byte Buffer.
+    const messageBytes = Buffer.isBuffer(messageHash)
+      ? messageHash
+      : messageHash.toBuffer();
+    const canonicalHash = Buffer.isBuffer(messageHash)
+      ? Fr.fromBuffer(messageHash)
+      : messageHash;
 
     // Call MetaMask signMessage with raw bytes
     // MetaMask will prepend "\x19Ethereum Signed Message:\n32" automatically
@@ -64,6 +69,6 @@ export class MetaMaskAuthWitnessProvider implements AuthWitnessProvider {
       witnessFields.push(new Fr(s[i]));
     }
 
-    return new AuthWitness(messageHash, witnessFields);
+    return new AuthWitness(canonicalHash, witnessFields);
   }
 }
