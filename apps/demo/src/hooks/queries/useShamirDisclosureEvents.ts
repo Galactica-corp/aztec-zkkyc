@@ -14,6 +14,9 @@ export type ShamirDisclosureShardEventPayload = {
   shard_y: Fr;
 };
 
+const ZERO_ADDRESS =
+  '0x0000000000000000000000000000000000000000000000000000000000000000';
+
 interface UseShamirDisclosureEventsOptions {
   enabled?: boolean;
 }
@@ -38,6 +41,71 @@ const isUnknownContractError = (error: unknown): boolean => {
 const isEmptyBlockRangeError = (error: unknown): boolean => {
   const message = error instanceof Error ? error.message : String(error);
   return message.includes('toBlock must be strictly greater than fromBlock');
+};
+
+const ensureShamirContractRegistered = async (
+  pxe: ReturnType<NonNullable<ReturnType<typeof useAztecWallet>['connector']>['getPXE']>,
+  contractAddress: string,
+  currentConfig: NonNullable<ReturnType<typeof useAztecWallet>['currentConfig']>
+): Promise<void> => {
+  const expectedAddress = AztecAddress.fromString(contractAddress);
+
+  try {
+    const existing = await pxe.getContractInstance(expectedAddress);
+    if (existing) return;
+  } catch {
+    // Continue with registration attempt.
+  }
+
+  const constructorArgs = currentConfig.shamirDisclosureConstructorArgs;
+  const hasConstructorData =
+    constructorArgs.recipientCount > 0 &&
+    constructorArgs.threshold > 0 &&
+    constructorArgs.recipients.every(
+      (value) => value && value !== ZERO_ADDRESS
+    ) &&
+    constructorArgs.participantAddresses.every(
+      (value) => value && value !== ZERO_ADDRESS
+    );
+
+  if (!hasConstructorData) {
+    throw new Error(
+      'Missing Shamir constructor metadata in deployment config. Re-run `yarn deploy` from repo root.'
+    );
+  }
+
+  const { getContractInstanceFromInstantiationParams } = await import(
+    '@aztec/aztec.js/contracts'
+  );
+
+  const deployerAddress = AztecAddress.fromString(currentConfig.deployerAddress);
+  const instance = await getContractInstanceFromInstantiationParams(
+    ShamirDisclosureContract.artifact,
+    {
+      salt: Fr.fromString(currentConfig.shamirDisclosureDeploymentSalt),
+      deployer: deployerAddress,
+      constructorArgs: [
+        constructorArgs.recipientCount,
+        constructorArgs.threshold,
+        ...constructorArgs.recipients.map((value) => AztecAddress.fromString(value)),
+        ...constructorArgs.participantAddresses.map((value) =>
+          AztecAddress.fromString(value)
+        ),
+      ],
+      constructorArtifact: 'constructor',
+    }
+  );
+
+  if (!instance.address.equals(expectedAddress)) {
+    throw new Error(
+      `Shamir constructor mismatch. Computed ${instance.address.toString()} but deployment expects ${expectedAddress.toString()}.`
+    );
+  }
+
+  await pxe.registerContract({
+    instance,
+    artifact: ShamirDisclosureContract.artifact,
+  });
 };
 
 /**
@@ -66,9 +134,13 @@ export const useShamirDisclosureEvents = (
     queryKey: queryKeys.disclosureEvents.list(contractAddress ?? '', scopeAddress),
     queryFn: async (): Promise<PrivateEvent<ShamirDisclosureShardEventPayload>[]> => {
       const wallet = connector!.getWallet();
-      if (!wallet || !contractAddress || !account) {
+      const pxe = connector!.getPXE();
+      if (!wallet || !pxe || !contractAddress || !account || !currentConfig) {
         return [];
       }
+
+      await ensureShamirContractRegistered(pxe, contractAddress, currentConfig);
+
       const filter = {
         contractAddress: AztecAddress.fromString(contractAddress),
         scopes: [account.getAddress()],
@@ -82,9 +154,8 @@ export const useShamirDisclosureEvents = (
         );
         return events;
       } catch (error) {
-        // Some deployments do not pre-register ShamirDisclosure in PXE.
-        // Treat this as "no events available" instead of hard-failing the UI.
-        if (isUnknownContractError(error) || isEmptyBlockRangeError(error)) {
+        // PXE can throw for an empty block interval while indexing catches up.
+        if (isEmptyBlockRangeError(error)) {
           return [];
         }
         throw error;

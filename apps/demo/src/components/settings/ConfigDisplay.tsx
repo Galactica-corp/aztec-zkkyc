@@ -28,6 +28,10 @@ const CONFIG_FIELDS: ConfigField[] = [
     label: 'Age Check Requirement Contract',
   },
   {
+    key: 'sanctionListRequirementContractAddress',
+    label: 'Sanction List Requirement Contract',
+  },
+  {
     key: 'basicDisclosureContractAddress',
     label: 'Basic Disclosure Contract',
   },
@@ -44,6 +48,10 @@ const CONFIG_FIELDS: ConfigField[] = [
   {
     key: 'ageCheckRequirementDeploymentSalt',
     label: 'Age Check Requirement Salt',
+  },
+  {
+    key: 'sanctionListRequirementDeploymentSalt',
+    label: 'Sanction List Requirement Salt',
   },
   {
     key: 'basicDisclosureDeploymentSalt',

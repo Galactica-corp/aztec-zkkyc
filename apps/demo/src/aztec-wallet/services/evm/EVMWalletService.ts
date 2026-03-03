@@ -180,16 +180,11 @@ export class EVMWalletService {
 
     const newAddress = accountsArray[0];
     if (newAddress !== this.address) {
-      this.address = newAddress;
-
-      if (this.currentProvider) {
-        this.walletClient = createWalletClient({
-          account: { address: newAddress } as Account,
-          transport: custom(this.currentProvider),
-        });
-      }
-
-      this.notifyListeners();
+      // External-signer Aztec accounts are derived from signer material tied to the
+      // selected EVM account. If the EVM account changes mid-session, the existing
+      // Aztec account context becomes stale (scopes/keys can mismatch). Force a
+      // clean reconnect so we rebuild account state deterministically.
+      this.disconnect();
     }
   };
 

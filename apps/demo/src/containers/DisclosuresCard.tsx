@@ -120,6 +120,7 @@ const styles = {
     'rounded border border-default bg-surface-tertiary p-2 font-mono text-sm text-default break-all',
   thresholdError: 'text-sm text-red-500',
   sectionTitle: 'text-sm font-semibold text-default mb-2',
+  sectionHint: 'text-xs text-muted mb-2 break-all',
   loadingContainer:
     'flex flex-col items-center justify-center py-8 gap-4 text-muted',
   loadingSpinner:
@@ -202,6 +203,10 @@ export const DisclosuresCard: React.FC = () => {
       <CardContent className={styles.formContainer}>
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>Direct disclosure events</h3>
+          <p className={styles.sectionHint}>
+            Basic disclosure emits to one fixed recipient configured at deploy
+            time.
+          </p>
           {currentConfig?.basicDisclosureContractAddress &&
           connector &&
           hasAppManagedPXE(connector) ? (
@@ -285,6 +290,18 @@ export const DisclosuresCard: React.FC = () => {
 
         <section className={styles.section}>
           <h3 className={styles.sectionTitle}>Shamir disclosure events</h3>
+          <p className={styles.sectionHint}>
+            Recipients:{' '}
+            {currentConfig?.shamirDisclosureConstructorArgs?.recipientCount
+              ? currentConfig.shamirDisclosureConstructorArgs.recipients
+                  .slice(
+                    0,
+                    currentConfig.shamirDisclosureConstructorArgs.recipientCount
+                  )
+                  .map((value) => truncateAddress(value))
+                  .join(', ')
+              : 'Not configured'}
+          </p>
           {currentConfig?.shamirDisclosureContractAddress &&
           connector &&
           hasAppManagedPXE(connector) ? (
