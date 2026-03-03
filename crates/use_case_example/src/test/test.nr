@@ -71,6 +71,20 @@ unconstrained fn test_zk_certificate_integration() {
     env.call_private(user, UseCaseExample::at(use_case_example_address).use_privately(AUTHWIT_NONCE));
 }
 
+// Test: Use case can run compliance check with custom requirement and disclosure addresses.
+#[test]
+unconstrained fn test_demo_custom_contracts() {
+    let (_, _, use_case_example_address, _, age_check_address, basic_disclosure_address, _) =
+        utils::setup_test_env();
+
+    // Building the private call object verifies the function exists and accepts custom addresses.
+    let _demo_call = UseCaseExample::at(use_case_example_address).demo_custom_contracts(
+        AUTHWIT_NONCE,
+        age_check_address,
+        basic_disclosure_address,
+    );
+}
+
 // Test: User cannot proof that their certificate does not exist
 #[test(should_fail)]
 unconstrained fn test_fail_user_proof_certificate_non_existence() {

@@ -65,4 +65,32 @@ pub contract UseCaseExample {
 
         // Custom use case logic would go here
     }
+
+    /**
+     * Private usage demo that allows passing custom requirement and disclosure contracts.
+     * @param authwit_nonce The nonce of the private authentication witness of checking the certificate.
+     * @param requirement_checker_address Requirement checker contract address to use for this call.
+     * @param disclosure_contract_address Disclosure contract address to use for this call.
+     */
+    #[external("private")]
+    fn demo_custom_contracts(
+        authwit_nonce: Field,
+        requirement_checker_address: AztecAddress,
+        disclosure_contract_address: AztecAddress,
+    ) {
+        let user = self.msg_sender();
+
+        self.call(
+            CertificateRegistry::at(self.storage.zk_certificate_registry.read())
+                .check_certificate_and_requirements(
+                    user,
+                    authwit_nonce,
+                    requirement_checker_address,
+                    disclosure_contract_address,
+                    self.storage.disclosure_context.read(),
+                ),
+        );
+
+        // Custom use case logic would go here
+    }
 }
