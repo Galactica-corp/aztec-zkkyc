@@ -8,30 +8,44 @@
  * The JSON file must contain:
  *   certificateRegistryContract: { address: string, salt: string }
  *   ageCheckRequirementContract: { address: string, salt: string }
+ *   sanctionListRequirementContract: { address: string, salt: string }
  *   basicDisclosureContract: { address: string, salt: string }
  *   shamirDisclosureContract: { address: string, salt: string }
+ *   shamirDisclosureConstructorArgs: {
+ *     recipientCount: number
+ *     threshold: number
+ *     recipients: [string, string, string]
+ *     participantAddresses: [string, string, string, string, string]
+ *   }
  *   useCaseExampleContract: { address: string, salt: string }
  *   certificateRegistryAdminAddress: string
  *   deployer: string
  *   nodeUrl?: string
  */
 
-import { readFileSync, writeFileSync } from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import { readFileSync, writeFileSync } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const SANDBOX_JSON_PATH = path.join(
   __dirname,
-  "../src/config/deployments/sandbox.json"
+  '../src/config/deployments/sandbox.json'
 );
 
 export interface DeploymentPayload {
   certificateRegistryContract: { address: string; salt: string };
   ageCheckRequirementContract: { address: string; salt: string };
+  sanctionListRequirementContract: { address: string; salt: string };
   basicDisclosureContract: { address: string; salt: string };
   shamirDisclosureContract: { address: string; salt: string };
+  shamirDisclosureConstructorArgs: {
+    recipientCount: number;
+    threshold: number;
+    recipients: [string, string, string];
+    participantAddresses: [string, string, string, string, string];
+  };
   useCaseExampleContract: { address: string; salt: string };
   certificateRegistryAdminAddress: string;
   deployer: string;
@@ -41,68 +55,111 @@ export interface DeploymentPayload {
 function main(): void {
   const inputPath = process.argv[2];
   if (!inputPath) {
-    console.error("Usage: tsx scripts/update-sandbox-deployment.ts <path-to-deployment-json>");
+    console.error(
+      'Usage: tsx scripts/update-sandbox-deployment.ts <path-to-deployment-json>'
+    );
     process.exit(1);
   }
 
   let payload: DeploymentPayload;
   try {
-    const raw = readFileSync(path.resolve(inputPath), "utf-8");
+    const raw = readFileSync(path.resolve(inputPath), 'utf-8');
     payload = JSON.parse(raw) as DeploymentPayload;
   } catch (err) {
-    console.error("Failed to read deployment payload:", (err as Error).message);
+    console.error('Failed to read deployment payload:', (err as Error).message);
     process.exit(1);
   }
 
   const {
     certificateRegistryContract,
     ageCheckRequirementContract,
+    sanctionListRequirementContract,
     basicDisclosureContract,
     shamirDisclosureContract,
+    shamirDisclosureConstructorArgs,
     useCaseExampleContract,
     certificateRegistryAdminAddress,
     deployer,
     nodeUrl,
   } = payload;
-  if (!certificateRegistryContract?.address || !certificateRegistryContract?.salt) {
-    console.error("Payload must include certificateRegistryContract.address and .salt");
+  if (
+    !certificateRegistryContract?.address ||
+    !certificateRegistryContract?.salt
+  ) {
+    console.error(
+      'Payload must include certificateRegistryContract.address and .salt'
+    );
     process.exit(1);
   }
   if (!useCaseExampleContract?.address || !useCaseExampleContract?.salt) {
-    console.error("Payload must include useCaseExampleContract.address and .salt");
+    console.error(
+      'Payload must include useCaseExampleContract.address and .salt'
+    );
     process.exit(1);
   }
-  if (!ageCheckRequirementContract?.address || !ageCheckRequirementContract?.salt) {
-    console.error("Payload must include ageCheckRequirementContract.address and .salt");
+  if (
+    !ageCheckRequirementContract?.address ||
+    !ageCheckRequirementContract?.salt
+  ) {
+    console.error(
+      'Payload must include ageCheckRequirementContract.address and .salt'
+    );
+    process.exit(1);
+  }
+  if (
+    !sanctionListRequirementContract?.address ||
+    !sanctionListRequirementContract?.salt
+  ) {
+    console.error(
+      'Payload must include sanctionListRequirementContract.address and .salt'
+    );
     process.exit(1);
   }
   if (!basicDisclosureContract?.address || !basicDisclosureContract?.salt) {
-    console.error("Payload must include basicDisclosureContract.address and .salt");
+    console.error(
+      'Payload must include basicDisclosureContract.address and .salt'
+    );
     process.exit(1);
   }
   if (!shamirDisclosureContract?.address || !shamirDisclosureContract?.salt) {
-    console.error("Payload must include shamirDisclosureContract.address and .salt");
+    console.error(
+      'Payload must include shamirDisclosureContract.address and .salt'
+    );
+    process.exit(1);
+  }
+  if (
+    !shamirDisclosureConstructorArgs ||
+    !Number.isInteger(shamirDisclosureConstructorArgs.recipientCount) ||
+    !Number.isInteger(shamirDisclosureConstructorArgs.threshold) ||
+    !Array.isArray(shamirDisclosureConstructorArgs.recipients) ||
+    shamirDisclosureConstructorArgs.recipients.length !== 3 ||
+    !Array.isArray(shamirDisclosureConstructorArgs.participantAddresses) ||
+    shamirDisclosureConstructorArgs.participantAddresses.length !== 5
+  ) {
+    console.error(
+      'Payload must include valid shamirDisclosureConstructorArgs with recipients[3] and participantAddresses[5]'
+    );
     process.exit(1);
   }
   if (!certificateRegistryAdminAddress) {
-    console.error("Payload must include certificateRegistryAdminAddress");
+    console.error('Payload must include certificateRegistryAdminAddress');
     process.exit(1);
   }
   if (!deployer) {
-    console.error("Payload must include deployer");
+    console.error('Payload must include deployer');
     process.exit(1);
   }
 
   let deployment: Record<string, unknown>;
   try {
-    const existing = readFileSync(SANDBOX_JSON_PATH, "utf-8");
+    const existing = readFileSync(SANDBOX_JSON_PATH, 'utf-8');
     deployment = JSON.parse(existing) as Record<string, unknown>;
   } catch {
     deployment = {
-      network: "sandbox",
-      nodeUrl: nodeUrl ?? "http://localhost:8080",
-      dripperContract: { address: "0x00", salt: "0x00" },
-      tokenContract: { address: "0x00", salt: "0x00" },
+      network: 'sandbox',
+      nodeUrl: nodeUrl ?? 'http://localhost:8080',
+      dripperContract: { address: '0x00', salt: '0x00' },
+      tokenContract: { address: '0x00', salt: '0x00' },
       deployer,
       proverEnabled: false,
       deployedAt: new Date().toISOString(),
@@ -111,16 +168,18 @@ function main(): void {
 
   deployment.certificateRegistryContract = certificateRegistryContract;
   deployment.ageCheckRequirementContract = ageCheckRequirementContract;
+  deployment.sanctionListRequirementContract = sanctionListRequirementContract;
   deployment.basicDisclosureContract = basicDisclosureContract;
   deployment.shamirDisclosureContract = shamirDisclosureContract;
+  deployment.shamirDisclosureConstructorArgs = shamirDisclosureConstructorArgs;
   deployment.useCaseExampleContract = useCaseExampleContract;
   deployment.certificateRegistryAdminAddress = certificateRegistryAdminAddress;
   deployment.deployer = deployer;
-  deployment.nodeUrl = deployment.nodeUrl ?? nodeUrl ?? "http://localhost:8080";
+  deployment.nodeUrl = deployment.nodeUrl ?? nodeUrl ?? 'http://localhost:8080';
   deployment.deployedAt = new Date().toISOString();
 
   writeFileSync(SANDBOX_JSON_PATH, JSON.stringify(deployment, null, 2));
-  console.log("Updated sandbox deployment:", SANDBOX_JSON_PATH);
+  console.log('Updated sandbox deployment:', SANDBOX_JSON_PATH);
 }
 
 main();

@@ -13,6 +13,13 @@ export interface DeployedContractConfig {
   deployer?: string;
 }
 
+export interface ShamirDisclosureNetworkConfig {
+  recipientCount: number;
+  threshold: number;
+  recipients: [string, string, string];
+  participantAddresses: [string, string, string, string, string];
+}
+
 /**
  * Fee Payment Contracts configuration - a map of contract names to their deployment configs.
  */
@@ -34,10 +41,13 @@ export interface NetworkConfig {
   certificateRegistryAdminAddress: string;
   ageCheckRequirementContractAddress: string;
   ageCheckRequirementDeploymentSalt: string;
+  sanctionListRequirementContractAddress: string;
+  sanctionListRequirementDeploymentSalt: string;
   basicDisclosureContractAddress: string;
   basicDisclosureDeploymentSalt: string;
   shamirDisclosureContractAddress: string;
   shamirDisclosureDeploymentSalt: string;
+  shamirDisclosureConstructorArgs: ShamirDisclosureNetworkConfig;
   useCaseExampleContractAddress: string;
   useCaseExampleDeploymentSalt: string;
   proverEnabled: boolean;

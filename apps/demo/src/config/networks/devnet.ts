@@ -1,6 +1,8 @@
 import { AztecAddress } from '@aztec/stdlib/aztec-address';
 import { NetworkConfig } from './types';
 
+const ZERO_ADDRESS = AztecAddress.ZERO.toString();
+
 /**
  * Devnet configuration for public development network.
  *
@@ -24,12 +26,27 @@ export const DEVNET_CONFIG: NetworkConfig = {
   ageCheckRequirementContractAddress:
     '0x0000000000000000000000000000000000000000000000000000000000000000',
   ageCheckRequirementDeploymentSalt: '0x00',
+  sanctionListRequirementContractAddress:
+    '0x0000000000000000000000000000000000000000000000000000000000000000',
+  sanctionListRequirementDeploymentSalt: '0x00',
   basicDisclosureContractAddress:
     '0x0000000000000000000000000000000000000000000000000000000000000000',
   basicDisclosureDeploymentSalt: '0x00',
   shamirDisclosureContractAddress:
     '0x0000000000000000000000000000000000000000000000000000000000000000',
   shamirDisclosureDeploymentSalt: '0x00',
+  shamirDisclosureConstructorArgs: {
+    recipientCount: 0,
+    threshold: 0,
+    recipients: [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS],
+    participantAddresses: [
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+    ],
+  },
   useCaseExampleContractAddress:
     '0x0000000000000000000000000000000000000000000000000000000000000000',
   useCaseExampleDeploymentSalt: '0x00',

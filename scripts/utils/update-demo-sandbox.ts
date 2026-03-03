@@ -16,8 +16,15 @@ const DEPLOY_OUTPUT_JSON = path.join(APPS_DEMO, ".deploy-output.json");
 export interface UpdateDemoSandboxParams {
   certificateRegistryContract: { address: string; salt: string };
   ageCheckRequirementContract: { address: string; salt: string };
+  sanctionListRequirementContract: { address: string; salt: string };
   basicDisclosureContract: { address: string; salt: string };
   shamirDisclosureContract: { address: string; salt: string };
+  shamirDisclosureConstructorArgs: {
+    recipientCount: number;
+    threshold: number;
+    recipients: [string, string, string];
+    participantAddresses: [string, string, string, string, string];
+  };
   useCaseExampleContract: { address: string; salt: string };
   /** Admin address used in Certificate Registry constructor (from getCertificateRegistryAdminAddress) */
   certificateRegistryAdminAddress: string;
@@ -38,8 +45,10 @@ export function updateDemoSandboxDeployment(
     const payload = {
       certificateRegistryContract: params.certificateRegistryContract,
       ageCheckRequirementContract: params.ageCheckRequirementContract,
+      sanctionListRequirementContract: params.sanctionListRequirementContract,
       basicDisclosureContract: params.basicDisclosureContract,
       shamirDisclosureContract: params.shamirDisclosureContract,
+      shamirDisclosureConstructorArgs: params.shamirDisclosureConstructorArgs,
       useCaseExampleContract: params.useCaseExampleContract,
       certificateRegistryAdminAddress: params.certificateRegistryAdminAddress,
       deployer: params.deployer,

@@ -274,6 +274,22 @@ async function main() {
         address: shamirDisclosureContract.address.toString(),
         salt: shamirDisclosureInstance.salt.toString(),
       },
+      shamirDisclosureConstructorArgs: {
+        recipientCount: 3,
+        threshold: 2,
+        recipients: [
+          shamirRecipient0.toString(),
+          shamirRecipient1.toString(),
+          shamirRecipient2.toString(),
+        ],
+        participantAddresses: [
+          address.toString(),
+          address.toString(),
+          address.toString(),
+          address.toString(),
+          address.toString(),
+        ],
+      },
       useCaseExampleContract: {
         address: useCaseExampleContract.address.toString(),
         salt: useCaseInstance.salt.toString(),

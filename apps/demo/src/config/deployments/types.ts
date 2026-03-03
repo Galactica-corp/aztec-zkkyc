@@ -12,10 +12,17 @@ export interface ContractDeployment {
   salt: string;
 }
 
+export interface ShamirDisclosureConstructorArgs {
+  recipientCount: number;
+  threshold: number;
+  recipients: [string, string, string];
+  participantAddresses: [string, string, string, string, string];
+}
+
 /**
  * Full deployment configuration for a network.
- * certificateRegistryContract, ageCheckRequirementContract, basicDisclosureContract,
- * shamirDisclosureContract, and useCaseExampleContract
+ * certificateRegistryContract, ageCheckRequirementContract, sanctionListRequirementContract,
+ * basicDisclosureContract, shamirDisclosureContract, and useCaseExampleContract
  * are populated by scripts/deploy_contract.ts (root).
  */
 export interface DeploymentConfig {
@@ -27,10 +34,14 @@ export interface DeploymentConfig {
   certificateRegistryContract?: ContractDeployment;
   /** Set by root yarn deploy (scripts/deploy_contract.ts) */
   ageCheckRequirementContract?: ContractDeployment;
+  /** Optional requirement checker variant */
+  sanctionListRequirementContract?: ContractDeployment;
   /** Set by root yarn deploy (scripts/deploy_contract.ts) */
   basicDisclosureContract?: ContractDeployment;
   /** Set by root yarn deploy (scripts/deploy_contract.ts) */
   shamirDisclosureContract?: ContractDeployment;
+  /** Constructor args required to deterministically reconstruct Shamir instance */
+  shamirDisclosureConstructorArgs?: ShamirDisclosureConstructorArgs;
   /** Set by root yarn deploy (scripts/deploy_contract.ts) */
   useCaseExampleContract?: ContractDeployment;
   /** Admin address used in Certificate Registry constructor; set by root yarn deploy */
@@ -82,6 +93,10 @@ export const DEFAULT_SANDBOX_DEPLOYMENT: DeploymentConfig = {
     address: PLACEHOLDER_ADDRESS,
     salt: PLACEHOLDER_SALT,
   },
+  sanctionListRequirementContract: {
+    address: PLACEHOLDER_ADDRESS,
+    salt: PLACEHOLDER_SALT,
+  },
   basicDisclosureContract: {
     address: PLACEHOLDER_ADDRESS,
     salt: PLACEHOLDER_SALT,
@@ -89,6 +104,18 @@ export const DEFAULT_SANDBOX_DEPLOYMENT: DeploymentConfig = {
   shamirDisclosureContract: {
     address: PLACEHOLDER_ADDRESS,
     salt: PLACEHOLDER_SALT,
+  },
+  shamirDisclosureConstructorArgs: {
+    recipientCount: 0,
+    threshold: 0,
+    recipients: [PLACEHOLDER_ADDRESS, PLACEHOLDER_ADDRESS, PLACEHOLDER_ADDRESS],
+    participantAddresses: [
+      PLACEHOLDER_ADDRESS,
+      PLACEHOLDER_ADDRESS,
+      PLACEHOLDER_ADDRESS,
+      PLACEHOLDER_ADDRESS,
+      PLACEHOLDER_ADDRESS,
+    ],
   },
   useCaseExampleContract: {
     address: PLACEHOLDER_ADDRESS,
@@ -122,6 +149,10 @@ export const DEFAULT_DEVNET_DEPLOYMENT: DeploymentConfig = {
     address: PLACEHOLDER_ADDRESS,
     salt: PLACEHOLDER_SALT,
   },
+  sanctionListRequirementContract: {
+    address: PLACEHOLDER_ADDRESS,
+    salt: PLACEHOLDER_SALT,
+  },
   basicDisclosureContract: {
     address: PLACEHOLDER_ADDRESS,
     salt: PLACEHOLDER_SALT,
@@ -129,6 +160,18 @@ export const DEFAULT_DEVNET_DEPLOYMENT: DeploymentConfig = {
   shamirDisclosureContract: {
     address: PLACEHOLDER_ADDRESS,
     salt: PLACEHOLDER_SALT,
+  },
+  shamirDisclosureConstructorArgs: {
+    recipientCount: 0,
+    threshold: 0,
+    recipients: [PLACEHOLDER_ADDRESS, PLACEHOLDER_ADDRESS, PLACEHOLDER_ADDRESS],
+    participantAddresses: [
+      PLACEHOLDER_ADDRESS,
+      PLACEHOLDER_ADDRESS,
+      PLACEHOLDER_ADDRESS,
+      PLACEHOLDER_ADDRESS,
+      PLACEHOLDER_ADDRESS,
+    ],
   },
   useCaseExampleContract: {
     address: PLACEHOLDER_ADDRESS,

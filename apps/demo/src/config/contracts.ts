@@ -3,6 +3,7 @@ import { Fr } from '@aztec/aztec.js/fields';
 import { AgeCheckRequirementContract } from '../../../../artifacts/AgeCheckRequirement';
 import { BasicDisclosureContract } from '../../../../artifacts/BasicDisclosure';
 import { CertificateRegistryContract } from '../../../../artifacts/CertificateRegistry';
+import { SanctionListRequirementContract } from '../../../../artifacts/SanctionListRequirement';
 import { UseCaseExampleContract } from '../../../../artifacts/UseCaseExample';
 import {
   createContractConfig,
@@ -66,6 +67,23 @@ export const contractsConfig = createContractConfig({
         ? AztecAddress.fromString(config.deployerAddress)
         : getDeployerAddress(config),
       constructorArgs: [18],
+      constructorArtifact: 'constructor',
+    }),
+    lazyRegister: true,
+  },
+
+  sanctionListRequirement: {
+    artifact: SanctionListRequirementContract.artifact,
+    contract: SanctionListRequirementContract,
+    address: (config) => config.sanctionListRequirementContractAddress,
+    deployParams: (config) => ({
+      salt: Fr.fromString(config.sanctionListRequirementDeploymentSalt),
+      deployer: config.deployerAddress
+        ? AztecAddress.fromString(config.deployerAddress)
+        : getDeployerAddress(config),
+      constructorArgs: [
+        AztecAddress.fromString(config.certificateRegistryAdminAddress),
+      ],
       constructorArtifact: 'constructor',
     }),
     lazyRegister: true,
