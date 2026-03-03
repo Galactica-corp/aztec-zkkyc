@@ -10,23 +10,26 @@ use ::aztec::macros::aztec;
 
 mod test;
 
-fn derive_coefficient(disclosure_context: Field, degree_index: u32, coefficient_salt: u32) -> Field {
-    disclosure_context + Field::from(coefficient_salt + degree_index)
+fn derive_coefficient(coefficient_seed: Field, degree_index: u32) -> Field {
+    // Derive each coefficient from a hash so values are spread over the full field.
+    ::aztec::protocol::hash::poseidon2_hash_with_separator(
+        [coefficient_seed, Field::from(degree_index + 1)],
+        0,
+    )
 }
 
 fn evaluate_shard(
     secret: Field,
-    disclosure_context: Field,
+    coefficient_seed: Field,
     threshold: u32,
     shard_x: Field,
-    coefficient_salt: u32,
 ) -> Field {
     let mut shard_y = secret;
     let mut x_power = shard_x;
 
     for degree_index in 0..8 {
         if degree_index + 1 < threshold {
-            let coeff = derive_coefficient(disclosure_context, degree_index, coefficient_salt);
+            let coeff = derive_coefficient(coefficient_seed, degree_index);
             shard_y = shard_y + coeff * x_power;
         }
         x_power = x_power * shard_x;
@@ -46,7 +49,6 @@ pub contract ShamirDisclosure {
 
     global FIELD_CONTENT_TYPE_ZK_KYC: Field = 1;
     global KYC_PERSONAL_INDEX_SURNAME: u32 = 0;
-    global SHARD_COEFF_SALT: u32 = 17;
     global MAX_RECIPIENTS: u32 = 8;
 
     #[storage]
@@ -138,12 +140,12 @@ pub contract ShamirDisclosure {
      *
      * Shares are evaluated at x = 1..recipient_count from a deterministic polynomial
      * whose constant term is the disclosed secret and whose higher coefficients are
-     * derived from `context`.
+     * derived from a hash seed of (`context`, `unique_id`).
      *
      * @param from Original certificate owner associated with emitted shards.
      * @param context Disclosure context used in events and coefficient derivation.
      * @param _guardian Unused in this implementation (kept for interface compatibility).
-     * @param _unique_id Unused in this implementation (kept for interface compatibility).
+     * @param unique_id Disclosure nonce used in coefficient seed derivation.
      * @param content_type Certificate content type; must match ZK KYC.
      * @param content_note_0 KYC personal note; surname index is used as secret.
      * @param _content_note_1 Unused in this implementation (kept for interface compatibility).
@@ -152,7 +154,7 @@ pub contract ShamirDisclosure {
         from: AztecAddress,
         context: Field,
         _guardian: AztecAddress,
-        _unique_id: Field,
+        unique_id: Field,
         content_type: Field,
         content_note_0: [Field; 7],
         _content_note_1: [Field; 7],
@@ -165,19 +167,22 @@ pub contract ShamirDisclosure {
         let secret = content_note_0[KYC_PERSONAL_INDEX_SURNAME];
         let recipient_count = self.storage.recipient_count.read();
         let threshold = self.storage.threshold.read();
+        let coefficient_seed = ::aztec::protocol::hash::poseidon2_hash_with_separator(
+            [context, unique_id],
+            1,
+        );
 
         // Deterministic polynomial per context:
         // y = secret + c1*x + c2*x^2 + ... + c_(threshold-1)*x^(threshold-1)
-        // with coefficients c_i derived from context.
+        // with coefficients c_i derived from the coefficient seed.
         for recipient_index in 0..MAX_RECIPIENTS {
             if recipient_index < recipient_count {
                 let shard_x = Field::from(recipient_index + 1);
                 let shard_y = crate::evaluate_shard(
                     secret,
-                    context,
+                    coefficient_seed,
                     threshold,
                     shard_x,
-                    SHARD_COEFF_SALT,
                 );
 
                 self

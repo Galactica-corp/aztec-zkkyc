@@ -46,6 +46,12 @@ const asBigInt = (value: unknown): bigint => {
   throw new Error(`Unable to parse bigint from value: ${String(value)}`);
 };
 
+const modField = (value: bigint): bigint => {
+  const prime = Fr.MODULUS;
+  const reduced = value % prime;
+  return reduced >= 0n ? reduced : reduced + prime;
+};
+
 const KYC_SAMPLE = {
   personal: {
     surname: "DOE",
@@ -359,7 +365,6 @@ describe("ZK Certificate and UseCaseExample", () => {
     ];
 
     const secret = asBigInt(kycPersonalData[0]);
-    const coeff = asBigInt(DISCLOSURE_CONTEXT) + 17n;
     const shardList: { x: bigint; y: bigint }[] = [];
 
     for (const recipient of recipients) {
@@ -379,11 +384,16 @@ describe("ZK Certificate and UseCaseExample", () => {
       expect(shardEvent.from.toString()).toBe(userAccount.address.toString());
       expect(asBigInt(shardEvent.context)).toBe(asBigInt(DISCLOSURE_CONTEXT));
       expect(asBigInt(shardEvent.shard_x)).toBe(recipient.expectedX);
-      expect(asBigInt(shardEvent.shard_y)).toBe(secret + coeff * recipient.expectedX);
       shardList.push({
         x: asBigInt(shardEvent.shard_x),
         y: asBigInt(shardEvent.shard_y),
       });
+    }
+
+    // threshold=2 => linear polynomial y = secret + coeff * x
+    const coeff = modField(shardList[0].y - secret);
+    for (const shard of shardList) {
+      expect(shard.y).toBe(modField(secret + coeff * shard.x));
     }
 
     expect(decryptShamirSecret(3, 2, shardList.slice(0, 2))).toBe(secret);
