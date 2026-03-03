@@ -5,7 +5,10 @@ import { getSponsoredFPCInstance } from "../crates/zk_certificate/src/utils/spon
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { getTimeouts } from "../config/config.js";
 import { createAccountFromEnv } from "../crates/zk_certificate/src/utils/create_account_from_env.js";
-import { getCertificateRegistryAdminAddress } from "../crates/zk_certificate/src/utils/env_helper.js";
+import {
+  getBasicDisclosureRecipientAddress,
+  getCertificateRegistryAdminAddress,
+} from "../crates/zk_certificate/src/utils/env_helper.js";
 
 import { CertificateRegistryContract } from "../artifacts/CertificateRegistry.js";
 import { AgeCheckRequirementContract } from "../artifacts/AgeCheckRequirement.js";
@@ -99,7 +102,7 @@ async function main() {
   logger.info(`🎉 Certificate Registry Contract deployed successfully!`);
   logger.info(`📍 Contract address: ${certificateRegistryContract.address}`);
   await logContractInstantiationData(certificateDeployMethod, [adminAddress.toString()]);
-  logger.info(`👤 Admin address: ${address}`);
+  logger.info(`👤 Admin address: ${adminAddress}`);
 
   // Deploy age check requirement contract
   logger.info('🏎️  Starting age check requirement contract deployment...');
@@ -117,7 +120,14 @@ async function main() {
 
   // Deploy basic disclosure contract
   logger.info("🏎️  Starting basic disclosure contract deployment...");
-  const basicDisclosureDeployMethod = BasicDisclosureContract.deploy(wallet, address);
+  const basicDisclosureRecipient = getBasicDisclosureRecipientAddress(adminAddress);
+  logger.info(
+    `📋 Basic disclosure recipient (private event scope): ${basicDisclosureRecipient}`
+  );
+  const basicDisclosureDeployMethod = BasicDisclosureContract.deploy(
+    wallet,
+    basicDisclosureRecipient
+  );
   logger.info("⏳ Waiting for deployment transaction to be mined...");
   const basicDisclosureContract = await basicDisclosureDeployMethod.send({
     from: address,
@@ -126,7 +136,9 @@ async function main() {
   });
   logger.info("🎉 Basic Disclosure Contract deployed successfully!");
   logger.info(`📍 Contract address: ${basicDisclosureContract.address}`);
-  await logContractInstantiationData(basicDisclosureDeployMethod, [address.toString()]);
+  await logContractInstantiationData(basicDisclosureDeployMethod, [
+    basicDisclosureRecipient.toString(),
+  ]);
 
   // Deploy shamir disclosure contract
   logger.info("🏎️  Starting shamir disclosure contract deployment...");
@@ -186,7 +198,7 @@ async function main() {
     certificateRegistryContract.address.toString(),
     ageCheckRequirementContract.address.toString(),
     basicDisclosureContract.address.toString(),
-    shamirDisclosureContract.address.toString(),
+    DISCLOSURE_CONTEXT.toString(),
   ]);
 
   // Verify deployment

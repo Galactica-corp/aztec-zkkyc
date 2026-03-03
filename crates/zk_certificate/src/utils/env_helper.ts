@@ -28,3 +28,22 @@ export function getCertificateRegistryAdminAddress(): AztecAddress {
     );
   }
 }
+
+/**
+ * Reads optional Basic Disclosure recipient from env.
+ * Falls back to the provided default when not configured.
+ */
+export function getBasicDisclosureRecipientAddress(
+  fallback: AztecAddress
+): AztecAddress {
+  const value = process.env.BASIC_DISCLOSURE_RECIPIENT_ADDRESS;
+  if (!value) return fallback;
+
+  try {
+    return AztecAddress.fromString(value);
+  } catch (error) {
+    throw new Error(
+      `Invalid BASIC_DISCLOSURE_RECIPIENT_ADDRESS format. Please ensure it is a valid hex string (e.g. "0x..."). ${error}`
+    );
+  }
+}

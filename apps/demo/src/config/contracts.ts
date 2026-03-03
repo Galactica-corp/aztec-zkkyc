@@ -50,9 +50,7 @@ export const contractsConfig = createContractConfig({
         ? AztecAddress.fromString(config.deployerAddress)
         : getDeployerAddress(config),
       constructorArgs: [
-        config.deployerAddress
-          ? AztecAddress.fromString(config.deployerAddress)
-          : getDeployerAddress(config),
+        AztecAddress.fromString(config.certificateRegistryAdminAddress),
       ],
       constructorArtifact: 'constructor',
     }),

@@ -54,24 +54,44 @@ export const useDisclosureEvents = (
     queryFn: async (): Promise<PrivateEvent<BasicDisclosureEventPayload>[]> => {
       const wallet = connector!.getWallet();
       if (!wallet || !contractAddress || !account) {
+        console.log('[useDisclosureEvents] Skipping fetch', {
+          hasWallet: Boolean(wallet),
+          hasContractAddress: Boolean(contractAddress),
+          hasAccount: Boolean(account),
+        });
         return [];
       }
       const filter = {
         contractAddress: AztecAddress.fromString(contractAddress),
         scopes: [account.getAddress()],
       };
-      return queuePxeCall(() =>
+      console.log('[useDisclosureEvents] Fetching private disclosure events', {
+        contractAddress,
+        scopeAddress,
+        scopes: filter.scopes.map((scope) => scope.toString()),
+      });
+      const events = await queuePxeCall(() =>
         wallet.getPrivateEvents<BasicDisclosureEventPayload>(
           BasicDisclosureContract.events.BasicDisclosureEvent,
           filter
         )
       );
+      console.log('[useDisclosureEvents] Fetched private disclosure events', {
+        contractAddress,
+        scopeAddress,
+        eventCount: events.length,
+      });
+      return events;
     },
     enabled: canFetch,
     staleTime: 30_000,
   });
 
   const refetch = async () => {
+    console.log('[useDisclosureEvents] Manual refresh triggered', {
+      contractAddress,
+      scopeAddress,
+    });
     await queryClient.invalidateQueries({
       queryKey: queryKeys.disclosureEvents.list(
         contractAddress ?? '',
