@@ -12,14 +12,12 @@ import type { PXE } from '@aztec/pxe/server';
 import { AVAILABLE_NETWORKS } from '../../../../config/networks';
 import { FeePaymentRegister } from '../../../../services/aztec/feePayment/FeePaymentRegister';
 import { MinimalWallet } from '../../../../utils/MinimalWallet';
-import { getEnv } from '../../../../utils/env';
 import { NetworkService } from '../network';
 import { AztecStorageService } from '../storage';
 import type { AztecNetwork } from '../../../../config/networks/constants';
 
 const logger = createLogger('shared-pxe-service');
 const pxeLogger = createLogger('pxe');
-const PROVER_ENABLED = getEnv().proverEnabled;
 
 export interface SharedPXEInstance {
   pxe: PXE;
@@ -151,6 +149,10 @@ class SharedPXEServiceClass {
     return networkConfig?.feePaymentContracts;
   }
 
+  private getNetworkConfig(networkName: string) {
+    return AVAILABLE_NETWORKS.find((n) => n.name === networkName);
+  }
+
   private normalizeNodeUrl(nodeUrl: string): string {
     if (!nodeUrl) {
       return nodeUrl;
@@ -176,7 +178,9 @@ class SharedPXEServiceClass {
 
     const config = getPXEConfig();
     config.l1Contracts = l1Contracts;
-    config.proverEnabled = PROVER_ENABLED;
+    // Use network-specific prover mode. Devnet requires real proofs, sandbox doesn't.
+    const networkConfig = this.getNetworkConfig(networkName);
+    config.proverEnabled = networkConfig?.proverEnabled ?? false;
 
     const pxe = await createPXE(aztecNode, config, {
       store: pxeStore,
