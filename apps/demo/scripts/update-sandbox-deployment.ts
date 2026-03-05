@@ -29,12 +29,20 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const SANDBOX_JSON_PATH = path.join(
-  __dirname,
-  '../src/config/deployments/sandbox.json'
-);
+const DEPLOYMENT_JSON_PATHS = {
+  sandbox: path.join(__dirname, '../src/config/deployments/sandbox.json'),
+  devnet: path.join(__dirname, '../src/config/deployments/devnet.json'),
+} as const;
+
+const NETWORK_NODE_URLS = {
+  sandbox: 'http://localhost:8080',
+  devnet: 'https://v4-devnet-2.aztec-labs.com/',
+} as const;
+
+type DeploymentNetwork = keyof typeof DEPLOYMENT_JSON_PATHS;
 
 export interface DeploymentPayload {
+  network?: DeploymentNetwork;
   certificateRegistryContract: { address: string; salt: string };
   ageCheckRequirementContract: { address: string; salt: string };
   sanctionListRequirementContract: { address: string; salt: string };
@@ -54,6 +62,11 @@ export interface DeploymentPayload {
 
 function main(): void {
   const inputPath = process.argv[2];
+  const networkArg = process.argv[3];
+  const argNetwork =
+    networkArg === 'devnet' || networkArg === 'sandbox'
+      ? networkArg
+      : undefined;
   if (!inputPath) {
     console.error(
       'Usage: tsx scripts/update-sandbox-deployment.ts <path-to-deployment-json>'
@@ -71,6 +84,7 @@ function main(): void {
   }
 
   const {
+    network: payloadNetwork,
     certificateRegistryContract,
     ageCheckRequirementContract,
     sanctionListRequirementContract,
@@ -82,6 +96,9 @@ function main(): void {
     deployer,
     nodeUrl,
   } = payload;
+  const network: DeploymentNetwork = payloadNetwork ?? argNetwork ?? 'sandbox';
+  const deploymentJsonPath = DEPLOYMENT_JSON_PATHS[network];
+  const defaultNodeUrl = NETWORK_NODE_URLS[network];
   if (
     !certificateRegistryContract?.address ||
     !certificateRegistryContract?.salt
@@ -152,20 +169,21 @@ function main(): void {
 
   let deployment: Record<string, unknown>;
   try {
-    const existing = readFileSync(SANDBOX_JSON_PATH, 'utf-8');
+    const existing = readFileSync(deploymentJsonPath, 'utf-8');
     deployment = JSON.parse(existing) as Record<string, unknown>;
   } catch {
     deployment = {
-      network: 'sandbox',
-      nodeUrl: nodeUrl ?? 'http://localhost:8080',
+      network,
+      nodeUrl: nodeUrl ?? defaultNodeUrl,
       dripperContract: { address: '0x00', salt: '0x00' },
       tokenContract: { address: '0x00', salt: '0x00' },
       deployer,
-      proverEnabled: false,
+      proverEnabled: network === 'devnet',
       deployedAt: new Date().toISOString(),
     };
   }
 
+  deployment.network = network;
   deployment.certificateRegistryContract = certificateRegistryContract;
   deployment.ageCheckRequirementContract = ageCheckRequirementContract;
   deployment.sanctionListRequirementContract = sanctionListRequirementContract;
@@ -175,11 +193,11 @@ function main(): void {
   deployment.useCaseExampleContract = useCaseExampleContract;
   deployment.certificateRegistryAdminAddress = certificateRegistryAdminAddress;
   deployment.deployer = deployer;
-  deployment.nodeUrl = deployment.nodeUrl ?? nodeUrl ?? 'http://localhost:8080';
+  deployment.nodeUrl = nodeUrl ?? (deployment.nodeUrl as string) ?? defaultNodeUrl;
   deployment.deployedAt = new Date().toISOString();
 
-  writeFileSync(SANDBOX_JSON_PATH, JSON.stringify(deployment, null, 2));
-  console.log('Updated sandbox deployment:', SANDBOX_JSON_PATH);
+  writeFileSync(deploymentJsonPath, JSON.stringify(deployment, null, 2));
+  console.log(`Updated ${network} deployment:`, deploymentJsonPath);
 }
 
 main();

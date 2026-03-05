@@ -1,7 +1,15 @@
 import { AztecAddress } from '@aztec/stdlib/aztec-address';
+import { getDevnetDeployment, PLACEHOLDER_ADDRESS, PLACEHOLDER_SALT } from '../deployments';
 import { NetworkConfig } from './types';
 
 const ZERO_ADDRESS = AztecAddress.ZERO.toString();
+const deployment = getDevnetDeployment();
+const certRegistry = deployment.certificateRegistryContract;
+const ageCheckRequirement = deployment.ageCheckRequirementContract;
+const sanctionListRequirement = deployment.sanctionListRequirementContract;
+const basicDisclosure = deployment.basicDisclosureContract;
+const shamirDisclosure = deployment.shamirDisclosureContract;
+const useCaseExample = deployment.useCaseExampleContract;
 
 /**
  * Devnet configuration for public development network.
@@ -13,47 +21,52 @@ export const DEVNET_CONFIG: NetworkConfig = {
   name: 'devnet',
   displayName: 'Devnet',
   description: 'Public development network for testing with real tokens',
-  nodeUrl: 'https://v4-devnet-2.aztec-labs.com/',
-  dripperContractAddress:
-    '0x02bc708c7f88a6bacefb7133eaf97a55d28980717c72bbd63d36d516536d9c21',
-  tokenContractAddress:
-    '0x1d64b9cf07d536e6b218c14256c4965abb568f02648d5ce1da6d58caea6c3639',
+  nodeUrl: deployment.nodeUrl,
+  dripperContractAddress: deployment.dripperContract.address,
+  tokenContractAddress: deployment.tokenContract.address,
   certificateRegistryContractAddress:
-    '0x0000000000000000000000000000000000000000000000000000000000000000',
-  certificateRegistryDeploymentSalt: '0x00',
+    certRegistry?.address ?? PLACEHOLDER_ADDRESS,
+  certificateRegistryDeploymentSalt: certRegistry?.salt ?? PLACEHOLDER_SALT,
   certificateRegistryAdminAddress:
-    '0x0000000000000000000000000000000000000000000000000000000000000000',
+    deployment.certificateRegistryAdminAddress ?? PLACEHOLDER_ADDRESS,
   ageCheckRequirementContractAddress:
-    '0x0000000000000000000000000000000000000000000000000000000000000000',
-  ageCheckRequirementDeploymentSalt: '0x00',
+    ageCheckRequirement?.address ?? PLACEHOLDER_ADDRESS,
+  ageCheckRequirementDeploymentSalt:
+    ageCheckRequirement?.salt ?? PLACEHOLDER_SALT,
   sanctionListRequirementContractAddress:
-    '0x0000000000000000000000000000000000000000000000000000000000000000',
-  sanctionListRequirementDeploymentSalt: '0x00',
+    sanctionListRequirement?.address ?? PLACEHOLDER_ADDRESS,
+  sanctionListRequirementDeploymentSalt:
+    sanctionListRequirement?.salt ?? PLACEHOLDER_SALT,
   basicDisclosureContractAddress:
-    '0x0000000000000000000000000000000000000000000000000000000000000000',
-  basicDisclosureDeploymentSalt: '0x00',
+    basicDisclosure?.address ?? PLACEHOLDER_ADDRESS,
+  basicDisclosureDeploymentSalt: basicDisclosure?.salt ?? PLACEHOLDER_SALT,
   shamirDisclosureContractAddress:
-    '0x0000000000000000000000000000000000000000000000000000000000000000',
-  shamirDisclosureDeploymentSalt: '0x00',
+    shamirDisclosure?.address ?? PLACEHOLDER_ADDRESS,
+  shamirDisclosureDeploymentSalt: shamirDisclosure?.salt ?? PLACEHOLDER_SALT,
   shamirDisclosureConstructorArgs: {
-    recipientCount: 0,
-    threshold: 0,
-    recipients: [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS],
-    participantAddresses: [
-      ZERO_ADDRESS,
-      ZERO_ADDRESS,
+    recipientCount: deployment.shamirDisclosureConstructorArgs?.recipientCount ?? 0,
+    threshold: deployment.shamirDisclosureConstructorArgs?.threshold ?? 0,
+    recipients: deployment.shamirDisclosureConstructorArgs?.recipients ?? [
       ZERO_ADDRESS,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
     ],
+    participantAddresses:
+      deployment.shamirDisclosureConstructorArgs?.participantAddresses ?? [
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+      ],
   },
   useCaseExampleContractAddress:
-    '0x0000000000000000000000000000000000000000000000000000000000000000',
-  useCaseExampleDeploymentSalt: '0x00',
-  deployerAddress: AztecAddress.ZERO.toString(),
-  dripperDeploymentSalt: '1337',
-  tokenDeploymentSalt: '1337',
-  proverEnabled: true,
+    useCaseExample?.address ?? PLACEHOLDER_ADDRESS,
+  useCaseExampleDeploymentSalt: useCaseExample?.salt ?? PLACEHOLDER_SALT,
+  deployerAddress: deployment.deployer,
+  dripperDeploymentSalt: deployment.dripperContract.salt,
+  tokenDeploymentSalt: deployment.tokenContract.salt,
+  proverEnabled: deployment.proverEnabled,
   isTestnet: true,
   feePaymentContracts: {
     metered: {

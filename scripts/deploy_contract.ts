@@ -3,7 +3,7 @@ import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
 import { getSponsoredFPCInstance } from "../crates/zk_certificate/src/utils/sponsored_fpc.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { getTimeouts } from "../config/config.js";
+import { getAztecNodeUrl, getEnv, getTimeouts } from "../config/config.js";
 import { createAccountFromEnv } from "../crates/zk_certificate/src/utils/create_account_from_env.js";
 import {
   getBasicDisclosureRecipientAddress,
@@ -238,7 +238,8 @@ async function main() {
   logger.info(`   - Admin Address: ${adminAddress}`);
   logger.info(`   - Sponsored FPC: ${sponsoredFPC.address}`);
 
-  // Update demo app sandbox deployment so Settings show these contracts
+  // Update demo app deployment config so Settings show these contracts.
+  const targetNetwork = getEnv() === "devnet" ? "devnet" : "sandbox";
   const certInstance = await certificateDeployMethod.getInstance();
   const ageCheckInstance = await ageCheckDeployMethod.getInstance();
   const sanctionListInstance = await sanctionListDeployMethod.getInstance();
@@ -296,15 +297,20 @@ async function main() {
       },
       certificateRegistryAdminAddress: adminAddress.toString(),
       deployer: address.toString(),
-      nodeUrl: "http://localhost:8080",
+      network: targetNetwork,
+      nodeUrl: getAztecNodeUrl(),
       logger,
     });
   }
 }
 
-main().catch((error: unknown) => {
-  const logger = createLogger('aztec:aztec-starter');
-  logger.error(`❌ Deployment failed: ${error instanceof Error ? error.message : serializeError(error)}`);
-  logger.error(`📋 Error details: ${serializeError(error)}`);
-  process.exit(1);
-});
+main()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch((error: unknown) => {
+    const logger = createLogger('aztec:aztec-starter');
+    logger.error(`❌ Deployment failed: ${error instanceof Error ? error.message : serializeError(error)}`);
+    logger.error(`📋 Error details: ${serializeError(error)}`);
+    process.exit(1);
+  });

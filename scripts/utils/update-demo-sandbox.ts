@@ -29,6 +29,7 @@ export interface UpdateDemoSandboxParams {
   /** Admin address used in Certificate Registry constructor (from getCertificateRegistryAdminAddress) */
   certificateRegistryAdminAddress: string;
   deployer: string;
+  network?: "sandbox" | "devnet";
   nodeUrl?: string;
   logger?: { info: (msg: string) => void; warn: (msg: string) => void };
 }
@@ -42,7 +43,9 @@ export function updateDemoSandboxDeployment(
 ): boolean {
   const { logger } = params;
   try {
+    const network = params.network ?? "sandbox";
     const payload = {
+      network,
       certificateRegistryContract: params.certificateRegistryContract,
       ageCheckRequirementContract: params.ageCheckRequirementContract,
       sanctionListRequirementContract: params.sanctionListRequirementContract,
@@ -57,7 +60,7 @@ export function updateDemoSandboxDeployment(
     writeFileSync(DEPLOY_OUTPUT_JSON, JSON.stringify(payload, null, 2));
     const result = spawnSync(
       "npx",
-      ["tsx", "scripts/update-sandbox-deployment.ts", DEPLOY_OUTPUT_JSON],
+      ["tsx", "scripts/update-sandbox-deployment.ts", DEPLOY_OUTPUT_JSON, network],
       { cwd: APPS_DEMO, stdio: "inherit", shell: true }
     );
     if (result.status !== 0) {
@@ -67,7 +70,7 @@ export function updateDemoSandboxDeployment(
       return false;
     }
     logger?.info(
-      "📝 Updated demo app sandbox deployment via apps/demo/scripts/update-sandbox-deployment.ts"
+      `📝 Updated demo app ${network} deployment via apps/demo/scripts/update-sandbox-deployment.ts`
     );
     return true;
   } catch (err) {
