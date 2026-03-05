@@ -18,7 +18,7 @@
     "codegen": "aztec codegen target --outdir artifacts --force",
     "compile": "rm -rf ./node_modules/@defi-wonderland/aztec-fee-payment/src/ts/dist/target ./apps/demo/node_modules/@defi-wonderland/aztec-fee-payment/src/ts/dist/target ./node_modules/@defi-wonderland/aztec-standards/target ./apps/demo/node_modules/@defi-wonderland/aztec-standards/target ./apps/demo/contracts/ecdsa_k_eth_signer_account/target ./apps/demo/src/target ./apps/demo/target && aztec compile --workspace",
     "deploy::sandbox": "yarn clean-sandbox && yarn deploy-account && yarn deploy-contracts",
-    "clean-sandbox": "rm -rf pxe_data_* wallet_data_*",
+    "clean::sandbox": "rm -rf pxe_data_* wallet_data_*",
     "deploy-contracts": "NODE_NO_WARNINGS=1 node --loader ts-node/esm scripts/deploy_contract.ts",
     "deploy::devnet": "NODE_NO_WARNINGS=1 AZTEC_ENV=devnet node --loader ts-node/esm scripts/deploy_contract.ts",
     "deploy-new-account": "NODE_NO_WARNINGS=1 node --loader ts-node/esm scripts/deploy_new_account.ts",

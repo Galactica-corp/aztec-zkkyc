@@ -1,6 +1,6 @@
 {
   "network": "devnet",
-  "nodeUrl": "https://v4-devnet-2.aztec-labs.com/",
+  "nodeUrl": "https://v4-devnet-2.aztec-labs.com",
   "dripperContract": {
     "address": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "salt": "0x0000000000000000000000000000000000000000000000000000000000000000"
@@ -9,7 +9,48 @@
     "address": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "salt": "0x0000000000000000000000000000000000000000000000000000000000000000"
   },
-  "deployer": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "deployer": "0x133bfbcfd1be732482ba740b84a65d239e62f04957cdd238658228fdaaca30e1",
   "proverEnabled": true,
-  "deployedAt": ""
+  "deployedAt": "2026-03-05T14:54:50.153Z",
+  "certificateRegistryContract": {
+    "address": "0x2bff9de5ee37fbec5f0acdb43430a696a5150d8731f6cd4ed34461a0287c7da2",
+    "salt": "0x2c928e9792049073b54f0ddcfaf2092eca4ef390450b95445b165a1a2742fb37"
+  },
+  "ageCheckRequirementContract": {
+    "address": "0x11f82b70e84bc0ead9c86fa8efa98d163358cca323b38b9cebc7f9a8667174c4",
+    "salt": "0x0bca6cc176ddecebb1f07273a4acb040af213e7630ddf4cfbcefd611e2e549b2"
+  },
+  "sanctionListRequirementContract": {
+    "address": "0x058950057bcc120473a6235258ac66d09aac6de4cfbab6c8c3e75d73c1be10ce",
+    "salt": "0x07b0691627d8483107d4d68d43f6bf345b210bbb3927727ccbddd75c620563ff"
+  },
+  "basicDisclosureContract": {
+    "address": "0x1f68ba89c539aee368d221e8dcb3f60d47a85c8f839e06ec6d337c95267e6a77",
+    "salt": "0x0aeb01104737857b44b126957d351c721f055ce1880fd7087500c8ffd393979d"
+  },
+  "shamirDisclosureContract": {
+    "address": "0x23c228f05ebd8c30fbc7ca079b510b77bba16c1f0eecdf245cbeb86f875ffcf7",
+    "salt": "0x10b62b5c83a6332b40f20d6cde606725645d9b8e4eb4724515acc3a4d51e6a49"
+  },
+  "shamirDisclosureConstructorArgs": {
+    "recipientCount": 3,
+    "threshold": 2,
+    "recipients": [
+      "0x068cc5ba7afa44d14b088c94699f1ad3fd40136bf847c4e96a5b1fb6357d182d",
+      "0x0f6b01f27e5a44fa7f14ac8761e2b5333c9307477326b3c27d6ab136b7edd722",
+      "0x2320c9938b3e87feb4e475413456d028572f3367e18d61e7d198d342b557f297"
+    ],
+    "participantAddresses": [
+      "0x133bfbcfd1be732482ba740b84a65d239e62f04957cdd238658228fdaaca30e1",
+      "0x133bfbcfd1be732482ba740b84a65d239e62f04957cdd238658228fdaaca30e1",
+      "0x133bfbcfd1be732482ba740b84a65d239e62f04957cdd238658228fdaaca30e1",
+      "0x133bfbcfd1be732482ba740b84a65d239e62f04957cdd238658228fdaaca30e1",
+      "0x133bfbcfd1be732482ba740b84a65d239e62f04957cdd238658228fdaaca30e1"
+    ]
+  },
+  "useCaseExampleContract": {
+    "address": "0x24139ed3b86d195b3225c5ee50fc02943360c29d9df96b206cba62f101e8ffb3",
+    "salt": "0x083d1d108229d93ff1ed6009aa96442eb387bf4e87c24a92570c7421e68c958f"
+  },
+  "certificateRegistryAdminAddress": "0x068cc5ba7afa44d14b088c94699f1ad3fd40136bf847c4e96a5b1fb6357d182d"
 }
