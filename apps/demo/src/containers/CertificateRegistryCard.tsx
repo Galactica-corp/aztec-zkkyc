@@ -5,7 +5,11 @@ import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { Fr } from '@aztec/aztec.js/fields';
 import { poseidon2Hash } from '@aztec/foundation/crypto/poseidon';
 import { CertificateRegistryContract } from '../../../../artifacts/CertificateRegistry';
-import { useAztecWallet } from '../aztec-wallet';
+import { useAztecWallet, hasAppManagedPXE } from '../aztec-wallet';
+import {
+  SharedPXEService,
+  registerAddressAsSender,
+} from '../aztec-wallet/services/aztec/pxe';
 import { CertificateListSection } from '../components/certificates';
 import {
   Card,
@@ -393,6 +397,19 @@ export const CertificateRegistryCard: React.FC = () => {
         feePaymentMethod,
       });
       if (result.success) {
+        if (connector && hasAppManagedPXE(connector) && currentConfig) {
+          const pxeInstance = SharedPXEService.getExistingInstance(
+            currentConfig.nodeUrl,
+            currentConfig.name
+          );
+          if (pxeInstance) {
+            await registerAddressAsSender(
+              pxeInstance,
+              issueUser.trim(),
+              'certificateRegistry:issueCertificate'
+            );
+          }
+        }
         success('Certificate issued', `To ${issueUser}`);
         setIssueUser('');
         setIssueUniqueId('');
@@ -424,6 +441,8 @@ export const CertificateRegistryCard: React.FC = () => {
     kycCountry,
     writeContract,
     feePaymentMethod,
+    connector,
+    currentConfig,
     success,
     toastError,
   ]);
