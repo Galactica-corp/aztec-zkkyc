@@ -9,6 +9,7 @@ import {
   hasConfiguredCredentials,
 } from '../../../utils/accountCredentials';
 import { SharedPXEService, type SharedPXEInstance } from '../aztec/pxe';
+import { registerAddressAsSender } from '../aztec/pxe';
 import {
   deployAccountIfNotExists,
   type DeployAccountResult,
@@ -142,6 +143,11 @@ export async function createEmbeddedAccount(
       accountManager.getSecretKey()
     );
     wallet.addAccount(account);
+    await registerAddressAsSender(
+      pxeInstance,
+      account.getAddress(),
+      'embeddedAccount'
+    );
 
     // Deploy if needed (don't throw on deployment failure)
     let deployment: DeployAccountResult;
@@ -261,6 +267,11 @@ async function connectWithCredentials(
     accountManager.getSecretKey()
   );
   wallet.addAccount(account);
+  await registerAddressAsSender(
+    pxeInstance,
+    account.getAddress(),
+    'embeddedAccount'
+  );
 
   // Ensure account contract is initialized on-chain before use.
   // This is required for simulations/sends to work with configured credentials

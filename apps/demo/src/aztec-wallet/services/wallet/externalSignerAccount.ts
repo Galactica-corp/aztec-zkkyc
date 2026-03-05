@@ -4,6 +4,7 @@ import { AccountManager } from '@aztec/aztec.js/wallet';
 import { poseidon2Hash } from '@aztec/foundation/crypto/poseidon';
 import { EcdsaKEthSignerAccountContract } from '../../signers/EcdsaKEthSignerAccountContract';
 import { SharedPXEService, type SharedPXEInstance } from '../aztec/pxe';
+import { registerAddressAsSender } from '../aztec/pxe';
 import {
   deployAccountIfNotExists,
   type DeployAccountResult,
@@ -131,6 +132,11 @@ export async function createExternalSignerAccount(
       accountManager.getSecretKey()
     );
     wallet.addAccount(account);
+    await registerAddressAsSender(
+      pxeInstance,
+      account.getAddress(),
+      'externalSignerAccount'
+    );
 
     // External signer accounts must be initialized on-chain.
     // If deployment fails, fail connection early with a clear error.
