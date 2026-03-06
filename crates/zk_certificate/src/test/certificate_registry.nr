@@ -6,6 +6,7 @@ use dep::age_check_requirement::AgeCheckRequirement;
 use dep::basic_disclosure::BasicDisclosure;
 use ::aztec::protocol::address::AztecAddress;
 use ::aztec::protocol::storage::map::derive_storage_slot_in_map;
+use ::aztec::protocol::traits::FromField;
 use ::aztec::protocol::traits::ToField;
 use ::aztec::test::helpers::authwit::add_private_authwit_from_call;
 use dep::shamir_disclosure::ShamirDisclosure;
@@ -259,10 +260,15 @@ unconstrained fn test_user_proof_certificate_existence() {
         ),
     );
 
-    // let check_certificate_call =
-    //     CertificateRegistry::at(contract_address).check_certificate(user, 0);
-    // add_private_authwit_from_call(env, user, user, check_certificate_call);
-    // env.call_private(user, check_certificate_call);
+    let check_call = CertificateRegistry::at(contract_address).check_certificate(
+        user,
+        0,
+        AztecAddress::from_field(0),
+        AztecAddress::from_field(0),
+        0,
+    );
+    add_private_authwit_from_call(env, user, user, check_call);
+    env.call_private(user, check_call);
 }
 
 // Test: User can proof certificate existence with requirement check (age check)
@@ -298,11 +304,50 @@ unconstrained fn test_user_proof_certificate_existence_with_requirements() {
         ),
     );
 
-    let check_call = CertificateRegistry::at(contract_address).check_certificate_and_requirements(
+    let check_call = CertificateRegistry::at(contract_address).check_certificate(
         user,
         0,
         age_check_address,
         basic_disclosure_address,
+        TEST_DISCLOSURE_CONTEXT,
+    );
+    add_private_authwit_from_call(env, user, user, check_call);
+    env.call_private(user, check_call);
+}
+
+// Test: User can proof certificate existence with requirement check only
+#[test]
+unconstrained fn test_user_proof_certificate_existence_with_requirements_only() {
+    let (mut env, contract_address, admin) = utils::setup_certificate_registry();
+    let guardian = env.create_light_account();
+    let user = env.create_light_account();
+    let unique_id = Field::from(3);
+    let revocation_id = Field::from(1234563);
+    let (kyc_personal, kyc_address) = utils::sample_kyc_content();
+
+    let age_check_initializer = AgeCheckRequirement::interface().constructor(18u32);
+    let age_check_address = env
+        .deploy("@age_check_requirement/AgeCheckRequirement")
+        .with_public_initializer(admin, age_check_initializer);
+
+    env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
+    env.call_private(
+        guardian,
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_id,
+            CONTENT_TYPE_ZK_KYC,
+            kyc_personal,
+            kyc_address,
+        ),
+    );
+
+    let check_call = CertificateRegistry::at(contract_address).check_certificate(
+        user,
+        0,
+        age_check_address,
+        AztecAddress::from_field(0),
         TEST_DISCLOSURE_CONTEXT,
     );
     add_private_authwit_from_call(env, user, user, check_call);
@@ -371,11 +416,51 @@ unconstrained fn test_user_proof_certificate_existence_with_shamir_disclosure() 
         ),
     );
 
-    let check_call = CertificateRegistry::at(contract_address).check_certificate_and_requirements(
+    let check_call = CertificateRegistry::at(contract_address).check_certificate(
         user,
         0,
         age_check_address,
         shamir_disclosure_address,
+        TEST_DISCLOSURE_CONTEXT,
+    );
+    add_private_authwit_from_call(env, user, user, check_call);
+    env.call_private(user, check_call);
+}
+
+// Test: User can proof certificate existence with disclosure only
+#[test]
+unconstrained fn test_user_proof_certificate_existence_with_disclosure_only() {
+    let (mut env, contract_address, admin) = utils::setup_certificate_registry();
+    let guardian = env.create_light_account();
+    let user = env.create_light_account();
+    let unique_id = Field::from(4);
+    let revocation_id = Field::from(1234564);
+    let (kyc_personal, kyc_address) = utils::sample_kyc_content();
+
+    let disclosure_recipient = env.create_light_account();
+    let basic_disclosure_initializer = BasicDisclosure::interface().constructor(disclosure_recipient);
+    let basic_disclosure_address = env
+        .deploy("@basic_disclosure/BasicDisclosure")
+        .with_public_initializer(admin, basic_disclosure_initializer);
+
+    env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
+    env.call_private(
+        guardian,
+        CertificateRegistry::at(contract_address).issue_certificate(
+            user,
+            unique_id,
+            revocation_id,
+            CONTENT_TYPE_ZK_KYC,
+            kyc_personal,
+            kyc_address,
+        ),
+    );
+
+    let check_call = CertificateRegistry::at(contract_address).check_certificate(
+        user,
+        0,
+        AztecAddress::from_field(0),
+        basic_disclosure_address,
         TEST_DISCLOSURE_CONTEXT,
     );
     add_private_authwit_from_call(env, user, user, check_call);
@@ -417,7 +502,7 @@ unconstrained fn test_fail_requirement_blocks_disclosure_flow() {
         ),
     );
 
-    let check_call = CertificateRegistry::at(contract_address).check_certificate_and_requirements(
+    let check_call = CertificateRegistry::at(contract_address).check_certificate(
         user,
         0,
         age_check_address,
@@ -434,8 +519,13 @@ unconstrained fn test_fail_user_proof_certificate_non_existence() {
     let (mut env, contract_address, _) = utils::setup_certificate_registry();
     let user = env.create_light_account();
 
-    let check_certificate_call =
-        CertificateRegistry::at(contract_address).check_certificate(user, 0);
+    let check_certificate_call = CertificateRegistry::at(contract_address).check_certificate(
+        user,
+        0,
+        AztecAddress::from_field(0),
+        AztecAddress::from_field(0),
+        0,
+    );
     add_private_authwit_from_call(env, user, user, check_certificate_call);
     env.call_private(user, check_certificate_call);
 }
@@ -467,8 +557,13 @@ unconstrained fn test_fail_user_proof_certificate_existence_after_guardian_remov
         CertificateRegistry::at(contract_address).remove_guardian_from_whitelist(guardian),
     );
 
-    let check_certificate_call =
-        CertificateRegistry::at(contract_address).check_certificate(user, 0);
+    let check_certificate_call = CertificateRegistry::at(contract_address).check_certificate(
+        user,
+        0,
+        AztecAddress::from_field(0),
+        AztecAddress::from_field(0),
+        0,
+    );
     add_private_authwit_from_call(env, user, user, check_certificate_call);
     env.call_private(user, check_certificate_call);
 }
@@ -543,8 +638,13 @@ unconstrained fn test_fail_user_use_certificate_after_revocation() {
     env.mine_block();
     env.mine_block_at(env.last_block_timestamp() + 24 * 60 * 60); // 24 hours from now to pass the delay
 
-    let check_certificate_call =
-        CertificateRegistry::at(contract_address).check_certificate(user, 0);
+    let check_certificate_call = CertificateRegistry::at(contract_address).check_certificate(
+        user,
+        0,
+        AztecAddress::from_field(0),
+        AztecAddress::from_field(0),
+        0,
+    );
     add_private_authwit_from_call(env, user, user, check_certificate_call);
     env.call_private(user, check_certificate_call);
 }

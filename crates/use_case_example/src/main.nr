@@ -54,7 +54,7 @@ pub contract UseCaseExample {
 
         self.call(
             CertificateRegistry::at(self.storage.zk_certificate_registry.read())
-                .check_certificate_and_requirements(
+                .check_certificate(
                     user,
                     authwit_nonce,
                     self.storage.requirement_checker_address.read(),
@@ -82,7 +82,7 @@ pub contract UseCaseExample {
 
         self.call(
             CertificateRegistry::at(self.storage.zk_certificate_registry.read())
-                .check_certificate_and_requirements(
+                .check_certificate(
                     user,
                     authwit_nonce,
                     requirement_checker_address,

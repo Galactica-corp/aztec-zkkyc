@@ -329,48 +329,23 @@ pub contract CertificateRegistry {
     }
 
     /**
-     * Check if a user has a valid certificate.
-     */
-    #[authorize_once("from", "authwit_nonce")]
-    #[external("private")]
-    fn check_certificate(from: AztecAddress, authwit_nonce: Field) {
-        let mut options = NoteGetterOptions::new().set_limit(1);
-
-        let notes = self.storage.certificates.at(from).pop_notes(options);
-        assert(notes.len() > 0, "No certificate found");
-
-        // ensure that the issuing guardian is still whitelisted
-        self.enqueue_self._check_guardian_whitelisted(notes.get(0).guardian);
-
-        // Check that the note has not been revoked
-        assert_eq(
-            self.storage.revocation_list.at(notes.get(0).revocation_id).get_current_value(),
-            false,
-            "Certificate revoked",
-        );
-
-        // Put the certificate back into the storage to be used again
-        self.storage.certificates.at(from).insert(notes.get(0)).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
-    }
-
-    /**
-     * Check if a user has a valid certificate and that requirement/disclosure checks pass.
+     * Check if a user has a valid certificate and optionally run requirements/disclosures.
      * @param from - The user address whose certificate to check
      * @param authwit_nonce - Nonce for the authwit
-     * @param requirement_checker_address - Requirement checker contract address
-     * @param disclosure_contract_address - Disclosure contract address
+     * @param requirement_checker_address - Requirement checker contract address (set to ZeroAddress to skip)
+     * @param disclosure_contract_address - Disclosure contract address (set to ZeroAddress to skip)
      * @param context - Use-case specific context passed through to disclosures
      */
     #[authorize_once("from", "authwit_nonce")]
     #[external("private")]
-    fn check_certificate_and_requirements(
+    fn check_certificate(
         from: AztecAddress,
         authwit_nonce: Field,
         requirement_checker_address: AztecAddress,
         disclosure_contract_address: AztecAddress,
         context: Field,
     ) {
-        let mut options = NoteGetterOptions::new().set_limit(1);
+        let options = NoteGetterOptions::new().set_limit(1);
 
         let notes = self.storage.certificates.at(from).pop_notes(options);
         assert(notes.len() > 0, "No certificate found");
@@ -387,42 +362,49 @@ pub contract CertificateRegistry {
             "Certificate revoked",
         );
 
-        // Pop content notes to get data for requirement check
-        let getter_0 = NoteGetterOptions::new()
-            .select(ContentNote::properties().content_id, Comparator.EQ, certificate.unique_id + 0)
-            .set_limit(1);
-        let getter_1 = NoteGetterOptions::new()
-            .select(ContentNote::properties().content_id, Comparator.EQ, certificate.unique_id + 1)
-            .set_limit(1);
-        let popped_0 = self.storage.content_notes.at(from).pop_notes(getter_0);
-        let popped_1 = self.storage.content_notes.at(from).pop_notes(getter_1);
-        assert(popped_0.len() > 0, "Content note 0 not found");
-        assert(popped_1.len() > 0, "Content note 1 not found");
-        let note_0 = popped_0.get(0);
-        let note_1 = popped_1.get(0);
+        let run_requirement_check = !requirement_checker_address.to_field().eq(0);
+        let run_disclosure = !disclosure_contract_address.to_field().eq(0);
 
-        // Call requirement checker
-        self.call(
-            RequirementCheckerInterface::at(requirement_checker_address)
-                .check_requirements(certificate.content_type, note_0.data, note_1.data),
-        );
+        if run_requirement_check | run_disclosure {
+            // Pop content notes only when requirement/disclosure checks are enabled.
+            let getter_0 = NoteGetterOptions::new()
+                .select(ContentNote::properties().content_id, Comparator.EQ, certificate.unique_id + 0)
+                .set_limit(1);
+            let getter_1 = NoteGetterOptions::new()
+                .select(ContentNote::properties().content_id, Comparator.EQ, certificate.unique_id + 1)
+                .set_limit(1);
+            let popped_0 = self.storage.content_notes.at(from).pop_notes(getter_0);
+            let popped_1 = self.storage.content_notes.at(from).pop_notes(getter_1);
+            assert(popped_0.len() > 0, "Content note 0 not found");
+            assert(popped_1.len() > 0, "Content note 1 not found");
+            let note_0 = popped_0.get(0);
+            let note_1 = popped_1.get(0);
 
-        // Call disclosure contract after requirements pass
-        self.call(
-            DisclosureInterface::at(disclosure_contract_address).disclose(
-                from,
-                context,
-                certificate.guardian,
-                certificate.unique_id,
-                certificate.content_type,
-                note_0.data,
-                note_1.data,
-            ),
-        );
+            if run_requirement_check {
+                self.call(
+                    RequirementCheckerInterface::at(requirement_checker_address)
+                        .check_requirements(certificate.content_type, note_0.data, note_1.data),
+                );
+            }
 
-        // Put content notes back
-        self.storage.content_notes.at(from).insert(note_0).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
-        self.storage.content_notes.at(from).insert(note_1).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+            if run_disclosure {
+                self.call(
+                    DisclosureInterface::at(disclosure_contract_address).disclose(
+                        from,
+                        context,
+                        certificate.guardian,
+                        certificate.unique_id,
+                        certificate.content_type,
+                        note_0.data,
+                        note_1.data,
+                    ),
+                );
+            }
+
+            // Put content notes back.
+            self.storage.content_notes.at(from).insert(note_0).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+            self.storage.content_notes.at(from).insert(note_1).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+        }
 
         // Put the certificate back into the storage to be used again
         self.storage.certificates.at(from).insert(certificate).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);

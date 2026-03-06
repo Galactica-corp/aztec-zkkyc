@@ -59,7 +59,7 @@ unconstrained fn test_zk_certificate_integration() {
 
     // Prepare authwit for checking the certificate and requirements.
     let check_call = CertificateRegistry::at(zk_certificate_registry_address)
-        .check_certificate_and_requirements(
+        .check_certificate(
             user,
             AUTHWIT_NONCE,
             age_check_address,
@@ -93,7 +93,7 @@ unconstrained fn test_fail_user_proof_certificate_non_existence() {
     let user = env.create_contract_account(); // use contract account to support authwit
 
     let check_call = CertificateRegistry::at(zk_certificate_registry_address)
-        .check_certificate_and_requirements(
+        .check_certificate(
             user,
             AUTHWIT_NONCE,
             age_check_address,
@@ -155,7 +155,7 @@ unconstrained fn test_fail_underage_user() {
     // Default block timestamp (~2026): user born 2020-01-01 is 16, under threshold 18
 
     let check_call = CertificateRegistry::at(zk_certificate_registry_address)
-        .check_certificate_and_requirements(
+        .check_certificate(
             user,
             AUTHWIT_NONCE,
             age_check_address,
