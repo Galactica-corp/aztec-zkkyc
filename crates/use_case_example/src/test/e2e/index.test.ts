@@ -236,7 +236,7 @@ describe("ZK Certificate and UseCaseExample", () => {
   }, 600000);
 
   it("User cannot use use_privately before guardian issues certificate", async () => {
-    const action = certificateRegistry.methods.check_certificate_and_requirements(
+    const action = certificateRegistry.methods.check_certificate(
       userAccount.address,
       AUTHWIT_NONCE,
       ageCheckRequirement.address,
@@ -286,7 +286,7 @@ describe("ZK Certificate and UseCaseExample", () => {
   }, 60000);
 
   it("User uses certificate with authwit to call use_privately", async () => {
-    const action = certificateRegistry.methods.check_certificate_and_requirements(
+    const action = certificateRegistry.methods.check_certificate(
       userAccount.address,
       AUTHWIT_NONCE,
       ageCheckRequirement.address,

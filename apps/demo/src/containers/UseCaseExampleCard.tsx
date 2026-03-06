@@ -156,7 +156,7 @@ export const UseCaseExampleCard: React.FC = () => {
       const action = (
         certRegistry as unknown as {
           methods: {
-            check_certificate_and_requirements: (
+            check_certificate: (
               _user: typeof userAddress,
               _authwitNonce: Fr,
               _requirementChecker: AztecAddress,
@@ -165,7 +165,7 @@ export const UseCaseExampleCard: React.FC = () => {
             ) => unknown;
           };
         }
-      ).methods.check_certificate_and_requirements(
+      ).methods.check_certificate(
         userAddress,
         nonce,
         AztecAddress.fromString(requirementCheckerAddress),
@@ -221,7 +221,9 @@ export const UseCaseExampleCard: React.FC = () => {
         );
       }
 
-      const deployerAddress = AztecAddress.fromString(currentConfig.deployerAddress);
+      const deployerAddress = AztecAddress.fromString(
+        currentConfig.deployerAddress
+      );
 
       const instance = await getContractInstanceFromInstantiationParams(
         ShamirDisclosureContract.artifact,
@@ -406,7 +408,7 @@ export const UseCaseExampleCard: React.FC = () => {
           <CardDescription>
             Example contract that checks compliance via the ZK Certificate
             Registry. Call use_privately with a random authwit nonce and an auth
-            witness for check_certificate_and_requirements.
+            witness for check_certificate.
           </CardDescription>
         </div>
       </CardHeader>
@@ -426,7 +428,7 @@ export const UseCaseExampleCard: React.FC = () => {
               <p className={styles.helperText}>
                 Private function that checks your certificate with the ZK
                 Certificate Registry. Uses a random authwit nonce and an auth
-                witness for check_certificate_and_requirements.
+                witness for check_certificate.
               </p>
               <Button
                 variant={

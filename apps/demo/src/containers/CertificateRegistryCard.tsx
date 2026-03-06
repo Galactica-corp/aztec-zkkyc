@@ -30,10 +30,7 @@ import {
   TabsContent,
 } from '../components/ui';
 import { contractsConfig } from '../config/contracts';
-import {
-  useRequiredContracts,
-  useCertificates,
-} from '../hooks';
+import { useRequiredContracts, useCertificates } from '../hooks';
 import { useToast } from '../hooks';
 import { useWriteContract } from '../hooks/contracts';
 import { useFeePayment } from '../store/feePayment';
@@ -81,9 +78,6 @@ const CONTENT_TYPE_ZK_KYC = 1n;
 const DEFAULT_KYC_BIRTHDAY_DATE = '1990-06-01';
 const DEFAULT_KYC_VERIFICATION_LEVEL = '2';
 const EMPTY_REGION_VALUE = '__none__';
-const MAX_REQUIREMENT_CHECKERS = 4;
-const MAX_DISCLOSURES = 4;
-
 const toPaddedField = (value: string): Fr =>
   Fr.fromBufferReduce(Buffer.from(value.padEnd(32, '#'), 'utf8'));
 
@@ -502,7 +496,13 @@ export const CertificateRegistryCard: React.FC = () => {
         contract: CertificateRegistryContract,
         address: registryAddress,
         functionName: 'check_certificate',
-        args: [AztecAddress.fromString(connectedAddress), 0n],
+        args: [
+          AztecAddress.fromString(connectedAddress),
+          0n,
+          AztecAddress.ZERO,
+          AztecAddress.ZERO,
+          0n,
+        ],
         feePaymentMethod,
       });
       if (result.success) {
@@ -549,28 +549,17 @@ export const CertificateRegistryCard: React.FC = () => {
       const result = await writeContract({
         contract: CertificateRegistryContract,
         address: registryAddress,
-        functionName: 'check_certificate_and_requirements',
+        functionName: 'check_certificate',
         args: [
           AztecAddress.fromString(connectedAddress),
           0n,
-          Array.from(
-            { length: MAX_REQUIREMENT_CHECKERS },
-            () => AztecAddress.fromString(checkRequirementAddress.trim())
-          ),
-          1,
-          Array.from({ length: MAX_DISCLOSURES }, (_, i) =>
-            i % 2 === 0
-              ? AztecAddress.fromString(
-                  currentConfig?.basicDisclosureContractAddress ??
-                    checkRequirementAddress.trim()
-                )
-              : AztecAddress.fromString(
-                  currentConfig?.shamirDisclosureContractAddress ??
-                    checkRequirementAddress.trim()
-                )
-          ),
-          2,
-          777,
+          AztecAddress.fromString(checkRequirementAddress.trim()),
+          currentConfig?.basicDisclosureContractAddress
+            ? AztecAddress.fromString(
+                currentConfig.basicDisclosureContractAddress
+              )
+            : AztecAddress.ZERO,
+          777n,
         ],
         feePaymentMethod,
       });
