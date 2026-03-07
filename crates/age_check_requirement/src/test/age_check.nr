@@ -69,7 +69,7 @@ unconstrained fn test_age_check_passes_adult() {
 }
 
 // Test: User with birthday 2010-01-01, threshold 18 - fails (default block ts ~2026, user 16)
-#[test(should_fail)]
+#[test(should_fail_with = "Age requirement not met")]
 unconstrained fn test_age_check_fails_underage() {
     let (mut env, contract_address, admin) = setup_age_check(18u32);
     let (kyc_personal, kyc_address) = sample_kyc_content_underage();
@@ -83,7 +83,7 @@ unconstrained fn test_age_check_fails_underage() {
 }
 
 // Test: Unsupported content type - fails
-#[test(should_fail)]
+#[test(should_fail_with = "Unsupported content type for age check")]
 unconstrained fn test_age_check_fails_unsupported_content_type() {
     let (mut env, contract_address, admin) = setup_age_check(18u32);
     let (kyc_personal, kyc_address) = sample_kyc_content_adult();

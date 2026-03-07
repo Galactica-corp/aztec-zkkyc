@@ -63,7 +63,7 @@ unconstrained fn test_basic_disclosure_for_kyc_content() {
 
 }
 
-#[test(should_fail)]
+#[test(should_fail_with = "Unsupported content type for basic disclosure")]
 unconstrained fn test_basic_disclosure_fails_for_unsupported_content_type() {
     let (mut env, contract_address, admin) = setup_basic_disclosure();
     let (kyc_personal, kyc_address) = sample_kyc_content();

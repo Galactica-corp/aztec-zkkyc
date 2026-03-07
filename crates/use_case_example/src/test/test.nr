@@ -86,7 +86,7 @@ unconstrained fn test_demo_custom_contracts() {
 }
 
 // Test: User cannot proof that their certificate does not exist
-#[test(should_fail)]
+#[test(should_fail_with = "No certificate found")]
 unconstrained fn test_fail_user_proof_certificate_non_existence() {
     let (mut env, zk_certificate_registry_address, use_case_example_address, _, age_check_address, basic_disclosure_address, _) =
         utils::setup_test_env();
@@ -106,7 +106,7 @@ unconstrained fn test_fail_user_proof_certificate_non_existence() {
 }
 
 // Test: User with underage KYC data fails the requirement check
-#[test(should_fail)]
+#[test(should_fail_with = "Age requirement not met")]
 unconstrained fn test_fail_underage_user() {
     let (mut env, zk_certificate_registry_address, use_case_example_address, admin, age_check_address, basic_disclosure_address, _) =
         utils::setup_test_env();

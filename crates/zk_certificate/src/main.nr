@@ -91,7 +91,10 @@ pub contract CertificateRegistry {
      */
     #[external("public")]
     fn whitelist_guardian(guardian: AztecAddress) {
-        assert(self.msg_sender().eq(self.storage.admin.read()));
+        assert(
+            self.msg_sender().eq(self.storage.admin.read()),
+            "Only admin can whitelist guardian",
+        );
 
         if self.storage.guardian_whitelist.at(guardian).read().eq(false) {
             let guardian_field = guardian.to_field();
@@ -118,7 +121,10 @@ pub contract CertificateRegistry {
      */
     #[external("public")]
     fn remove_guardian_from_whitelist(guardian: AztecAddress) {
-        assert(self.msg_sender().eq(self.storage.admin.read()));
+        assert(
+            self.msg_sender().eq(self.storage.admin.read()),
+            "Only admin can remove guardian from whitelist",
+        );
 
         if self.storage.guardian_whitelist.at(guardian).read().eq(true) {
             self.storage.guardian_whitelist.at(guardian).write(false);

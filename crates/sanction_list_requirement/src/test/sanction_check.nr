@@ -69,7 +69,7 @@ unconstrained fn test_sanction_check_passes_clean_user() {
     env.call_private(admin, call);
 }
 
-#[test(should_fail)]
+#[test(should_fail_with = "User citizenship is on sanction list")]
 unconstrained fn test_sanction_check_fails_sanctioned_country() {
     let (mut env, contract_address, admin) = setup_sanction_check();
     let (kyc_personal, kyc_address) = sample_kyc_content_sanctioned_country();
@@ -90,7 +90,7 @@ unconstrained fn test_sanction_check_fails_sanctioned_country() {
     env.call_private(admin, check_call);
 }
 
-#[test(should_fail)]
+#[test(should_fail_with = "User name is on sanction list")]
 unconstrained fn test_sanction_check_fails_sanctioned_name() {
     let (mut env, contract_address, admin) = setup_sanction_check();
     let surname = Field::from(100);
@@ -112,7 +112,7 @@ unconstrained fn test_sanction_check_fails_sanctioned_name() {
     env.call_private(admin, check_call);
 }
 
-#[test(should_fail)]
+#[test(should_fail_with = "Unsupported content type for sanction check")]
 unconstrained fn test_sanction_check_fails_unsupported_content_type() {
     let (mut env, contract_address, admin) = setup_sanction_check();
     let (kyc_personal, kyc_address) = sample_kyc_content_clean();
