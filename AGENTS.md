@@ -3,6 +3,16 @@
 This repository contains TypeScript scripts and Noir contracts for the Aztec local network.
 Follow these guidelines when contributing:
 
+# Aztec Project
+
+## Critical: Use `aztec` CLI, not `nargo` directly
+
+This is an Aztec smart contract project. Always use the `aztec` CLI wrapper instead of calling `nargo` directly:
+
+- **Compile**: `aztec compile` (NOT `nargo compile`). Using `nargo compile` alone produces incomplete artifacts.
+- **Test**: `aztec test` (NOT `nargo test`).
+- **Other nargo commands** like `nargo fmt` and `nargo doc` are fine to use directly.
+
 ## Setup
 - Use **Node.js v24** with Yarn.
 - Install dependencies with `yarn install`.
@@ -12,6 +22,7 @@ Follow these guidelines when contributing:
 - Compile contracts with `yarn compile` and generate TypeScript artifacts with `yarn codegen`.
 - Use four spaces for indentation in TypeScript and scripts.
 - Do not commit generated artifacts (`src/artifacts`, `target`, or `store` folders).
+- Make use of the `aztec` and `noir` MCP servers to query documentation on writing Noir smart contracts for Aztec.
 
 ## Testing
 - Run `yarn test` and ensure it passes before committing. This runs both the TypeScript tests and Noir tests.
