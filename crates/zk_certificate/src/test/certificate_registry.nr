@@ -62,6 +62,28 @@ unconstrained fn test_fail_non_admin_whitelist_guardian() {
     env.call_public(guardian, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
 }
 
+// Test: Removing a non-whitelisted guardian is a no-op for admin
+#[test]
+unconstrained fn test_remove_non_whitelisted_guardian_is_noop() {
+    let (mut env, contract_address, admin) = utils::setup_certificate_registry();
+    let guardian = env.create_light_account();
+
+    env.call_public(
+        admin,
+        CertificateRegistry::at(contract_address).remove_guardian_from_whitelist(guardian),
+    );
+    env.call_public(admin, CertificateRegistry::at(contract_address).whitelist_guardian(guardian));
+
+    env.public_context_at(contract_address, |context| {
+        let guardian_whitelist_slot = derive_storage_slot_in_map(
+            CertificateRegistry::storage_layout().guardian_whitelist.slot,
+            guardian,
+        );
+        let guardian_whitelist = context.storage_read(guardian_whitelist_slot);
+        assert_eq(guardian_whitelist, true);
+    });
+}
+
 // Test: Remove a guardian from the whitelist
 #[test]
 unconstrained fn test_remove_guardian_from_whitelist() {

@@ -49,13 +49,18 @@ pub contract CertificateRegistry {
     use dep::requirement_checker_interface::RequirementCheckerInterface;
 
     global REVOCATION_DELAY: u64 = 12 * 60 * 60; // 12 hours
+    global MAX_WHITELISTED_GUARDIANS: u32 = 20;
     #[storage]
     struct Storage<Context> {
         // Contract administrator address
         admin: PublicMutable<AztecAddress, Context>,
 
-        // Whitelisted guardian addresses
+        // Whitelisted guardian membership for O(1) checks in private/public flows.
         guardian_whitelist: Map<AztecAddress, PublicMutable<bool, Context>, Context>,
+        // Iterable whitelist slots (0 means empty).
+        // We keep this alongside guardian_whitelist because Aztec Map has keyed lookup but no key iteration.
+        // This enables the utility getter used by PXE to discover guardian-created notes.
+        guardian_whitelist_iterable: Map<u32, PublicMutable<Field, Context>, Context>,
 
         // Private Certificates of the user
         certificates: Owned<PrivateSet<CertificateNote, Context>, Context>,
@@ -87,7 +92,24 @@ pub contract CertificateRegistry {
     #[external("public")]
     fn whitelist_guardian(guardian: AztecAddress) {
         assert(self.msg_sender().eq(self.storage.admin.read()));
-        self.storage.guardian_whitelist.at(guardian).write(true);
+
+        if self.storage.guardian_whitelist.at(guardian).read().eq(false) {
+            let guardian_field = guardian.to_field();
+            let mut inserted = false;
+            // Fill first empty slot to keep the list compact and deterministic for clients.
+            for i in 0..MAX_WHITELISTED_GUARDIANS {
+                if !inserted {
+                    let slot_value = self.storage.guardian_whitelist_iterable.at(i).read();
+                    if slot_value.eq(0) {
+                        self.storage.guardian_whitelist_iterable.at(i).write(guardian_field);
+                        inserted = true;
+                    }
+                }
+            }
+            assert(inserted, "Guardian whitelist full");
+
+            self.storage.guardian_whitelist.at(guardian).write(true);
+        }
     }
 
     /**
@@ -97,7 +119,31 @@ pub contract CertificateRegistry {
     #[external("public")]
     fn remove_guardian_from_whitelist(guardian: AztecAddress) {
         assert(self.msg_sender().eq(self.storage.admin.read()));
-        self.storage.guardian_whitelist.at(guardian).write(false);
+
+        if self.storage.guardian_whitelist.at(guardian).read().eq(true) {
+            self.storage.guardian_whitelist.at(guardian).write(false);
+
+            let guardian_field = guardian.to_field();
+            let mut found_index = MAX_WHITELISTED_GUARDIANS;
+            let mut last_index = MAX_WHITELISTED_GUARDIANS;
+
+            // Find both the guardian slot and the right-most used slot for swap-delete compaction.
+            for i in 0..MAX_WHITELISTED_GUARDIANS {
+                let slot_value = self.storage.guardian_whitelist_iterable.at(i).read();
+                if slot_value.eq(guardian_field) {
+                    found_index = i;
+                }
+                if !slot_value.eq(0) {
+                    last_index = i;
+                }
+            }
+
+            if found_index < MAX_WHITELISTED_GUARDIANS {
+                let last_guardian = self.storage.guardian_whitelist_iterable.at(last_index).read();
+                self.storage.guardian_whitelist_iterable.at(found_index).write(last_guardian);
+                self.storage.guardian_whitelist_iterable.at(last_index).write(0);
+            }
+        }
     }
 
     /**
@@ -326,6 +372,20 @@ pub contract CertificateRegistry {
         let notes =
             self.storage.guardian_certificates_copies.at(guardian).view_notes(NoteViewerOptions::new());
         notes.len()
+    }
+
+    /**
+     * Return all currently whitelisted guardian addresses.
+     * This utility getter is intended for PXE clients to discover notes created by whitelisted guardians.
+     * Returns a fixed-size array padded with zeroes for unused entries.
+     */
+    #[external("utility")]
+    unconstrained fn get_whitelisted_guardians() -> pub [Field; MAX_WHITELISTED_GUARDIANS] {
+        let mut guardians = [0; MAX_WHITELISTED_GUARDIANS];
+        for i in 0..MAX_WHITELISTED_GUARDIANS {
+            guardians[i] = self.storage.guardian_whitelist_iterable.at(i).read();
+        }
+        guardians
     }
 
     /**
