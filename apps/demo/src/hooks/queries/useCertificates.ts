@@ -4,10 +4,15 @@ import { Contract } from '@aztec/aztec.js/contracts';
 import { Fr } from '@aztec/aztec.js/fields';
 import { CertificateRegistryContract } from '../../../../../artifacts/CertificateRegistry';
 import { useAztecWallet, hasAppManagedPXE } from '../../aztec-wallet';
+import { SharedPXEService } from '../../aztec-wallet/services/aztec/pxe/SharedPXEService';
+import { registerGuardianWhitelistAsSenders } from '../../aztec-wallet/services/aztec/pxe/senderRegistration';
 import { contractsConfig } from '../../config/contracts';
 import { queuePxeCall } from '../../utils';
 import { queryKeys } from './queryKeys';
-import type { CertificateData, ContentNoteData } from '../../domain/certificates';
+import type {
+  CertificateData,
+  ContentNoteData,
+} from '../../domain/certificates';
 
 export type { CertificateData } from '../../domain/certificates';
 
@@ -32,14 +37,18 @@ function fieldToString(value: bigint): string {
 /** True if the page contains a real certificate (count > 0 and non-zero ids). */
 function isNotEmptyPage(page: UserCertificatesPageResult): boolean {
   if (page.count === 0) return false;
-  return page.unique_id !== 0n || page.guardian !== 0n || page.revocation_id !== 0n;
+  return (
+    page.unique_id !== 0n || page.guardian !== 0n || page.revocation_id !== 0n
+  );
 }
 
 function pageToCertificateData(
   page: UserCertificatesPageResult,
   owner: string
 ): CertificateData {
-  const guardianAddress = AztecAddress.fromField(new Fr(page.guardian)).toString();
+  const guardianAddress = AztecAddress.fromField(
+    new Fr(page.guardian)
+  ).toString();
   const contentNotes: ContentNoteData[] = [];
   if (page.content_0_id !== 0n) {
     contentNotes.push({
@@ -155,15 +164,44 @@ export const useCertificates = (
           wallet
         );
 
+        // Keep PXE sender sync in step with the on-chain guardian whitelist so
+        // incoming guardian-emitted notes can be discovered by this wallet.
+        try {
+          const guardianWhitelist = (await queuePxeCall(() =>
+            contract.methods
+              .get_whitelisted_guardians()
+              .simulate({ from: owner })
+          )) as bigint[];
+
+          const sharedPxeInstance = SharedPXEService.getExistingInstance(
+            currentConfig.nodeUrl,
+            currentConfig.name
+          );
+
+          if (sharedPxeInstance) {
+            await registerGuardianWhitelistAsSenders(
+              sharedPxeInstance,
+              guardianWhitelist,
+              'useCertificates'
+            );
+          }
+        } catch (senderSyncError) {
+          // Non-fatal: certificate fetching can continue even if sender sync fails.
+          console.warn(
+            '[useCertificates] Failed to sync guardian whitelist senders',
+            senderSyncError
+          );
+        }
+
         const certificates: CertificateData[] = [];
         let pageIndex = 0;
 
         while (true) {
-          const page = await queuePxeCall(() =>
+          const page = (await queuePxeCall(() =>
             contract.methods
               .get_user_certificates_and_content(owner, pageIndex)
               .simulate({ from: owner })
-          ) as UserCertificatesPageResult;
+          )) as UserCertificatesPageResult;
 
           if (page.count === 0) break;
           if (!isNotEmptyPage(page)) break;
@@ -176,8 +214,7 @@ export const useCertificates = (
 
         return certificates;
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : 'Unknown error';
+        const message = err instanceof Error ? err.message : 'Unknown error';
         throw new Error(`Failed to load certificates: ${message}`, {
           cause: err instanceof Error ? err : undefined,
         });
