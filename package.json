@@ -4,10 +4,11 @@
   "main": "index.js",
   "repository": "https://github.com/Galactica-corp/aztec-zkkyc.git",
   "author": "Galactica Network <info@galactica.com>",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "private": true,
   "workspaces": [
-    "apps/demo"
+    "apps/demo",
+    "services/guardian_backend"
   ],
   "type": "module",
   "scripts": {
