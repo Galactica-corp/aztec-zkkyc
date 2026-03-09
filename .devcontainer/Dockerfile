@@ -3,6 +3,10 @@ SHELL ["/bin/bash", "-c"]
 
 ENV NVM_DIR=/root/.nvm
 ENV NODE_VERSION=22.15.0
+ARG AZTEC_VERSION=4.0.0-devnet.2-patch.1
+ENV AZTEC_VERSION=$AZTEC_VERSION
+ENV NON_INTERACTIVE=1
+ENV BIN_PATH=/usr/local/bin
 
 # Install dependencies including newer libstdc++
 RUN apt update && apt install -y \
@@ -16,7 +20,8 @@ RUN apt update && apt install -y \
     jq \
     python3 \
     build-essential \
-    ca-certificates
+    ca-certificates \
+    netcat-openbsd
 
 # Install nvm, node and npm
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash \
@@ -28,3 +33,5 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | b
 # Add node and npm to path
 ENV PATH="${NVM_DIR}/versions/node/v${NODE_VERSION}/bin:${PATH}"
 RUN npm i -g yarn
+RUN curl -fsSL "https://install.aztec.network/${AZTEC_VERSION}" \
+    | VERSION="${AZTEC_VERSION}" bash -s
