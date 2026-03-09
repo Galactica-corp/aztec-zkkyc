@@ -41,10 +41,19 @@ Notes:
 Goal: Get, parse and check KYC details to then issue a ZK KYC in the certificate registry.
 
 Suggested Steps:
-1. 
+1. Understand the data and structure required for a ZK KYC from looking at `@crates/use_case_exaple/src/test/e2e/index.test.ts` and `@crates/zk_certificate/src/content/kyc_layout.nr`.
+2. Create a JSON schema defining the input data for a ZK KYC.
+4. Expose issuance function skeleton in JS and CLI API.
+3. Integrate a parser to check input data for completeness and validity.
+5. Prepare the string fields of the KYC for issuance by hashing them, see `@crates/use_case_example/src/test/e2e/index.test.ts:32-53`
+6. Call smart contract function issuing the certificate
+7. Wait for on-chain settlement.
+8. Add nice error handling and reporting.
+9. Return IDs of the issued certificate, so that the caller can log them in their KYC database.
 
 Notes:
-- 
+- For testing, you can check the integration test `@crates/use_case_exaple/src/test/e2e/index.test.ts` as reference.
+- This smart contract function can be used for issuance: `@crates/zk_certificate/src/main.nr:155-198` 
 
 ## 4. Query PXE notes about revokable certificates
 
