@@ -53,7 +53,7 @@ unconstrained fn test_whitelist_guardian() {
 }
 
 // Test: Non-admin cannot whitelist a guardian
-#[test(should_fail)]
+#[test(should_fail_with = "Only admin can whitelist guardian")]
 unconstrained fn test_fail_non_admin_whitelist_guardian() {
     let (mut env, contract_address, _) = utils::setup_certificate_registry();
     let guardian = env.create_light_account();
@@ -111,7 +111,7 @@ unconstrained fn test_remove_guardian_from_whitelist() {
 }
 
 // Test: Non-admin cannot remove a guardian from the whitelist
-#[test(should_fail)]
+#[test(should_fail_with = "Only admin can remove guardian from whitelist")]
 unconstrained fn test_fail_non_admin_remove_guardian_from_whitelist() {
     let (mut env, contract_address, _) = utils::setup_certificate_registry();
     let guardian = env.create_light_account();
@@ -128,7 +128,7 @@ unconstrained fn test_fail_non_admin_remove_guardian_from_whitelist() {
 // ============================================================================
 
 // Test: Non-whitelisted guardian cannot issue a certificate
-#[test(should_fail)]
+#[test(should_fail_with = "Guardian not whitelisted")]
 unconstrained fn test_fail_non_whitelisted_guardian_issue_certificate() {
     let (mut env, contract_address, _) = utils::setup_certificate_registry();
     let guardian = env.create_light_account();
@@ -490,7 +490,7 @@ unconstrained fn test_user_proof_certificate_existence_with_disclosure_only() {
 }
 
 // Test: Requirement failure prevents requirement+disclosure check flow from succeeding
-#[test(should_fail)]
+#[test(should_fail_with = "Age requirement not met")]
 unconstrained fn test_fail_requirement_blocks_disclosure_flow() {
     let (mut env, contract_address, admin) = utils::setup_certificate_registry();
     let guardian = env.create_light_account();
@@ -536,7 +536,7 @@ unconstrained fn test_fail_requirement_blocks_disclosure_flow() {
 }
 
 // Test: User cannot pass the check when the certificate is missing
-#[test(should_fail)]
+#[test(should_fail_with = "No certificate found")]
 unconstrained fn test_fail_user_proof_certificate_non_existence() {
     let (mut env, contract_address, _) = utils::setup_certificate_registry();
     let user = env.create_light_account();
@@ -553,7 +553,7 @@ unconstrained fn test_fail_user_proof_certificate_non_existence() {
 }
 
 // Test: User cannot proof certificate existence after the guardian is removed from the whitelist
-#[test(should_fail)]
+#[test(should_fail_with = "Guardian not whitelisted")]
 unconstrained fn test_fail_user_proof_certificate_existence_after_guardian_removal() {
     let (mut env, contract_address, admin) = utils::setup_certificate_registry();
     let guardian = env.create_light_account();
@@ -631,7 +631,7 @@ unconstrained fn test_guardian_revoke_certificate() {
 }
 
 // Test: User cannot use a certificate after revocation
-#[test(should_fail)]
+#[test(should_fail_with = "Certificate revoked")]
 unconstrained fn test_fail_user_use_certificate_after_revocation() {
     let (mut env, contract_address, admin) = utils::setup_certificate_registry();
     let guardian = env.create_light_account();
