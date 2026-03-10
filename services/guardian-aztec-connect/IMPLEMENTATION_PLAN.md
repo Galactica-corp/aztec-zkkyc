@@ -21,6 +21,10 @@ Suggested steps:
 Notes:
 - You can check `@scripts/deploy_account_from_env.ts` as reference for how to connect to the network, load an account and deploy it.
 - For testing, you can check the integration test `@crates/use_case_exaple/src/test/e2e/index.test.ts` as reference.
+- Keep building on the shared runtime/context instead of reloading network, wallet, and guardian account in each function.
+- Use `AZTEC_ENV` with the root `config/<env>.json` files. Guardian account material is `SECRET`, `SIGNING_KEY`, and `SALT`.
+- For account deployment/status, prefer `getContractMetadata(...).isContractInitialized` over wallet registration checks.
+- Keep CLI commands wired through the command registry and keep reusable test fixtures under `test/support/`.
 
 ## 2. Check whitelist status
 
@@ -35,6 +39,7 @@ Suggested Steps:
 Notes:
 - For testing, you can check the integration test `@crates/use_case_exaple/src/test/e2e/index.test.ts` as reference. It shows how to deploy the certificate registry and how the admin manages the whitelist.
 - This smart contract function can be used: `@crates/zk_certificate/src/main.nr:383-395` 
+- Reuse the certificate registry client abstraction and extend the existing account status / CLI command surfaces instead of creating separate bootstrapping paths.
 
 ## 3. Issue KYC certificates
 
@@ -54,6 +59,7 @@ Suggested Steps:
 Notes:
 - For testing, you can check the integration test `@crates/use_case_exaple/src/test/e2e/index.test.ts` as reference.
 - This smart contract function can be used for issuance: `@crates/zk_certificate/src/main.nr:155-198` 
+- Reuse the shared runtime, certificate registry client, and CLI registry. Keep KYC parsing/validation separate from Aztec transaction submission.
 
 ## 4. Query PXE notes about revokable certificates
 
@@ -69,6 +75,7 @@ Suggested Steps:
 
 Notes:
 - For testing, you can check the integration test `@crates/use_case_exaple/src/test/e2e/index.test.ts` as reference.
+- Reuse the shared runtime and certificate registry client setup from the previous slices.
 
 ## 5. Revoke KYC certificates
 
@@ -82,6 +89,7 @@ Suggested Steps:
 Notes:
 - For testing, you can check the integration test `@crates/use_case_exaple/src/test/e2e/index.test.ts` as reference.
 - The revocation function in the smart contract is implemented here:  `@crates/zk_certificate/src/main.nr:213-231` 
+- Reuse the same transaction submission patterns and CLI command registry introduced in the wallet setup slice.
 
 ## 6. Improvements
 
