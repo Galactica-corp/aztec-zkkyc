@@ -11,13 +11,10 @@ This subpackage provides guardians with the service and infrastructure to issue 
 
 ## Installation
 
-<!-- TODO: Add installation instructions (e.g. from workspace root, or as a standalone dependency) -->
-
 ### From published package
 ```bash
 yarn add @galactica-net/guardian-aztec-connect
 ```
-<!-- TODO: Add import and usage instructions -->
 
 ### From source:
 ```bash
@@ -30,24 +27,56 @@ yarn install
 
 ## Testing
 
-<!-- TODO: Add testing instructions and how to run guardian-aztec-connect tests -->
-
 ```bash
 # From repository root
 yarn test
 
 # Or from this directory
-# yarn test
+yarn test
+yarn test:unit
+yarn test:integration
 ```
 
 ## Running
 
-<!-- TODO: Add instructions for running the service and/or CLI tools -->
+This package currently implements the wallet setup slice:
+
+- load a guardian Schnorr account from `SECRET`, `SIGNING_KEY`, and `SALT`
+- resolve the Aztec network via `AZTEC_ENV`
+- query whether the guardian account contract is deployed
+- deploy the guardian account if needed
+
+`AZTEC_ENV` follows the repository-wide `config/<env>.json` convention. Use `local-network` by default or set `AZTEC_ENV=devnet`.
+
+Create a local `.env` file from `.env.example` before running the SDK or CLI.
 
 ```bash
-# Start the guardian-aztec-connect service (when implemented)
-# yarn start
+# Check the guardian account status
+yarn cli -- account status
 
-# Run CLI tools for manual testing (when implemented)
-# yarn cli -- <command>
+# Deploy the guardian account if needed
+yarn cli -- account deploy
+
+# Select a network explicitly
+yarn cli -- account status --network devnet
+
+# Print JSON for scripting
+yarn cli -- account status --json
+```
+
+## SDK Usage
+
+```ts
+import {
+    deployGuardianAccountIfNeeded,
+    getGuardianAccountStatus,
+} from "@galactica-net/guardian-aztec-connect";
+
+const status = await getGuardianAccountStatus({
+    aztecEnv: "local-network",
+});
+
+const deployed = await deployGuardianAccountIfNeeded({
+    aztecEnv: "local-network",
+});
 ```

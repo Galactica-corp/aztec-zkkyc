@@ -1,0 +1,16 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "rootDir": ".",
+        "outDir": "dist",
+        "tsBuildInfoFile": ".tsbuildinfo",
+        "composite": false,
+        "incremental": true,
+        "declaration": true,
+        "noEmit": false
+    },
+    "include": [
+        "src/**/*.ts",
+        "test/**/*.ts"
+    ]
+}

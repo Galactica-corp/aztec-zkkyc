@@ -1,4 +1,4 @@
-# Guardian Aztec Connect Guide
+# Guardian Backend Guide
 
 Use this file as the compact source of truth for this package. Read `README.md`, this file, and `IMPLEMENTATION_PLAN.md` before making substantial changes. Also inherit the root repository guidance from `/AGENTS.md`.
 
