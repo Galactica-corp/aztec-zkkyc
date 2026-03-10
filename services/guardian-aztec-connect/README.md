@@ -1,4 +1,4 @@
-# Aztec Guardian Backend
+# Guardian Aztec Connect
 
 This subpackage provides guardians with the service and infrastructure to issue zero-knowledge certificates, such as ZK KYC. It works as an SDK that can be imported in JavaScript or TypeScript applications. There are also CLI tools for manual testing.
 
@@ -15,7 +15,7 @@ This subpackage provides guardians with the service and infrastructure to issue 
 
 ### From published package
 ```bash
-yarn add @galactica-net/aztec-guardian-backend
+yarn add @galactica-net/guardian-aztec-connect
 ```
 <!-- TODO: Add import and usage instructions -->
 
@@ -25,12 +25,12 @@ yarn add @galactica-net/aztec-guardian-backend
 yarn install
 
 # Or install this package as a dependency
-# yarn add aztec-guardian-backend
+# yarn add guardian-aztec-connect
 ```
 
 ## Testing
 
-<!-- TODO: Add testing instructions and how to run guardian backend tests -->
+<!-- TODO: Add testing instructions and how to run guardian-aztec-connect tests -->
 
 ```bash
 # From repository root
@@ -45,7 +45,7 @@ yarn test
 <!-- TODO: Add instructions for running the service and/or CLI tools -->
 
 ```bash
-# Start the guardian backend service (when implemented)
+# Start the guardian-aztec-connect service (when implemented)
 # yarn start
 
 # Run CLI tools for manual testing (when implemented)

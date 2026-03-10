@@ -1,10 +1,10 @@
-# Guardian Backend Guide
+# Guardian Aztec Connect Guide
 
 Use this file as the compact source of truth for this package. Read `README.md`, this file, and `IMPLEMENTATION_PLAN.md` before making substantial changes. Also inherit the root repository guidance from `/AGENTS.md`.
 
 ## Spec
 
-`Aztec Guardian Backend` provides guardians with the service and infrastructure to issue zero-knowledge certificates, such as ZK KYC. It should support:
+`Guardian Aztec Connect` provides guardians with the service and infrastructure to issue zero-knowledge certificates, such as ZK KYC. It should support:
 
 - an SDK imported by JavaScript or TypeScript applications
 - CLI tools for manual testing and operational flows
@@ -18,8 +18,8 @@ Core features:
 
 Workspace context:
 
-- package path: `services/guardian_backend`
-- package name: `@galactica-net/aztec-guardian-backend`
+- package path: `services/guardian-aztec-connect`
+- package name: `@galactica-net/guardian-aztec-connect`
 - included from the root workspace `package.json`
 
 Target shape:
@@ -77,7 +77,7 @@ Definition of done:
 
 Prefer sources in this order:
 
-1. package code and docs in `services/guardian_backend`
+1. package code and docs in `services/guardian-aztec-connect`
 2. root guidance in `/AGENTS.md`
 3. Aztec and Noir MCP tools for getting documentation in Cursor
 4. Official Aztec docs for agents: `https://docs.aztec.network/developers/ai_tooling#for-learning-and-exploration`
@@ -86,3 +86,5 @@ Useful references:
 
 - Aztec JS SDK docs: `https://docs.aztec.network/typescript-api/devnet/aztec.js.md`
 - Aztec PXE docs: `https://docs.aztec.network/typescript-api/devnet/pxe.md`
+
+Consider these rules if they affect your changes.

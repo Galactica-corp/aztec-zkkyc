@@ -1,5 +1,5 @@
 {
-  "name": "@galactica-net/aztec-guardian-backend",
+  "name": "@galactica-net/guardian-aztec-connect",
   "version": "1.0.0",
   "main": "index.js",
   "license": "Apache-2.0"

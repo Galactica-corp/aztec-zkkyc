@@ -8,7 +8,7 @@
   "private": true,
   "workspaces": [
     "apps/demo",
-    "services/guardian_backend"
+    "services/guardian-aztec-connect"
   ],
   "type": "module",
   "scripts": {
