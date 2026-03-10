@@ -1,14 +1,11 @@
 import type { AztecAddress } from "@aztec/stdlib/aztec-address";
-import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
 import { AztecAddress as AztecAddressValue, deployGuardianAccountIfNeededFromDependencies, type DeployMethodLike } from "../../src/wallet/deployAccount.js";
+import { createAddressStub, createRegisteredAddress, getLocalNetworkConfig } from "../support/fixtures.js";
 
 describe("deployGuardianAccountIfNeededFromDependencies", () => {
     it("deploys through ZERO sender when the account is not initialized", async () => {
-        const network = resolveNetworkConfig({ aztecEnv: "local-network" });
-        const address = {
-            equals: (other: unknown) => other === address,
-            toString: () => "0xguardian",
-        } as unknown as AztecAddress;
+        const network = getLocalNetworkConfig();
+        const address = createAddressStub() as AztecAddress;
         const sentOptions: unknown[] = [];
         const senderRegistrations: Array<{ address: unknown; alias: string }> = [];
         const send: DeployMethodLike["send"] = async (options: unknown) => {
@@ -52,11 +49,8 @@ describe("deployGuardianAccountIfNeededFromDependencies", () => {
     });
 
     it("returns without deploying an initialized account", async () => {
-        const network = resolveNetworkConfig({ aztecEnv: "local-network" });
-        const address = {
-            equals: (other: unknown) => other === address,
-            toString: () => "0xguardian",
-        } as unknown as AztecAddress;
+        const network = getLocalNetworkConfig();
+        const address = createAddressStub() as AztecAddress;
         let sendCalls = 0;
         const send: DeployMethodLike["send"] = async () => {
             sendCalls += 1;
@@ -77,7 +71,7 @@ describe("deployGuardianAccountIfNeededFromDependencies", () => {
                     return { isContractInitialized: true };
                 },
                 async getAccounts() {
-                    return [{ item: address }];
+                    return [createRegisteredAddress(address)];
                 },
                 async registerSender() {
                     return;

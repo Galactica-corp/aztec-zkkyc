@@ -3,19 +3,20 @@ import { createGuardianAccount } from "../../src/wallet/guardianAccount.js";
 import { getGuardianAccountStatus } from "../../src/wallet/accountStatus.js";
 import { deployGuardianAccountIfNeeded } from "../../src/wallet/deployAccount.js";
 import { createGuardianWallet } from "../../src/wallet/setupWallet.js";
+import { createGuardianEnv, restoreProcessEnv } from "../support/fixtures.js";
 
 describe("wallet setup integration", () => {
     const originalEnv = { ...process.env };
 
     beforeEach(() => {
-        process.env.AZTEC_ENV = "local-network";
-        process.env.SECRET = Fr.random().toString();
-        process.env.SALT = Fr.random().toString();
-        process.env.SIGNING_KEY = GrumpkinScalar.random().toString();
+        process.env = {
+            ...process.env,
+            ...createGuardianEnv(),
+        };
     });
 
     afterEach(() => {
-        process.env = { ...originalEnv };
+        restoreProcessEnv(originalEnv);
     });
 
     it("loads the guardian account, reports status, and deploys it when needed", async () => {

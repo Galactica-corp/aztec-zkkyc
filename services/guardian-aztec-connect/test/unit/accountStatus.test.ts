@@ -1,21 +1,18 @@
 import type { AztecAddress } from "@aztec/stdlib/aztec-address";
-import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
 import { getGuardianAccountStatusFromDependencies } from "../../src/wallet/accountStatus.js";
+import { createAddressStub, createRegisteredAddress, getLocalNetworkConfig } from "../support/fixtures.js";
 
 describe("getGuardianAccountStatusFromDependencies", () => {
     it("returns wallet registration and deployment state", async () => {
-        const network = resolveNetworkConfig({ aztecEnv: "local-network" });
-        const address = {
-            equals: (other: unknown) => other === address,
-            toString: () => "0xguardian",
-        } as unknown as AztecAddress;
+        const network = getLocalNetworkConfig();
+        const address = createAddressStub() as AztecAddress;
 
         const status = await getGuardianAccountStatusFromDependencies({
             network,
             account: { address },
             wallet: {
                 async getAccounts() {
-                    return [{ item: address }];
+                    return [createRegisteredAddress(address)];
                 },
                 async getContractMetadata() {
                     return { isContractInitialized: true };

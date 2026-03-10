@@ -1,5 +1,6 @@
 import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
 import { readGuardianAccountSecrets } from "../../src/wallet/guardianAccount.js";
+import { createGuardianEnv } from "../support/fixtures.js";
 
 describe("readGuardianAccountSecrets", () => {
     it("throws when SECRET is missing", () => {
@@ -12,18 +13,11 @@ describe("readGuardianAccountSecrets", () => {
     });
 
     it("parses the guardian Schnorr account material", () => {
-        const secret = Fr.random();
-        const salt = Fr.random();
-        const signingKey = GrumpkinScalar.random();
+        const env = createGuardianEnv();
+        const secrets = readGuardianAccountSecrets(env);
 
-        const secrets = readGuardianAccountSecrets({
-            SECRET: secret.toString(),
-            SALT: salt.toString(),
-            SIGNING_KEY: signingKey.toString(),
-        });
-
-        expect(secrets.secret.toString()).toBe(secret.toString());
-        expect(secrets.salt.toString()).toBe(salt.toString());
-        expect(secrets.signingKey.toString()).toBe(signingKey.toString());
+        expect(secrets.secret.toString()).toBe(env.SECRET);
+        expect(secrets.salt.toString()).toBe(env.SALT);
+        expect(secrets.signingKey.toString()).toBe(env.SIGNING_KEY);
     });
 });

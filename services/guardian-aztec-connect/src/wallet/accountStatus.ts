@@ -1,8 +1,6 @@
 import type { AccountManager } from "@aztec/aztec.js/wallet";
 import type { GuardianAccountStatus, GuardianNetworkConfig, GuardianWalletSetupOptions } from "../types.js";
-import { resolveNetworkConfig } from "../config/networkConfig.js";
-import { createGuardianAccount } from "./guardianAccount.js";
-import { createGuardianWallet } from "./setupWallet.js";
+import { loadGuardianRuntime } from "../runtime/guardianRuntime.js";
 
 interface ContractMetadata {
     isContractInitialized: boolean;
@@ -43,14 +41,12 @@ export async function getGuardianAccountStatusFromDependencies(
 }
 
 export async function getGuardianAccountStatus(options: GuardianWalletSetupOptions = {}): Promise<GuardianAccountStatus> {
-    const network = resolveNetworkConfig({ aztecEnv: options.aztecEnv });
-    const wallet = await createGuardianWallet(options);
-    const account = await createGuardianAccount(wallet);
+    const runtime = await loadGuardianRuntime(options);
 
     return await getGuardianAccountStatusFromDependencies({
-        wallet,
-        account,
-        network,
+        wallet: runtime.wallet,
+        account: runtime.account,
+        network: runtime.network,
     });
 }
 

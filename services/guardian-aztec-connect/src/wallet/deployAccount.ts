@@ -1,17 +1,13 @@
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 import type { AccountManager } from "@aztec/aztec.js/wallet";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import type {
     DeployGuardianAccountResult,
     GuardianNetworkConfig,
     GuardianWalletSetupOptions,
 } from "../types.js";
-import { resolveNetworkConfig } from "../config/networkConfig.js";
-import { createGuardianAccount } from "./guardianAccount.js";
+import { loadSponsoredGuardianRuntime } from "../runtime/guardianRuntime.js";
 import { getGuardianAccountStatusFromDependencies } from "./accountStatus.js";
-import { createGuardianWallet } from "./setupWallet.js";
-import { getSponsoredFPCInstance } from "./sponsoredFee.js";
 
 interface DeployMethodLike {
     send(options: unknown): Promise<unknown>;
@@ -76,18 +72,13 @@ export async function deployGuardianAccountIfNeededFromDependencies(
 export async function deployGuardianAccountIfNeeded(
     options: GuardianWalletSetupOptions = {}
 ): Promise<DeployGuardianAccountResult> {
-    const network = resolveNetworkConfig({ aztecEnv: options.aztecEnv });
-    const wallet = await createGuardianWallet(options);
-    const account = await createGuardianAccount(wallet);
-    const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
-    const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
+    const runtime = await loadSponsoredGuardianRuntime(options);
 
     return await deployGuardianAccountIfNeededFromDependencies({
-        wallet,
-        account,
-        paymentMethod,
-        network,
+        wallet: runtime.wallet,
+        account: runtime.account,
+        paymentMethod: runtime.paymentMethod,
+        network: runtime.network,
     });
 }
 

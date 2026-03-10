@@ -1,21 +1,17 @@
-import { deployGuardianAccountIfNeeded, getGuardianAccountStatus } from "./index.js";
-import type { DeployGuardianAccountResult, GuardianAccountStatus, GuardianWalletSetupOptions } from "./types.js";
+import { getGuardianCliCommand, listGuardianCliCommands } from "./cli/commands.js";
+import { formatCliResult, serializeCliResult } from "./cli/output.js";
+import type { GuardianWalletSetupOptions } from "./types.js";
 
 function getUsage(): string {
     return [
         "Usage:",
-        "  guardian-aztec-connect account status [--network <name>] [--json]",
-        "  guardian-aztec-connect account deploy [--network <name>] [--json]",
+        ...listGuardianCliCommands().map((command) => `  ${command.usage}`),
     ].join("\n");
 }
 
-function parseOptions(argv: string[]): { command: "status" | "deploy"; options: GuardianWalletSetupOptions; json: boolean } {
-    if (argv[0] !== "account") {
-        throw new Error(getUsage());
-    }
-
-    const command = argv[1];
-    if (command !== "status" && command !== "deploy") {
+function parseOptions(argv: string[]): { commandKey: string; options: GuardianWalletSetupOptions; json: boolean } {
+    const commandKey = argv.slice(0, 2).join(" ").trim();
+    if (!getGuardianCliCommand(commandKey)) {
         throw new Error(getUsage());
     }
 
@@ -43,38 +39,12 @@ function parseOptions(argv: string[]): { command: "status" | "deploy"; options: 
     }
 
     return {
-        command,
+        commandKey,
         json,
         options: {
             aztecEnv,
         },
     };
-}
-
-function serializeResult(result: GuardianAccountStatus | DeployGuardianAccountResult) {
-    return {
-        ...result,
-        address: result.address.toString(),
-        network: {
-            ...result.network,
-        },
-    };
-}
-
-function formatResult(result: GuardianAccountStatus | DeployGuardianAccountResult): string {
-    const lines = [
-        `Network: ${result.network.name}`,
-        `Node URL: ${result.network.nodeUrl}`,
-        `Address: ${result.address.toString()}`,
-        `Registered in wallet: ${result.isRegisteredInWallet ? "yes" : "no"}`,
-        `Contract initialized: ${result.isContractInitialized ? "yes" : "no"}`,
-    ];
-
-    if ("deployed" in result) {
-        lines.push(`Deployment sent: ${result.deployed ? "yes" : "no"}`);
-    }
-
-    return lines.join("\n");
 }
 
 export async function main(argv: string[] = process.argv.slice(2)): Promise<void> {
@@ -83,17 +53,19 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
         return;
     }
 
-    const { command, options, json } = parseOptions(argv);
-    const result = command === "status"
-        ? await getGuardianAccountStatus(options)
-        : await deployGuardianAccountIfNeeded(options);
+    const { commandKey, options, json } = parseOptions(argv);
+    const command = getGuardianCliCommand(commandKey);
+    if (!command) {
+        throw new Error(getUsage());
+    }
+    const result = await command.execute(options);
 
     if (json) {
-        console.log(JSON.stringify(serializeResult(result), null, 2));
+        console.log(JSON.stringify(serializeCliResult(result), null, 2));
         return;
     }
 
-    console.log(formatResult(result));
+    console.log(formatCliResult(result));
 }
 
 const invokedAsEntrypoint = /\/cli\.(ts|js)$/.test(process.argv[1] ?? "");

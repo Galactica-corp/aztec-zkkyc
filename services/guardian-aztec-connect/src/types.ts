@@ -1,4 +1,6 @@
 import type { AztecAddress } from "@aztec/stdlib/aztec-address";
+import type { AccountManager } from "@aztec/aztec.js/wallet";
+import type { EmbeddedWallet } from "@aztec/wallets/embedded";
 
 export type GuardianEnvironment = "local" | "testnet" | "devnet" | "mainnet";
 
@@ -20,6 +22,10 @@ export interface GuardianWalletSetupOptions {
     registerInitialAccounts?: boolean;
 }
 
+export interface CertificateRegistrySetupOptions {
+    certificateRegistryAddress?: AztecAddress | string;
+}
+
 export interface GuardianAccountStatus {
     address: AztecAddress;
     network: GuardianNetworkConfig;
@@ -29,4 +35,10 @@ export interface GuardianAccountStatus {
 
 export interface DeployGuardianAccountResult extends GuardianAccountStatus {
     deployed: boolean;
+}
+
+export interface GuardianRuntime {
+    network: GuardianNetworkConfig;
+    wallet: EmbeddedWallet;
+    account: AccountManager;
 }
