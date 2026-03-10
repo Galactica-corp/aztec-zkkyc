@@ -60,17 +60,35 @@ Notes:
 Goal: Query private Aztec notes for the guardian account to check which certificates has been issued and what their revocation IDs are.
 
 Suggested Steps:
-1. 
+1. Create a new `listRevokableCertificates` function with an exposed JS and CLI API.
+2. Load the guardian account and network (expecting reusable functions for that shared with other functions).
+3. Load the PXE environment.
+4. Query notes from the certificate registry (see `@crates/zk_certificate/src/main.nr:75-76` )
+5. Return notes in a nice format.
+6. Format notes in the CLI call.
 
 Notes:
-- 
+- For testing, you can check the integration test `@crates/use_case_exaple/src/test/e2e/index.test.ts` as reference.
 
 ## 5. Revoke KYC certificates
 
 Goal: Revoke a KYC certificate by its ID.
 
 Suggested Steps:
-1. 
+1. Create a new `revokeCertificate` function with an exposed JS and CLI API. It takes the revocation ID as input.
+2. Load the guardian account and network (expecting reusable functions for that shared with other functions).
+3. Create and submit the revocation on-chain. The interaction with the smart contract is similar to the issuance function.
 
 Notes:
-- 
+- For testing, you can check the integration test `@crates/use_case_exaple/src/test/e2e/index.test.ts` as reference.
+- The revocation function in the smart contract is implemented here:  `@crates/zk_certificate/src/main.nr:213-231` 
+
+## 6. Improvements
+
+Goal: Check and improve the package.
+
+Suggested steps:
+1. Get an overview of the functions and scope of this package.
+2. Review package scripts, CLI API and the JS API. Improve it where it makes sense.
+3. Check the README.md documentation and update it where necessary. Keep it short, informative and actionable.
+4. Identify and suggest refactorings and improvements.
