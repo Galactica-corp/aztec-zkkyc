@@ -2,6 +2,14 @@
 
 Build the package in small slices, with TDD.
 
+## Implementation Learnings
+
+- Reuse `loadGuardianRegistryContext()` for future registry-backed operations instead of reloading sponsored runtime and registry client separately.
+- Reuse the shared tx helpers for write flows so deployment, issuance, and future revocation use the same send options and tx-hash checks.
+- Keep CLI commands command-owned: each command should parse its own flags and format/serialize its own result instead of growing one central parser/formatter.
+- Keep normalized KYC/content validation separate from Aztec submission. Future provider adapters should map into the normalized payload before calling this package.
+- The generated certificate registry ABI uses `[Field; 7]` arrays for `content_note_data_0` and `content_note_data_1`. Follow the generated artifact shape, not the older padded e2e sample.
+
 ## 1. Wallet Setup
 
 Goal: Base tooling for loading and working with an Aztec wallet
