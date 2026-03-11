@@ -1,6 +1,5 @@
 import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
 import type { AztecAddress } from "@aztec/stdlib/aztec-address";
-import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
 
 export function createGuardianEnv(overrides: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv {
     return {
@@ -28,8 +27,26 @@ export function createRegisteredAddress(address: AztecAddress, alias = "guardian
     };
 }
 
-export function getLocalNetworkConfig() {
-    return resolveNetworkConfig({ aztecEnv: "local-network" });
+export function createZkKycInput(overrides: Record<string, unknown> = {}) {
+    return {
+        userAddress: "0x0000000000000000000000000000000000000000000000000000000000000000",
+        personal: {
+            surname: "DOE",
+            forename: "JANE",
+            middlename: "",
+            birthday: "1990-06-01",
+            citizenship: "DEU",
+            verificationLevel: 2,
+        },
+        address: {
+            streetAndNumber: "MUSTERSTRASSE 10",
+            postcode: "10115",
+            town: "BERLIN",
+            region: "DE-BE",
+            country: "DEU",
+        },
+        ...overrides,
+    };
 }
 
 export function restoreProcessEnv(snapshot: NodeJS.ProcessEnv) {

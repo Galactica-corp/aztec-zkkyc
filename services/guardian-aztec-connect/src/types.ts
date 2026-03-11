@@ -20,6 +20,7 @@ export interface GuardianWalletSetupOptions {
     aztecEnv?: string;
     ephemeral?: boolean;
     registerInitialAccounts?: boolean;
+    inputPath?: string;
 }
 
 export interface CertificateRegistrySetupOptions {
@@ -51,4 +52,42 @@ export interface GuardianRuntime {
     network: GuardianNetworkConfig;
     wallet: EmbeddedWallet;
     account: AccountManager;
+}
+
+export interface ZkKycPersonalData {
+    surname: string;
+    forename: string;
+    middlename?: string;
+    birthday: string;
+    citizenship: string;
+    verificationLevel: number;
+}
+
+export interface ZkKycAddressData {
+    streetAndNumber: string;
+    postcode: string;
+    town: string;
+    region?: string;
+    country: string;
+}
+
+export interface ZkKycInput {
+    userAddress: AztecAddress | string;
+    personal: ZkKycPersonalData;
+    address: ZkKycAddressData;
+}
+
+export interface IssueKycCertificateOptions extends GuardianStatusOptions {
+    kyc: ZkKycInput;
+    uniqueId?: bigint | number | string;
+    revocationId?: bigint | number | string;
+}
+
+export interface IssueKycCertificateResult {
+    guardianAddress: AztecAddress;
+    userAddress: AztecAddress;
+    network: GuardianNetworkConfig;
+    uniqueId: bigint;
+    revocationId: bigint;
+    txHash: string;
 }

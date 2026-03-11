@@ -9,7 +9,7 @@ function getUsage(): string {
     ].join("\n");
 }
 
-function parseOptions(argv: string[]): { commandKey: string; options: GuardianWalletSetupOptions; json: boolean } {
+export function parseOptions(argv: string[]): { commandKey: string; options: GuardianWalletSetupOptions; json: boolean } {
     const commandKey = argv.slice(0, 2).join(" ").trim();
     if (!getGuardianCliCommand(commandKey)) {
         throw new Error(getUsage());
@@ -17,6 +17,7 @@ function parseOptions(argv: string[]): { commandKey: string; options: GuardianWa
 
     let json = false;
     let aztecEnv: string | undefined;
+    let inputPath: string | undefined;
 
     for (let index = 2; index < argv.length; index += 1) {
         const argument = argv[index];
@@ -35,6 +36,16 @@ function parseOptions(argv: string[]): { commandKey: string; options: GuardianWa
             continue;
         }
 
+        if (argument === "--input") {
+            inputPath = argv[index + 1];
+            if (!inputPath) {
+                throw new Error("Missing value for --input");
+            }
+
+            index += 1;
+            continue;
+        }
+
         throw new Error(`Unknown argument: ${argument}\n\n${getUsage()}`);
     }
 
@@ -43,6 +54,7 @@ function parseOptions(argv: string[]): { commandKey: string; options: GuardianWa
         json,
         options: {
             aztecEnv,
+            inputPath,
         },
     };
 }

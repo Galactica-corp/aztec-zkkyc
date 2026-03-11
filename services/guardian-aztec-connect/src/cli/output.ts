@@ -1,8 +1,28 @@
-import type { DeployGuardianAccountResult, GuardianAccountStatus } from "../types.js";
+import type {
+    DeployGuardianAccountResult,
+    GuardianAccountStatus,
+    IssueKycCertificateResult,
+} from "../types.js";
 
-export type GuardianCliOutputResult = GuardianAccountStatus | DeployGuardianAccountResult;
+export type GuardianCliOutputResult =
+    | GuardianAccountStatus
+    | DeployGuardianAccountResult
+    | IssueKycCertificateResult;
 
 export function serializeCliResult(result: GuardianCliOutputResult) {
+    if ("guardianAddress" in result) {
+        return {
+            ...result,
+            guardianAddress: result.guardianAddress.toString(),
+            userAddress: result.userAddress.toString(),
+            uniqueId: result.uniqueId.toString(),
+            revocationId: result.revocationId.toString(),
+            network: {
+                ...result.network,
+            },
+        };
+    }
+
     return {
         ...result,
         address: result.address.toString(),
@@ -13,6 +33,17 @@ export function serializeCliResult(result: GuardianCliOutputResult) {
 }
 
 export function formatCliResult(result: GuardianCliOutputResult): string {
+    if ("guardianAddress" in result) {
+        return [
+            `Network: ${result.network.name}`,
+            `Guardian address: ${result.guardianAddress.toString()}`,
+            `User address: ${result.userAddress.toString()}`,
+            `Unique ID: ${result.uniqueId.toString()}`,
+            `Revocation ID: ${result.revocationId.toString()}`,
+            `Transaction hash: ${result.txHash}`,
+        ].join("\n");
+    }
+
     const lines = [
         `Network: ${result.network.name}`,
         `Node URL: ${result.network.nodeUrl}`,

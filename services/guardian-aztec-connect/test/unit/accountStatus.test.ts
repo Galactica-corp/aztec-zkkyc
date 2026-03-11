@@ -1,10 +1,11 @@
 import type { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
 import { getGuardianAccountStatusFromDependencies } from "../../src/wallet/accountStatus.js";
-import { createAddressStub, createRegisteredAddress, getLocalNetworkConfig } from "../support/fixtures.js";
+import { createAddressStub, createRegisteredAddress } from "../support/fixtures.js";
 
 describe("getGuardianAccountStatusFromDependencies", () => {
     it("returns wallet registration and deployment state", async () => {
-        const network = getLocalNetworkConfig();
+        const network = resolveNetworkConfig({ aztecEnv: "local-network" });
         const address = createAddressStub() as AztecAddress;
 
         const status = await getGuardianAccountStatusFromDependencies({
@@ -35,7 +36,7 @@ describe("getGuardianAccountStatusFromDependencies", () => {
         const address = createAddressStub() as AztecAddress;
 
         const status = await getGuardianAccountStatusFromDependencies({
-            network: getLocalNetworkConfig(),
+            network: resolveNetworkConfig({ aztecEnv: "local-network" }),
             account: { address },
             wallet: {
                 async getAccounts() {
@@ -58,7 +59,7 @@ describe("getGuardianAccountStatusFromDependencies", () => {
         const address = createAddressStub() as AztecAddress;
 
         const status = await getGuardianAccountStatusFromDependencies({
-            network: getLocalNetworkConfig(),
+            network: resolveNetworkConfig({ aztecEnv: "local-network" }),
             account: { address },
             wallet: {
                 async getAccounts() {

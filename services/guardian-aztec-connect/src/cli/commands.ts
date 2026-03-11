@@ -1,12 +1,18 @@
+import { issueKycCertificate } from "../issuance/issueKycCertificate.js";
+import { loadKycInputFromFile } from "./loadKycInput.js";
 import { getGuardianAccountStatus } from "../wallet/accountStatus.js";
 import { deployGuardianAccountIfNeeded } from "../wallet/deployAccount.js";
 import type {
     DeployGuardianAccountResult,
     GuardianAccountStatus,
     GuardianWalletSetupOptions,
+    IssueKycCertificateResult,
 } from "../types.js";
 
-export type GuardianCliCommandResult = GuardianAccountStatus | DeployGuardianAccountResult;
+export type GuardianCliCommandResult =
+    | GuardianAccountStatus
+    | DeployGuardianAccountResult
+    | IssueKycCertificateResult;
 
 export interface GuardianCliCommand {
     key: string;
@@ -24,6 +30,20 @@ const guardianCliCommands: Record<string, GuardianCliCommand> = {
         key: "account deploy",
         usage: "guardian-aztec-connect account deploy [--network <name>] [--json]",
         execute: deployGuardianAccountIfNeeded,
+    },
+    "kyc issue": {
+        key: "kyc issue",
+        usage: "guardian-aztec-connect kyc issue --input <file> [--network <name>] [--json]",
+        async execute(options) {
+            if (!options.inputPath) {
+                throw new Error("Missing value for --input");
+            }
+
+            return await issueKycCertificate({
+                aztecEnv: options.aztecEnv,
+                kyc: loadKycInputFromFile(options.inputPath),
+            });
+        },
     },
 };
 

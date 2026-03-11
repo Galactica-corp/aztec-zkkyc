@@ -16,6 +16,27 @@ Core features:
 - view whitelist status
 - handle Aztec-specific wallet management, transaction building, and transaction submission
 
+Normalized ZK-KYC issuance payload:
+
+- `personal.surname`: required string
+- `personal.forename`: required string
+- `personal.middlename`: optional string, defaults to empty string
+- `personal.birthday`: required ISO date string in `YYYY-MM-DD` format
+- `personal.citizenship`: required ISO 3166-1 alpha-3 country code
+- `personal.verificationLevel`: required integer, currently `0`, `1`, or `2`
+- `address.streetAndNumber`: required string
+- `address.postcode`: required string
+- `address.town`: required string
+- `address.region`: optional ISO 3166-2 subdivision code, defaults to empty string
+- `address.country`: required ISO 3166-1 alpha-3 country code
+
+Issuance API rules:
+
+- provider-specific KYC payloads must be normalized outside this package before calling the SDK or CLI
+- SDK issuance auto-generates `uniqueId` and `revocationId` when they are not provided explicitly
+- CLI issuance reads the normalized payload from a JSON file path
+- issuance returns the generated certificate identifiers so callers can persist them in external systems
+
 Workspace context:
 
 - package path: `services/guardian-aztec-connect`
@@ -74,6 +95,7 @@ Definition of done:
 - On `local-network`, prefer ephemeral wallet/PXE state by default. Reusing persisted PXE state after restarting the local chain can cause stale block-hash and contract-sync errors.
 - Keep whitelist and future registry checks non-fatal where possible in status-style commands, but still surface the error clearly in the returned result and CLI output.
 - When extending later slices like issuance, note listing, and revocation, add tests first at the client/helper layer, then the shared service layer, then CLI formatting/output.
+- Keep the KYC validation and hashing logic reusable and separate from on-chain submission so backend/provider adapters can normalize into the same payload shape.
 
 ## Configuration Rules
 

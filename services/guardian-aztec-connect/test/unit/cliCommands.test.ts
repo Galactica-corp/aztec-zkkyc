@@ -1,20 +1,22 @@
 import { getGuardianCliCommand, listGuardianCliCommands } from "../../src/cli/commands.js";
 import { formatCliResult, serializeCliResult } from "../../src/cli/output.js";
-import { createAddressStub, getLocalNetworkConfig } from "../support/fixtures.js";
+import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
+import { createAddressStub } from "../support/fixtures.js";
 
 describe("guardian CLI command registry", () => {
     it("registers the account commands", () => {
         const commands = listGuardianCliCommands();
 
-        expect(commands.map((command) => command.key)).toEqual(["account status", "account deploy"]);
+        expect(commands.map((command) => command.key)).toEqual(["account status", "account deploy", "kyc issue"]);
         expect(getGuardianCliCommand("account status")?.usage).toContain("account status");
         expect(getGuardianCliCommand("account deploy")?.usage).toContain("account deploy");
+        expect(getGuardianCliCommand("kyc issue")?.usage).toContain("kyc issue");
     });
 
     it("formats and serializes command results", () => {
         const result = {
             address: createAddressStub(),
-            network: getLocalNetworkConfig(),
+            network: resolveNetworkConfig({ aztecEnv: "local-network" }),
             isRegisteredInWallet: true,
             isContractInitialized: true,
             isWhitelisted: false,
@@ -35,7 +37,7 @@ describe("guardian CLI command registry", () => {
     it("reports whitelist lookup failures without failing formatting", () => {
         const result = {
             address: createAddressStub(),
-            network: getLocalNetworkConfig(),
+            network: resolveNetworkConfig({ aztecEnv: "local-network" }),
             isRegisteredInWallet: false,
             isContractInitialized: false,
             isWhitelisted: null,
@@ -49,5 +51,28 @@ describe("guardian CLI command registry", () => {
         });
         expect(formatCliResult(result)).toContain("Guardian whitelisted: unavailable");
         expect(formatCliResult(result)).toContain("Whitelist status check failed: registry not reachable");
+    });
+
+    it("formats and serializes issuance results", () => {
+        const result = {
+            guardianAddress: createAddressStub("0xguardian"),
+            userAddress: createAddressStub("0xuser"),
+            network: resolveNetworkConfig({ aztecEnv: "local-network" }),
+            uniqueId: 11n,
+            revocationId: 22n,
+            txHash: "0xtxhash",
+        };
+
+        expect(serializeCliResult(result)).toMatchObject({
+            guardianAddress: "0xguardian",
+            userAddress: "0xuser",
+            uniqueId: "11",
+            revocationId: "22",
+            txHash: "0xtxhash",
+        });
+        expect(formatCliResult(result)).toContain("Guardian address: 0xguardian");
+        expect(formatCliResult(result)).toContain("User address: 0xuser");
+        expect(formatCliResult(result)).toContain("Unique ID: 11");
+        expect(formatCliResult(result)).toContain("Revocation ID: 22");
     });
 });

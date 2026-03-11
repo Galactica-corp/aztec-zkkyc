@@ -4,6 +4,7 @@ import { Fr } from "@aztec/aztec.js/fields";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import * as dotenv from "dotenv";
 import path from "path";
+import type { PreparedKycCertificateIssuance } from "../kyc/zkKyc.js";
 import { loadGuardianRuntime } from "../runtime/guardianRuntime.js";
 import type {
     CertificateRegistrySetupOptions,
@@ -34,9 +35,25 @@ interface GuardianWhitelistMethod {
     simulate(options?: { from?: AztecAddress }): Promise<bigint[]>;
 }
 
+interface IssueCertificateMethod {
+    send(options: unknown): Promise<{
+        txHash?: {
+            toString(): string;
+        };
+    } | undefined>;
+}
+
 interface GuardianWhitelistContract {
     methods: {
         get_whitelisted_guardians(): GuardianWhitelistMethod;
+        issue_certificate(
+            user: AztecAddress,
+            uniqueId: Fr,
+            revocationId: Fr,
+            contentType: Fr,
+            personalData: PreparedKycCertificateIssuance["personalData"],
+            addressData: PreparedKycCertificateIssuance["addressData"]
+        ): IssueCertificateMethod;
     };
 }
 
@@ -193,4 +210,29 @@ export async function getGuardianWhitelistStatus(
     });
 
     return isGuardianInWhitelist(guardianAddress, guardianWhitelist);
+}
+
+/**
+ * Submits the private `issue_certificate` call through an already loaded certificate registry client.
+ */
+export async function issueCertificate(
+    client: Pick<CertificateRegistryClient, "contract">,
+    issuance: PreparedKycCertificateIssuance,
+    sendOptions: unknown
+): Promise<{ txHash: string }> {
+    const contract = client.contract as unknown as GuardianWhitelistContract;
+    const receipt = await contract.methods
+        .issue_certificate(
+            issuance.userAddress,
+            issuance.uniqueId,
+            issuance.revocationId,
+            issuance.contentType,
+            issuance.personalData,
+            issuance.addressData
+        )
+        .send(sendOptions);
+
+    return {
+        txHash: receipt?.txHash?.toString() ?? "",
+    };
 }

@@ -1,0 +1,18 @@
+{
+  "userAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "personal": {
+    "surname": "DOE",
+    "forename": "JANE",
+    "middlename": "",
+    "birthday": "1990-06-01",
+    "citizenship": "DEU",
+    "verificationLevel": 2
+  },
+  "address": {
+    "streetAndNumber": "MUSTERSTRASSE 10",
+    "postcode": "10115",
+    "town": "BERLIN",
+    "region": "DE-BE",
+    "country": "DEU"
+  }
+}

@@ -1,10 +1,11 @@
 import type { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
 import { AztecAddress as AztecAddressValue, deployGuardianAccountIfNeededFromDependencies, type DeployMethodLike } from "../../src/wallet/deployAccount.js";
-import { createAddressStub, createRegisteredAddress, getLocalNetworkConfig } from "../support/fixtures.js";
+import { createAddressStub, createRegisteredAddress } from "../support/fixtures.js";
 
 describe("deployGuardianAccountIfNeededFromDependencies", () => {
     it("deploys through ZERO sender when the account is not initialized", async () => {
-        const network = getLocalNetworkConfig();
+        const network = resolveNetworkConfig({ aztecEnv: "local-network" });
         const address = createAddressStub() as AztecAddress;
         const sentOptions: unknown[] = [];
         const senderRegistrations: Array<{ address: unknown; alias: string }> = [];
@@ -49,7 +50,7 @@ describe("deployGuardianAccountIfNeededFromDependencies", () => {
     });
 
     it("returns without deploying an initialized account", async () => {
-        const network = getLocalNetworkConfig();
+        const network = resolveNetworkConfig({ aztecEnv: "local-network" });
         const address = createAddressStub() as AztecAddress;
         let sendCalls = 0;
         const send: DeployMethodLike["send"] = async () => {
