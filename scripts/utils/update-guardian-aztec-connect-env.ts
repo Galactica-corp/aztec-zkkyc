@@ -47,6 +47,9 @@ async function upsertEnvValue(
 
 export async function updateGuardianAztecConnectEnv(
   certificateRegistryAddress: string,
+  certificateRegistryDeploymentSalt: string,
+  certificateRegistryAdminAddress: string,
+  certificateRegistryDeployerAddress: string,
   logger: LoggerLike
 ): Promise<void> {
   try {
@@ -76,7 +79,22 @@ export async function updateGuardianAztecConnectEnv(
     "CERTIFICATE_REGISTRY_ADDRESS",
     certificateRegistryAddress
   );
+  await upsertEnvValue(
+    GUARDIAN_AZTEC_CONNECT_ENV_PATH,
+    "CERTIFICATE_REGISTRY_DEPLOYMENT_SALT",
+    certificateRegistryDeploymentSalt
+  );
+  await upsertEnvValue(
+    GUARDIAN_AZTEC_CONNECT_ENV_PATH,
+    "CERTIFICATE_REGISTRY_ADMIN_ADDRESS",
+    certificateRegistryAdminAddress
+  );
+  await upsertEnvValue(
+    GUARDIAN_AZTEC_CONNECT_ENV_PATH,
+    "CERTIFICATE_REGISTRY_DEPLOYER_ADDRESS",
+    certificateRegistryDeployerAddress
+  );
   logger.info(
-    `📝 Saved CERTIFICATE_REGISTRY_ADDRESS to ${GUARDIAN_AZTEC_CONNECT_ENV_PATH}`
+    `📝 Saved certificate registry settings to ${GUARDIAN_AZTEC_CONNECT_ENV_PATH}`
   );
 }

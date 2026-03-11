@@ -44,11 +44,12 @@ This package currently implements the wallet setup slice:
 - load a guardian Schnorr account from `SECRET`, `SIGNING_KEY`, and `SALT`
 - resolve the Aztec network via `AZTEC_ENV`
 - query whether the guardian account contract is deployed
+- check whether the guardian address is whitelisted in the certificate registry
 - deploy the guardian account if needed
 
 `AZTEC_ENV` follows the repository-wide `config/<env>.json` convention. Use `local-network` by default or set `AZTEC_ENV=devnet`.
 
-Create a local `.env` file from `.env.example` before running the SDK or CLI.
+Create a local `.env` file from `.env.example` before running the SDK or CLI. Set `CERTIFICATE_REGISTRY_ADDRESS` to enable whitelist checks against the certificate registry. For contracts deployed outside the current PXE, also provide `CERTIFICATE_REGISTRY_DEPLOYMENT_SALT`, `CERTIFICATE_REGISTRY_ADMIN_ADDRESS`, and optionally `CERTIFICATE_REGISTRY_DEPLOYER_ADDRESS` so the client can reconstruct and register the contract instance before reading the whitelist. If the registry still cannot be reached, the account status call succeeds and reports the whitelist status as unavailable.
 
 ```bash
 # Check the guardian account status
@@ -75,6 +76,9 @@ import {
 const status = await getGuardianAccountStatus({
     aztecEnv: "local-network",
 });
+
+console.log(status.isWhitelisted);
+console.log(status.whitelistStatusError);
 
 const deployed = await deployGuardianAccountIfNeeded({
     aztecEnv: "local-network",

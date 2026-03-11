@@ -1,5 +1,16 @@
 import type { AccountManager } from "@aztec/aztec.js/wallet";
-import type { GuardianAccountStatus, GuardianNetworkConfig, GuardianWalletSetupOptions } from "../types.js";
+import {
+    createCertificateRegistryClientFromRuntime,
+    getGuardianWhitelistStatus,
+} from "../contracts/certificateRegistryClient.js";
+import type {
+    CertificateRegistrySetupOptions,
+    GuardianAccountStatus,
+    GuardianNetworkConfig,
+    GuardianRuntime,
+    GuardianStatusOptions,
+    GuardianWhitelistStatus,
+} from "../types.js";
 import { loadGuardianRuntime } from "../runtime/guardianRuntime.js";
 
 interface ContractMetadata {
@@ -21,6 +32,18 @@ export interface GuardianStatusDependencies {
         address: AccountManager["address"];
     };
     network: GuardianNetworkConfig;
+    getWhitelistStatus?(): Promise<{ isWhitelisted: boolean }>;
+}
+
+export async function getGuardianWhitelistStatusFromRuntime(
+    runtime: GuardianRuntime,
+    options: CertificateRegistrySetupOptions = {}
+): Promise<{ isWhitelisted: boolean }> {
+    const client = await createCertificateRegistryClientFromRuntime(runtime, options);
+
+    return {
+        isWhitelisted: await getGuardianWhitelistStatus(client, runtime.account.address),
+    };
 }
 
 export async function getGuardianAccountStatusFromDependencies(
@@ -31,22 +54,38 @@ export async function getGuardianAccountStatusFromDependencies(
     const isRegisteredInWallet = registeredAccounts.some((registeredAccount) =>
         registeredAccount.item.equals(dependencies.account.address)
     );
+    let whitelistStatus: GuardianWhitelistStatus = {
+        isWhitelisted: null,
+    };
+
+    if (dependencies.getWhitelistStatus) {
+        try {
+            whitelistStatus = await dependencies.getWhitelistStatus();
+        } catch (error: unknown) {
+            whitelistStatus = {
+                isWhitelisted: null,
+                whitelistStatusError: error instanceof Error ? error.message : String(error),
+            };
+        }
+    }
 
     return {
         address: dependencies.account.address,
         network: dependencies.network,
         isRegisteredInWallet,
         isContractInitialized: metadata.isContractInitialized,
+        ...whitelistStatus,
     };
 }
 
-export async function getGuardianAccountStatus(options: GuardianWalletSetupOptions = {}): Promise<GuardianAccountStatus> {
+export async function getGuardianAccountStatus(options: GuardianStatusOptions = {}): Promise<GuardianAccountStatus> {
     const runtime = await loadGuardianRuntime(options);
 
     return await getGuardianAccountStatusFromDependencies({
         wallet: runtime.wallet,
         account: runtime.account,
         network: runtime.network,
+        getWhitelistStatus: async () => await getGuardianWhitelistStatusFromRuntime(runtime, options),
     });
 }
 

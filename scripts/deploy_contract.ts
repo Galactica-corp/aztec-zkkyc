@@ -106,8 +106,15 @@ async function main() {
   logger.info(`📍 Contract address: ${certificateRegistryContract.address}`);
   await logContractInstantiationData(certificateDeployMethod, [adminAddress.toString()]);
   logger.info(`👤 Admin address: ${adminAddress}`);
+  const certificateRegistryInstance = await certificateDeployMethod.getInstance();
+  if (!certificateRegistryInstance) {
+    throw new Error("Certificate registry deployment did not return instantiation data");
+  }
   await updateGuardianAztecConnectEnv(
     certificateRegistryContract.address.toString(),
+    certificateRegistryInstance.salt.toString(),
+    adminAddress.toString(),
+    address.toString(),
     logger
   );
 
@@ -245,7 +252,7 @@ async function main() {
 
   // Update demo app deployment config so Settings show these contracts.
   const targetNetwork = getEnv() === "devnet" ? "devnet" : "sandbox";
-  const certInstance = await certificateDeployMethod.getInstance();
+  const certInstance = certificateRegistryInstance;
   const ageCheckInstance = await ageCheckDeployMethod.getInstance();
   const sanctionListInstance = await sanctionListDeployMethod.getInstance();
   const basicDisclosureInstance = await basicDisclosureDeployMethod.getInstance();

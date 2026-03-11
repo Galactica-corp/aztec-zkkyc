@@ -4,10 +4,14 @@ export type {
     GuardianAccountStatus,
     GuardianNetworkConfig,
     GuardianRuntime,
+    GuardianStatusOptions,
     GuardianWalletSetupOptions,
+    GuardianWhitelistStatus,
 } from "./types.js";
 export {
     createCertificateRegistryClientFromRuntime,
+    getGuardianWhitelistStatus,
+    isGuardianInWhitelist,
     loadCertificateRegistryClient,
     resolveCertificateRegistryAddress,
 } from "./contracts/certificateRegistryClient.js";

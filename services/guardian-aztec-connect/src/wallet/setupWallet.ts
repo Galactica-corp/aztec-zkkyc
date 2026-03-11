@@ -7,9 +7,10 @@ import { resolveNetworkConfig } from "../config/networkConfig.js";
 
 export async function createGuardianWallet(options: GuardianWalletSetupOptions = {}): Promise<EmbeddedWallet> {
     const network = resolveNetworkConfig({ aztecEnv: options.aztecEnv });
+    const ephemeral = options.ephemeral ?? network.name === "local-network";
     const node = createAztecNodeClient(network.nodeUrl);
     const wallet = await EmbeddedWalletFactory.create(node, {
-        ephemeral: options.ephemeral ?? false,
+        ephemeral,
         pxeConfig: {
             proverEnabled: network.name !== "local-network",
         },

@@ -4,10 +4,13 @@ import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import type {
     DeployGuardianAccountResult,
     GuardianNetworkConfig,
-    GuardianWalletSetupOptions,
+    GuardianStatusOptions,
 } from "../types.js";
 import { loadSponsoredGuardianRuntime } from "../runtime/guardianRuntime.js";
-import { getGuardianAccountStatusFromDependencies } from "./accountStatus.js";
+import {
+    getGuardianAccountStatusFromDependencies,
+    getGuardianWhitelistStatusFromRuntime,
+} from "./accountStatus.js";
 
 interface DeployMethodLike {
     send(options: unknown): Promise<unknown>;
@@ -25,6 +28,7 @@ export interface DeployGuardianDependencies {
     };
     paymentMethod: unknown;
     network: GuardianNetworkConfig;
+    getWhitelistStatus?(): Promise<{ isWhitelisted: boolean }>;
 }
 
 export async function deployGuardianAccountIfNeededFromDependencies(
@@ -70,7 +74,7 @@ export async function deployGuardianAccountIfNeededFromDependencies(
 }
 
 export async function deployGuardianAccountIfNeeded(
-    options: GuardianWalletSetupOptions = {}
+    options: GuardianStatusOptions = {}
 ): Promise<DeployGuardianAccountResult> {
     const runtime = await loadSponsoredGuardianRuntime(options);
 
@@ -79,6 +83,7 @@ export async function deployGuardianAccountIfNeeded(
         account: runtime.account,
         paymentMethod: runtime.paymentMethod,
         network: runtime.network,
+        getWhitelistStatus: async () => await getGuardianWhitelistStatusFromRuntime(runtime, options),
     });
 }
 

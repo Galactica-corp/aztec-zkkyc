@@ -1,41 +1,39 @@
 # Guardian Backend Guide
 
-Use this file as the compact source of truth for this package. Read `README.md`, this file, and `IMPLEMENTATION_PLAN.md` before making substantial changes. Also inherit the root repository guidance from `/AGENTS.md`.
+Use this file as the compact source of truth for this package. Read `README.md` and this file before making substantial changes. Also inherit the root repository guidance from `/AGENTS.md`.
 
 ## Spec
 
-`Guardian Aztec Connect` provides guardians with the service and infrastructure to issue zero-knowledge certificates, such as ZK KYC. It should support:
-
-- an SDK imported by JavaScript or TypeScript applications
-- CLI tools for manual testing and operational flows
+`Guardian Backend` is a NodeJS service that runs in the backend to integrate a frontend where users pass KYC with the Sumsub KYC API and the `guardian-aztec-connect` SDK. It is a central component in providing a KYC service to users and issue ZK KYC on the Aztec blockchain.
 
 Core features:
 
-- issue certificates
-- revoke certificates
-- view whitelist status
-- handle Aztec-specific wallet management, transaction building, and transaction submission
+- Backend for guardian frontend application
+- Integrate Sumsub API for KYC audits and storage
+- Call `guardian-aztec-connect` (package in this repo) to issue and revoke ZK KYC certificates on-chain
 
 Workspace context:
 
-- package path: `services/guardian-aztec-connect`
-- package name: `@galactica-net/guardian-aztec-connect`
+- package path: `services/guardian-backend`
+- package name: `@galactica-net/guardian-backend`
 - included from the root workspace `package.json`
 
 Target shape:
 
 - `README.md` for package overview
 - `AGENTS.md` for compact spec, workflow, and config rules
-- `IMPLEMENTATION_PLAN.md` for feature-by-feature build steps
 - `.env.example` for local testing placeholders
 - `src/` and `test/` added incrementally as features land
 
 Design rules:
 
 - keep domain logic separate from Aztec transport and wallet concerns
-- expose SDK and CLI through shared core services instead of duplicated logic
+- expose backend service through REST API and CLI for testing (both share core services instead of duplicated logic)
 - prefer explicit typed inputs and outputs at package boundaries
 - keep placeholders explicit with `TODO:`
+- use docstrings to document the purpose of exposed functions and how to use them.
+- use comments to explain important reasons why the code has been written like this.
+- do not comment what the code is obviously doing. Instead use descriptive variable and function names.
 
 ## Workflow Rules
 
@@ -43,7 +41,6 @@ Design rules:
 - if behavior is not specified yet, extend the spec here first and then implement it
 - keep docs in sync with behavior in the same change
 - test everything as you go
-- use `aztec` CLI wrappers instead of `nargo` directly for Aztec compile and test flows
 - Prefer reusable and modular code. Do not copy paste large code sections.
 - After implementing a feature, take appropriate steps to refactor the codebase to keep it well maintained.
 
@@ -73,16 +70,23 @@ Definition of done:
 - do not hardcode private keys, mnemonics, or contract addresses
 - do not print sensitive values in logs
 
+## Reference Implementation
+
+- This package is a NodeJS port of the reference implementation written in Go, that can be found in `@services/guardian-backend/go-reference-implementation`
+- Our port should keep the REST API of the reference implementation, to be compatible with the same frontend. The reference frontend code it will be working with can be found in `@apps/guardian-frontend-reference`. It is a placeholder that will be reworked and rebranded after this package is finished.
+-  There are some features of the go reference implementation, that we do not need. These parts should be dropped and cut out of the migration. These includes the AWS S3 storage. We do not need to store data about the generated ZK certificates. We also do not need ethereum blockchain libraries.
+- Our port will use the `guardian-aztec-connect` package and its JS SDK function to work with the blockchain instead of `github.com/galactica-corp/guardians-sdk`. It will take care of all the blockchain interaction. The KYC certificate content and API differ a bit. Resolve those differences.  
+
 ## Preferred Sources
 
 Prefer sources in this order:
 
-1. package code and docs in `services/guardian-aztec-connect`
-2. root guidance in `/AGENTS.md`
-3. Aztec and Noir MCP tools for getting documentation in Cursor
-4. Official Aztec docs for agents: `https://docs.aztec.network/developers/ai_tooling#for-learning-and-exploration`
+1. package code and docs in `services/guardian-backend`
+2. Reference implementation in `@services/guardian-backend/go-reference-implementation`
+3. Root guidance in `/AGENTS.md`
+4. 
+5. 
 
 Useful references:
 
-- Aztec JS SDK docs: `https://docs.aztec.network/typescript-api/devnet/aztec.js.md`
-- Aztec PXE docs: `https://docs.aztec.network/typescript-api/devnet/pxe.md`
+- 

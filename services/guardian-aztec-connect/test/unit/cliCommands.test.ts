@@ -17,14 +17,37 @@ describe("guardian CLI command registry", () => {
             network: getLocalNetworkConfig(),
             isRegisteredInWallet: true,
             isContractInitialized: true,
+            isWhitelisted: false,
             deployed: true,
         };
 
         expect(serializeCliResult(result)).toMatchObject({
             address: "0xguardian",
             deployed: true,
+            isWhitelisted: false,
         });
         expect(formatCliResult(result)).toContain("Deployment sent: yes");
         expect(formatCliResult(result)).toContain("Registered in wallet: yes");
+        expect(formatCliResult(result)).toContain("Guardian whitelisted: no");
+        expect(formatCliResult(result)).toContain("Contact the Galactica team to get this guardian whitelisted.");
+    });
+
+    it("reports whitelist lookup failures without failing formatting", () => {
+        const result = {
+            address: createAddressStub(),
+            network: getLocalNetworkConfig(),
+            isRegisteredInWallet: false,
+            isContractInitialized: false,
+            isWhitelisted: null,
+            whitelistStatusError: "registry not reachable",
+        };
+
+        expect(serializeCliResult(result)).toMatchObject({
+            address: "0xguardian",
+            isWhitelisted: null,
+            whitelistStatusError: "registry not reachable",
+        });
+        expect(formatCliResult(result)).toContain("Guardian whitelisted: unavailable");
+        expect(formatCliResult(result)).toContain("Whitelist status check failed: registry not reachable");
     });
 });

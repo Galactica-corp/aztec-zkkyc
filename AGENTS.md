@@ -23,6 +23,9 @@ This is an Aztec smart contract project. Always use the `aztec` CLI wrapper inst
 - Use four spaces for indentation in TypeScript and scripts.
 - Do not commit generated artifacts (`src/artifacts`, `target`, or `store` folders).
 - Make use of the `aztec` and `noir` MCP servers to query documentation on writing Noir smart contracts for Aztec.
+- use docstrings to document the purpose of exposed functions and how to use them.
+- use comments to explain important reasons why the code has been written like this.
+- do not comment what the code is obviously doing. Instead use descriptive variable and function names.
 
 ## Testing
 - Run `yarn test` and ensure it passes before committing. This runs both the TypeScript tests and Noir tests.

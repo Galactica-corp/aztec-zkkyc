@@ -24,9 +24,19 @@ export interface GuardianWalletSetupOptions {
 
 export interface CertificateRegistrySetupOptions {
     certificateRegistryAddress?: AztecAddress | string;
+    certificateRegistryAdminAddress?: AztecAddress | string;
+    certificateRegistryDeploymentSalt?: string;
+    certificateRegistryDeployerAddress?: AztecAddress | string;
 }
 
-export interface GuardianAccountStatus {
+export type GuardianStatusOptions = GuardianWalletSetupOptions & CertificateRegistrySetupOptions;
+
+export interface GuardianWhitelistStatus {
+    isWhitelisted: boolean | null;
+    whitelistStatusError?: string;
+}
+
+export interface GuardianAccountStatus extends GuardianWhitelistStatus {
     address: AztecAddress;
     network: GuardianNetworkConfig;
     isRegisteredInWallet: boolean;

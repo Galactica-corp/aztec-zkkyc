@@ -19,7 +19,16 @@ export function formatCliResult(result: GuardianCliOutputResult): string {
         `Address: ${result.address.toString()}`,
         `Registered in wallet: ${result.isRegisteredInWallet ? "yes" : "no"}`,
         `Contract initialized: ${result.isContractInitialized ? "yes" : "no"}`,
+        `Guardian whitelisted: ${
+            result.isWhitelisted === null ? "unavailable" : result.isWhitelisted ? "yes" : "no"
+        }`,
     ];
+
+    if (result.whitelistStatusError) {
+        lines.push(`Whitelist status check failed: ${result.whitelistStatusError}`);
+    } else if (result.isWhitelisted === false) {
+        lines.push("Contact the Galactica team to get this guardian whitelisted.");
+    }
 
     if ("deployed" in result) {
         lines.push(`Deployment sent: ${result.deployed ? "yes" : "no"}`);

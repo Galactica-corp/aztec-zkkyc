@@ -36,6 +36,9 @@ Design rules:
 - expose SDK and CLI through shared core services instead of duplicated logic
 - prefer explicit typed inputs and outputs at package boundaries
 - keep placeholders explicit with `TODO:`
+- use docstrings to document the purpose of exposed functions and how to use them.
+- use comments to explain important reasons why the code has been written like this.
+- do not comment what the code is obviously doing. Instead use descriptive variable and function names. 
 
 ## Workflow Rules
 
