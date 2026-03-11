@@ -1,5 +1,4 @@
 import { getGuardianCliCommand, listGuardianCliCommands } from "./cli/commands.js";
-import { formatCliResult, serializeCliResult } from "./cli/output.js";
 import type { GuardianWalletSetupOptions } from "./types.js";
 
 function getUsage(): string {
@@ -11,52 +10,23 @@ function getUsage(): string {
 
 export function parseOptions(argv: string[]): { commandKey: string; options: GuardianWalletSetupOptions; json: boolean } {
     const commandKey = argv.slice(0, 2).join(" ").trim();
-    if (!getGuardianCliCommand(commandKey)) {
+    const command = getGuardianCliCommand(commandKey);
+    if (!command) {
         throw new Error(getUsage());
     }
 
-    let json = false;
-    let aztecEnv: string | undefined;
-    let inputPath: string | undefined;
+    try {
+        const parsed = command.parse(argv.slice(2));
 
-    for (let index = 2; index < argv.length; index += 1) {
-        const argument = argv[index];
-        if (argument === "--json") {
-            json = true;
-            continue;
-        }
-
-        if (argument === "--network") {
-            aztecEnv = argv[index + 1];
-            if (!aztecEnv) {
-                throw new Error("Missing value for --network");
-            }
-
-            index += 1;
-            continue;
-        }
-
-        if (argument === "--input") {
-            inputPath = argv[index + 1];
-            if (!inputPath) {
-                throw new Error("Missing value for --input");
-            }
-
-            index += 1;
-            continue;
-        }
-
-        throw new Error(`Unknown argument: ${argument}\n\n${getUsage()}`);
+        return {
+            commandKey,
+            json: parsed.json,
+            options: parsed.options,
+        };
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`${message}\n\n${getUsage()}`);
     }
-
-    return {
-        commandKey,
-        json,
-        options: {
-            aztecEnv,
-            inputPath,
-        },
-    };
 }
 
 export async function main(argv: string[] = process.argv.slice(2)): Promise<void> {
@@ -73,11 +43,11 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<void
     const result = await command.execute(options);
 
     if (json) {
-        console.log(JSON.stringify(serializeCliResult(result), null, 2));
+        console.log(JSON.stringify(command.serialize(result), null, 2));
         return;
     }
 
-    console.log(formatCliResult(result));
+    console.log(command.format(result));
 }
 
 const invokedAsEntrypoint = /\/cli\.(ts|js)$/.test(process.argv[1] ?? "");

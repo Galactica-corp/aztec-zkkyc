@@ -4,25 +4,7 @@ import type {
     IssueKycCertificateResult,
 } from "../types.js";
 
-export type GuardianCliOutputResult =
-    | GuardianAccountStatus
-    | DeployGuardianAccountResult
-    | IssueKycCertificateResult;
-
-export function serializeCliResult(result: GuardianCliOutputResult) {
-    if ("guardianAddress" in result) {
-        return {
-            ...result,
-            guardianAddress: result.guardianAddress.toString(),
-            userAddress: result.userAddress.toString(),
-            uniqueId: result.uniqueId.toString(),
-            revocationId: result.revocationId.toString(),
-            network: {
-                ...result.network,
-            },
-        };
-    }
-
+export function serializeAccountResult(result: GuardianAccountStatus | DeployGuardianAccountResult) {
     return {
         ...result,
         address: result.address.toString(),
@@ -32,18 +14,7 @@ export function serializeCliResult(result: GuardianCliOutputResult) {
     };
 }
 
-export function formatCliResult(result: GuardianCliOutputResult): string {
-    if ("guardianAddress" in result) {
-        return [
-            `Network: ${result.network.name}`,
-            `Guardian address: ${result.guardianAddress.toString()}`,
-            `User address: ${result.userAddress.toString()}`,
-            `Unique ID: ${result.uniqueId.toString()}`,
-            `Revocation ID: ${result.revocationId.toString()}`,
-            `Transaction hash: ${result.txHash}`,
-        ].join("\n");
-    }
-
+export function formatAccountResult(result: GuardianAccountStatus | DeployGuardianAccountResult): string {
     const lines = [
         `Network: ${result.network.name}`,
         `Node URL: ${result.network.nodeUrl}`,
@@ -66,4 +37,28 @@ export function formatCliResult(result: GuardianCliOutputResult): string {
     }
 
     return lines.join("\n");
+}
+
+export function serializeIssueKycResult(result: IssueKycCertificateResult) {
+    return {
+        ...result,
+        guardianAddress: result.guardianAddress.toString(),
+        userAddress: result.userAddress.toString(),
+        uniqueId: result.uniqueId.toString(),
+        revocationId: result.revocationId.toString(),
+        network: {
+            ...result.network,
+        },
+    };
+}
+
+export function formatIssueKycResult(result: IssueKycCertificateResult): string {
+    return [
+        `Network: ${result.network.name}`,
+        `Guardian address: ${result.guardianAddress.toString()}`,
+        `User address: ${result.userAddress.toString()}`,
+        `Unique ID: ${result.uniqueId.toString()}`,
+        `Revocation ID: ${result.revocationId.toString()}`,
+        `Transaction hash: ${result.txHash}`,
+    ].join("\n");
 }

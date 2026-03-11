@@ -7,6 +7,7 @@ import type {
     GuardianStatusOptions,
 } from "../types.js";
 import { loadSponsoredGuardianRuntime } from "../runtime/guardianRuntime.js";
+import { buildSponsoredSendOptions } from "../tx/guardianTx.js";
 import {
     getGuardianAccountStatusFromDependencies,
     getGuardianWhitelistStatusFromRuntime,
@@ -43,21 +44,19 @@ export async function deployGuardianAccountIfNeededFromDependencies(
     }
 
     const deployMethod = await dependencies.account.getDeployMethod();
-    const sendOptions = {
-        fee: { paymentMethod: dependencies.paymentMethod },
-        wait: { timeout: dependencies.network.txTimeoutMs, returnReceipt: true },
-    };
 
     try {
-        await deployMethod.send({
-            from: AztecAddress.ZERO,
-            ...sendOptions,
-        });
+        await deployMethod.send(buildSponsoredSendOptions(
+            AztecAddress.ZERO,
+            dependencies.paymentMethod,
+            dependencies.network
+        ));
     } catch {
-        await deployMethod.send({
-            from: dependencies.account.address,
-            ...sendOptions,
-        });
+        await deployMethod.send(buildSponsoredSendOptions(
+            dependencies.account.address,
+            dependencies.paymentMethod,
+            dependencies.network
+        ));
     }
 
     await dependencies.wallet.registerSender(dependencies.account.address, "guardian");

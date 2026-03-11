@@ -1,6 +1,4 @@
-import { loadSponsoredGuardianRuntime } from "../runtime/guardianRuntime.js";
 import {
-    createCertificateRegistryClientFromRuntime,
     issueCertificate,
     type CertificateRegistryClient,
 } from "../contracts/certificateRegistryClient.js";
@@ -8,6 +6,8 @@ import {
     prepareZkKycCertificateIssuance,
     type PreparedKycCertificateIssuance,
 } from "../kyc/zkKyc.js";
+import { loadGuardianRegistryContext } from "../runtime/guardianRegistryContext.js";
+import { buildSponsoredSendOptions, type GuardianSendOptions } from "../tx/guardianTx.js";
 import type {
     GuardianNetworkConfig,
     IssueKycCertificateOptions,
@@ -28,7 +28,7 @@ interface IssueKycCertificateDependencies {
     ): Promise<PreparedKycCertificateIssuance>;
     submitIssuance(
         issuance: PreparedKycCertificateIssuance,
-        sendOptions: unknown
+        sendOptions: GuardianSendOptions
     ): Promise<{ txHash: string }>;
 }
 
@@ -43,11 +43,11 @@ export async function issueKycCertificateFromDependencies(
         uniqueId: dependencies.uniqueId,
         revocationId: dependencies.revocationId,
     });
-    const sendOptions = {
-        from: dependencies.account.address,
-        fee: { paymentMethod: dependencies.paymentMethod },
-        wait: { timeout: dependencies.network.txTimeoutMs, returnReceipt: true },
-    };
+    const sendOptions = buildSponsoredSendOptions(
+        dependencies.account.address,
+        dependencies.paymentMethod,
+        dependencies.network
+    );
     const receipt = await dependencies.submitIssuance(issuance, sendOptions);
 
     return {
@@ -66,18 +66,18 @@ export async function issueKycCertificateFromDependencies(
 export async function issueKycCertificate(
     options: IssueKycCertificateOptions
 ): Promise<IssueKycCertificateResult> {
-    const runtime = await loadSponsoredGuardianRuntime(options);
-    const client = await createCertificateRegistryClientFromRuntime(runtime, options);
+    const context = await loadGuardianRegistryContext(options);
 
     return await issueKycCertificateFromDependencies({
-        network: runtime.network,
-        account: runtime.account,
-        paymentMethod: runtime.paymentMethod,
+        network: context.network,
+        account: context.account,
+        paymentMethod: context.paymentMethod,
         kyc: options.kyc,
         uniqueId: options.uniqueId,
         revocationId: options.revocationId,
         prepareIssuance: async (issuanceOptions) => await prepareZkKycCertificateIssuance(issuanceOptions),
-        submitIssuance: async (issuance, sendOptions) => await issueCertificate(client, issuance, sendOptions),
+        submitIssuance: async (issuance, sendOptions) =>
+            await issueCertificate(context.certificateRegistryClient, issuance, sendOptions),
     });
 }
 

@@ -1,5 +1,4 @@
 import { getGuardianCliCommand, listGuardianCliCommands } from "../../src/cli/commands.js";
-import { formatCliResult, serializeCliResult } from "../../src/cli/output.js";
 import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
 import { createAddressStub } from "../support/fixtures.js";
 
@@ -14,6 +13,7 @@ describe("guardian CLI command registry", () => {
     });
 
     it("formats and serializes command results", () => {
+        const command = getGuardianCliCommand("account deploy");
         const result = {
             address: createAddressStub(),
             network: resolveNetworkConfig({ aztecEnv: "local-network" }),
@@ -23,18 +23,19 @@ describe("guardian CLI command registry", () => {
             deployed: true,
         };
 
-        expect(serializeCliResult(result)).toMatchObject({
+        expect(command?.serialize(result)).toMatchObject({
             address: "0xguardian",
             deployed: true,
             isWhitelisted: false,
         });
-        expect(formatCliResult(result)).toContain("Deployment sent: yes");
-        expect(formatCliResult(result)).toContain("Registered in wallet: yes");
-        expect(formatCliResult(result)).toContain("Guardian whitelisted: no");
-        expect(formatCliResult(result)).toContain("Contact the Galactica team to get this guardian whitelisted.");
+        expect(command?.format(result)).toContain("Deployment sent: yes");
+        expect(command?.format(result)).toContain("Registered in wallet: yes");
+        expect(command?.format(result)).toContain("Guardian whitelisted: no");
+        expect(command?.format(result)).toContain("Contact the Galactica team to get this guardian whitelisted.");
     });
 
     it("reports whitelist lookup failures without failing formatting", () => {
+        const command = getGuardianCliCommand("account status");
         const result = {
             address: createAddressStub(),
             network: resolveNetworkConfig({ aztecEnv: "local-network" }),
@@ -44,16 +45,17 @@ describe("guardian CLI command registry", () => {
             whitelistStatusError: "registry not reachable",
         };
 
-        expect(serializeCliResult(result)).toMatchObject({
+        expect(command?.serialize(result)).toMatchObject({
             address: "0xguardian",
             isWhitelisted: null,
             whitelistStatusError: "registry not reachable",
         });
-        expect(formatCliResult(result)).toContain("Guardian whitelisted: unavailable");
-        expect(formatCliResult(result)).toContain("Whitelist status check failed: registry not reachable");
+        expect(command?.format(result)).toContain("Guardian whitelisted: unavailable");
+        expect(command?.format(result)).toContain("Whitelist status check failed: registry not reachable");
     });
 
     it("formats and serializes issuance results", () => {
+        const command = getGuardianCliCommand("kyc issue");
         const result = {
             guardianAddress: createAddressStub("0xguardian"),
             userAddress: createAddressStub("0xuser"),
@@ -63,16 +65,16 @@ describe("guardian CLI command registry", () => {
             txHash: "0xtxhash",
         };
 
-        expect(serializeCliResult(result)).toMatchObject({
+        expect(command?.serialize(result)).toMatchObject({
             guardianAddress: "0xguardian",
             userAddress: "0xuser",
             uniqueId: "11",
             revocationId: "22",
             txHash: "0xtxhash",
         });
-        expect(formatCliResult(result)).toContain("Guardian address: 0xguardian");
-        expect(formatCliResult(result)).toContain("User address: 0xuser");
-        expect(formatCliResult(result)).toContain("Unique ID: 11");
-        expect(formatCliResult(result)).toContain("Revocation ID: 22");
+        expect(command?.format(result)).toContain("Guardian address: 0xguardian");
+        expect(command?.format(result)).toContain("User address: 0xuser");
+        expect(command?.format(result)).toContain("Unique ID: 11");
+        expect(command?.format(result)).toContain("Revocation ID: 22");
     });
 });

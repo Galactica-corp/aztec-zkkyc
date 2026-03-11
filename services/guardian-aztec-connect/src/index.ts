@@ -22,11 +22,13 @@ export {
     resolveCertificateRegistryAddress,
 } from "./contracts/certificateRegistryClient.js";
 export { loadGuardianRuntime, loadSponsoredGuardianRuntime } from "./runtime/guardianRuntime.js";
+export { loadGuardianRegistryContext } from "./runtime/guardianRegistryContext.js";
 export {
     CONTENT_TYPE_ZK_KYC,
     prepareZkKycCertificateIssuance,
     parseBirthdayToUnixTimestamp,
 } from "./kyc/zkKyc.js";
 export { issueKycCertificate } from "./issuance/issueKycCertificate.js";
+export { buildSponsoredSendOptions, requireTransactionHash } from "./tx/guardianTx.js";
 export { getGuardianAccountStatus } from "./wallet/accountStatus.js";
 export { deployGuardianAccountIfNeeded } from "./wallet/deployAccount.js";

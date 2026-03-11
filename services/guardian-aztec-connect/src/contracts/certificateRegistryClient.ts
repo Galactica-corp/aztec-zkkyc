@@ -5,6 +5,7 @@ import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import * as dotenv from "dotenv";
 import path from "path";
 import type { PreparedKycCertificateIssuance } from "../kyc/zkKyc.js";
+import { requireTransactionHash } from "../tx/guardianTx.js";
 import { loadGuardianRuntime } from "../runtime/guardianRuntime.js";
 import type {
     CertificateRegistrySetupOptions,
@@ -233,6 +234,6 @@ export async function issueCertificate(
         .send(sendOptions);
 
     return {
-        txHash: receipt?.txHash?.toString() ?? "",
+        txHash: requireTransactionHash(receipt, "Certificate issuance"),
     };
 }
