@@ -19,6 +19,7 @@ import { ShamirDisclosureContract } from "../artifacts/ShamirDisclosure.js";
 import { UseCaseExampleContract } from "../artifacts/UseCaseExample.js";
 import { ContractBase, DeployMethod } from "@aztec/aztec.js/contracts";
 import { updateDemoSandboxDeployment } from "./utils/update-demo-sandbox.js";
+import { updateGuardianAztecConnectEnv } from "./utils/update-guardian-aztec-connect-env.js";
 import { inspect } from "util";
 
 /** Serialize any thrown value for logging (handles null-prototype and non-Error). */
@@ -105,6 +106,10 @@ async function main() {
   logger.info(`📍 Contract address: ${certificateRegistryContract.address}`);
   await logContractInstantiationData(certificateDeployMethod, [adminAddress.toString()]);
   logger.info(`👤 Admin address: ${adminAddress}`);
+  await updateGuardianAztecConnectEnv(
+    certificateRegistryContract.address.toString(),
+    logger
+  );
 
   // Deploy age check requirement contract
   logger.info('🏎️  Starting age check requirement contract deployment...');
