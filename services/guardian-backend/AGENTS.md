@@ -75,7 +75,8 @@ Definition of done:
 - This package is a NodeJS port of the reference implementation written in Go, that can be found in `@services/guardian-backend/go-reference-implementation`
 - Our port should keep the REST API of the reference implementation, to be compatible with the same frontend. The reference frontend code it will be working with can be found in `@apps/guardian-frontend-reference`. It is a placeholder that will be reworked and rebranded after this package is finished.
 -  There are some features of the go reference implementation, that we do not need. These parts should be dropped and cut out of the migration. These includes the AWS S3 storage. We do not need to store data about the generated ZK certificates. We also do not need ethereum blockchain libraries.
-- Our port will use the `guardian-aztec-connect` package and its JS SDK function to work with the blockchain instead of `github.com/galactica-corp/guardians-sdk`. It will take care of all the blockchain interaction. The KYC certificate content and API differ a bit. Resolve those differences.  
+- Our port will use the `guardian-aztec-connect` package and its JS SDK function to work with the blockchain instead of `github.com/galactica-corp/guardians-sdk`. It will take care of all the blockchain interaction. The KYC certificate content and API differ a bit. Resolve those differences.
+- Keep the port simple and effective. You can drop irrelevant or redundant features.
 
 ## Preferred Sources
 
@@ -84,9 +85,6 @@ Prefer sources in this order:
 1. package code and docs in `services/guardian-backend`
 2. Reference implementation in `@services/guardian-backend/go-reference-implementation`
 3. Root guidance in `/AGENTS.md`
-4. 
-5. 
+4. Reference frontend counterpart in `@apps/guardian-frontend-reference`
+5. Sumsub API docs https://docs.sumsub.com/reference/about-sumsub-api
 
-Useful references:
-
-- 

@@ -67,6 +67,14 @@ Definition of done:
 4. manual verification steps are documented if needed
 5. docs remain consistent with the code
 
+## Implementation Learnings
+
+- Reuse the shared runtime and `certificateRegistryClient` for all certificate-registry reads and writes. Do not create separate Aztec bootstrapping paths per feature.
+- For contracts deployed outside the current PXE, register the contract before calling `Contract.at(...)`. For the certificate registry, reconstruction needs the address, deployment salt, admin address, and deployer address.
+- On `local-network`, prefer ephemeral wallet/PXE state by default. Reusing persisted PXE state after restarting the local chain can cause stale block-hash and contract-sync errors.
+- Keep whitelist and future registry checks non-fatal where possible in status-style commands, but still surface the error clearly in the returned result and CLI output.
+- When extending later slices like issuance, note listing, and revocation, add tests first at the client/helper layer, then the shared service layer, then CLI formatting/output.
+
 ## Configuration Rules
 
 - load secrets and runtime settings from environment variables
