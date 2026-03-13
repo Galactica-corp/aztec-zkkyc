@@ -94,13 +94,11 @@ describe("guardian CLI command registry", () => {
             count: 2,
             certificates: [
                 {
-                    guardianAddress: createAddressStub("0xguardian"),
                     uniqueId: 11n,
                     revocationId: 22n,
                     contentType: 1n,
                 },
                 {
-                    guardianAddress: createAddressStub("0xguardian"),
                     uniqueId: 33n,
                     revocationId: 44n,
                     contentType: 1n,

@@ -3,23 +3,13 @@ import { createGuardianAccount } from "../../src/wallet/guardianAccount.js";
 import { getGuardianAccountStatus } from "../../src/wallet/accountStatus.js";
 import { deployGuardianAccountIfNeeded } from "../../src/wallet/deployAccount.js";
 import { createGuardianWallet } from "../../src/wallet/setupWallet.js";
-import { createGuardianEnv, restoreProcessEnv } from "../support/fixtures.js";
+import { assertLocalAztecNodeAvailable, useGuardianEnvLifecycle } from "../support/integrationHarness.js";
 
 describe("wallet setup integration", () => {
-    const originalEnv = { ...process.env };
-
-    beforeEach(() => {
-        process.env = {
-            ...process.env,
-            ...createGuardianEnv(),
-        };
-    });
-
-    afterEach(() => {
-        restoreProcessEnv(originalEnv);
-    });
+    useGuardianEnvLifecycle();
 
     it("loads the guardian account, reports status, and deploys it when needed", async () => {
+        await assertLocalAztecNodeAvailable();
         const wallet = await createGuardianWallet({
             aztecEnv: "local-network",
             ephemeral: true,

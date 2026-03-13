@@ -8,9 +8,9 @@ import type { PreparedKycCertificateIssuance } from "../kyc/zkKyc.js";
 import { requireTransactionHash } from "../tx/guardianTx.js";
 import { loadGuardianRuntime } from "../runtime/guardianRuntime.js";
 import type {
-    CertificateRegistrySetupOptions,
+    GuardianRegistryOptions,
     GuardianRuntime,
-    GuardianWalletSetupOptions,
+    GuardianRuntimeOptions,
     RevokableCertificateSummary,
 } from "../types.js";
 
@@ -99,7 +99,7 @@ const defaultDependencies: CertificateRegistryClientDependencies = {
 };
 
 export function resolveCertificateRegistryAddress(
-    options: CertificateRegistrySetupOptions = {},
+    options: GuardianRegistryOptions = {},
     env: NodeJS.ProcessEnv = process.env
 ): AztecAddress {
     const configuredAddress = options.certificateRegistryAddress ?? env.CERTIFICATE_REGISTRY_ADDRESS;
@@ -114,7 +114,7 @@ export function resolveCertificateRegistryAddress(
 
 export async function createCertificateRegistryClientFromRuntime(
     runtime: GuardianRuntime,
-    options: CertificateRegistrySetupOptions = {},
+    options: GuardianRegistryOptions = {},
     dependencies: CertificateRegistryClientDependencies = defaultDependencies
 ): Promise<CertificateRegistryClient> {
     const address = resolveCertificateRegistryAddress(options);
@@ -146,7 +146,7 @@ interface CertificateRegistryRegistration {
 }
 
 export function resolveCertificateRegistryRegistration(
-    options: CertificateRegistrySetupOptions,
+    options: GuardianRegistryOptions,
     runtime: GuardianRuntime,
     env: NodeJS.ProcessEnv = process.env
 ): CertificateRegistryRegistration | undefined {
@@ -172,7 +172,7 @@ export async function ensureCertificateRegistryContractRegistered(
     runtime: GuardianRuntime,
     address: AztecAddress,
     artifact: ContractArtifact,
-    options: CertificateRegistrySetupOptions = {}
+    options: GuardianRegistryOptions = {}
 ): Promise<void> {
     const wallet = runtime.wallet as unknown as RuntimeWalletWithContractLookup;
 
@@ -211,7 +211,7 @@ export async function ensureCertificateRegistryContractRegistered(
 }
 
 export async function loadCertificateRegistryClient(
-    options: GuardianWalletSetupOptions & CertificateRegistrySetupOptions = {},
+    options: GuardianRuntimeOptions & GuardianRegistryOptions = {},
     dependencies: CertificateRegistryClientDependencies = defaultDependencies
 ): Promise<CertificateRegistryClient> {
     const runtime = await loadGuardianRuntime(options);
@@ -247,11 +247,9 @@ function normalizePageCount(value: number | bigint): number {
 }
 
 function mapGuardianCertificateCopy(
-    guardianAddress: AztecAddress,
     page: GuardianCertificatesPage
 ): RevokableCertificateSummary {
     return {
-        guardianAddress,
         uniqueId: page.unique_id,
         revocationId: page.revocation_id,
         contentType: page.content_type,
@@ -289,7 +287,7 @@ export async function listGuardianCertificateCopies(
             break;
         }
 
-        certificates.push(mapGuardianCertificateCopy(guardianAddress, page));
+        certificates.push(mapGuardianCertificateCopy(page));
 
         if (!page.has_more) {
             break;

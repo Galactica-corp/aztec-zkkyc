@@ -4,8 +4,8 @@ import {
     getGuardianWhitelistStatus,
 } from "../contracts/certificateRegistryClient.js";
 import type {
-    CertificateRegistrySetupOptions,
     GuardianAccountStatus,
+    GuardianRegistryOptions,
     GuardianNetworkConfig,
     GuardianRuntime,
     GuardianStatusOptions,
@@ -37,7 +37,7 @@ export interface GuardianStatusDependencies {
 
 export async function getGuardianWhitelistStatusFromRuntime(
     runtime: GuardianRuntime,
-    options: CertificateRegistrySetupOptions = {}
+    options: GuardianRegistryOptions = {}
 ): Promise<{ isWhitelisted: boolean }> {
     const client = await createCertificateRegistryClientFromRuntime(runtime, options);
 

@@ -34,13 +34,11 @@ describe("listRevokableCertificatesFromDependencies", () => {
                     count: 2,
                     certificates: [
                         {
-                            guardianAddress,
                             uniqueId: 101n,
                             revocationId: 201n,
                             contentType: 1n,
                         },
                         {
-                            guardianAddress,
                             uniqueId: 102n,
                             revocationId: 202n,
                             contentType: 1n,
@@ -54,13 +52,11 @@ describe("listRevokableCertificatesFromDependencies", () => {
             count: 2,
             certificates: [
                 {
-                    guardianAddress,
                     uniqueId: 101n,
                     revocationId: 201n,
                     contentType: 1n,
                 },
                 {
-                    guardianAddress,
                     uniqueId: 102n,
                     revocationId: 202n,
                     contentType: 1n,
@@ -85,7 +81,6 @@ describe("listRevokableCertificates", () => {
             count: 1,
             certificates: [
                 {
-                    guardianAddress,
                     uniqueId: 999n,
                     revocationId: 555n,
                     contentType: 1n,
@@ -102,7 +97,6 @@ describe("listRevokableCertificates", () => {
             count: 1,
             certificates: [
                 {
-                    guardianAddress,
                     uniqueId: 999n,
                     revocationId: 555n,
                     contentType: 1n,

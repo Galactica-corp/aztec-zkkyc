@@ -2,10 +2,10 @@ import { createAztecNodeClient } from "@aztec/aztec.js/node";
 import { registerInitialLocalNetworkAccountsInWallet } from "@aztec/wallets/testing";
 import type { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { EmbeddedWallet as EmbeddedWalletFactory } from "@aztec/wallets/embedded";
-import type { GuardianWalletSetupOptions } from "../types.js";
+import type { GuardianRuntimeOptions } from "../types.js";
 import { resolveNetworkConfig } from "../config/networkConfig.js";
 
-export async function createGuardianWallet(options: GuardianWalletSetupOptions = {}): Promise<EmbeddedWallet> {
+export async function createGuardianWallet(options: GuardianRuntimeOptions = {}): Promise<EmbeddedWallet> {
     const network = resolveNetworkConfig({ aztecEnv: options.aztecEnv });
     const ephemeral = options.ephemeral ?? network.name === "local-network";
     const node = createAztecNodeClient(network.nodeUrl);

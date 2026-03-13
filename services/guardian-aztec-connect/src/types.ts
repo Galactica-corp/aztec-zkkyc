@@ -16,22 +16,20 @@ export interface GuardianNetworkConfig {
     configPath: string;
 }
 
-export interface GuardianWalletSetupOptions {
+export interface GuardianRuntimeOptions {
     aztecEnv?: string;
     ephemeral?: boolean;
     registerInitialAccounts?: boolean;
-    inputPath?: string;
-    revocationId?: bigint | number | string;
 }
 
-export interface CertificateRegistrySetupOptions {
+export interface GuardianRegistryOptions {
     certificateRegistryAddress?: AztecAddress | string;
     certificateRegistryAdminAddress?: AztecAddress | string;
     certificateRegistryDeploymentSalt?: string;
     certificateRegistryDeployerAddress?: AztecAddress | string;
 }
 
-export type GuardianStatusOptions = GuardianWalletSetupOptions & CertificateRegistrySetupOptions;
+export type GuardianStatusOptions = GuardianRuntimeOptions & GuardianRegistryOptions;
 
 export interface GuardianWhitelistStatus {
     isWhitelisted: boolean | null;
@@ -94,7 +92,6 @@ export interface IssueKycCertificateResult {
 }
 
 export interface RevokableCertificateSummary {
-    guardianAddress: AztecAddress;
     uniqueId: bigint;
     revocationId: bigint;
     contentType: bigint;
@@ -116,4 +113,14 @@ export interface RevokeCertificateResult {
     network: GuardianNetworkConfig;
     revocationId: bigint;
     txHash: string;
+}
+
+export interface GuardianCliBaseOptions extends GuardianRuntimeOptions {}
+
+export interface IssueKycCliOptions extends GuardianCliBaseOptions {
+    inputPath?: string;
+}
+
+export interface RevokeCertificateCliOptions extends GuardianCliBaseOptions {
+    revocationId?: string;
 }

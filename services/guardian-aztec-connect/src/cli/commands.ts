@@ -3,11 +3,12 @@ import { listRevokableCertificates } from "../certificates/listRevokableCertific
 import { revokeCertificate } from "../revocation/revokeCertificate.js";
 import type {
     DeployGuardianAccountResult,
+    GuardianCliBaseOptions,
     GuardianAccountStatus,
-    GuardianWalletSetupOptions,
+    IssueKycCliOptions,
     IssueKycCertificateResult,
     ListRevokableCertificatesResult,
-    RevokeCertificateOptions,
+    RevokeCertificateCliOptions,
     RevokeCertificateResult,
 } from "../types.js";
 import { getGuardianAccountStatus } from "../wallet/accountStatus.js";
@@ -36,7 +37,7 @@ export interface ParsedGuardianCliCommand<TOptions extends object> {
     options: TOptions;
 }
 
-export interface GuardianCliCommand<TOptions extends object = GuardianWalletSetupOptions, TResult = GuardianCliCommandResult> {
+export interface GuardianCliCommand<TOptions extends object = GuardianCliBaseOptions, TResult = GuardianCliCommandResult> {
     key: string;
     usage: string;
     parse(args: string[]): ParsedGuardianCliCommand<TOptions>;
@@ -45,7 +46,7 @@ export interface GuardianCliCommand<TOptions extends object = GuardianWalletSetu
     serialize(result: TResult): unknown;
 }
 
-function parseNetworkJsonFlags(args: string[]): ParsedGuardianCliCommand<GuardianWalletSetupOptions> {
+function parseNetworkJsonFlags(args: string[]): ParsedGuardianCliCommand<GuardianCliBaseOptions> {
     let json = false;
     let aztecEnv: string | undefined;
 
@@ -77,7 +78,7 @@ function parseNetworkJsonFlags(args: string[]): ParsedGuardianCliCommand<Guardia
     };
 }
 
-function parseIssueKycFlags(args: string[]): ParsedGuardianCliCommand<GuardianWalletSetupOptions> {
+function parseIssueKycFlags(args: string[]): ParsedGuardianCliCommand<IssueKycCliOptions> {
     let json = false;
     let aztecEnv: string | undefined;
     let inputPath: string | undefined;
@@ -121,7 +122,7 @@ function parseIssueKycFlags(args: string[]): ParsedGuardianCliCommand<GuardianWa
     };
 }
 
-function parseRevokeCertificateFlags(args: string[]): ParsedGuardianCliCommand<RevokeCertificateOptions> {
+function parseRevokeCertificateFlags(args: string[]): ParsedGuardianCliCommand<RevokeCertificateCliOptions> {
     let json = false;
     let aztecEnv: string | undefined;
     let revocationId: string | undefined;
@@ -165,7 +166,7 @@ function parseRevokeCertificateFlags(args: string[]): ParsedGuardianCliCommand<R
     };
 }
 
-const guardianCliCommands: Record<string, GuardianCliCommand> = {
+const guardianCliCommands = {
     "account status": {
         key: "account status",
         usage: "guardian-aztec-connect account status [--network <name>] [--json]",
@@ -173,7 +174,7 @@ const guardianCliCommands: Record<string, GuardianCliCommand> = {
         execute: getGuardianAccountStatus,
         format: formatAccountResult,
         serialize: serializeAccountResult,
-    },
+    } satisfies GuardianCliCommand<GuardianCliBaseOptions, GuardianAccountStatus>,
     "account deploy": {
         key: "account deploy",
         usage: "guardian-aztec-connect account deploy [--network <name>] [--json]",
@@ -181,12 +182,12 @@ const guardianCliCommands: Record<string, GuardianCliCommand> = {
         execute: deployGuardianAccountIfNeeded,
         format: formatAccountResult,
         serialize: serializeAccountResult,
-    },
+    } satisfies GuardianCliCommand<GuardianCliBaseOptions, DeployGuardianAccountResult>,
     "kyc issue": {
         key: "kyc issue",
         usage: "guardian-aztec-connect kyc issue --input <file> [--network <name>] [--json]",
         parse: parseIssueKycFlags,
-        async execute(options) {
+        async execute(options: IssueKycCliOptions) {
             if (!options.inputPath) {
                 throw new Error("Missing value for --input");
             }
@@ -198,7 +199,7 @@ const guardianCliCommands: Record<string, GuardianCliCommand> = {
         },
         format: formatIssueKycResult,
         serialize: serializeIssueKycResult,
-    },
+    } satisfies GuardianCliCommand<IssueKycCliOptions, IssueKycCertificateResult>,
     "kyc list-revokable": {
         key: "kyc list-revokable",
         usage: "guardian-aztec-connect kyc list-revokable [--network <name>] [--json]",
@@ -206,12 +207,12 @@ const guardianCliCommands: Record<string, GuardianCliCommand> = {
         execute: listRevokableCertificates,
         format: formatListRevokableCertificatesResult,
         serialize: serializeListRevokableCertificatesResult,
-    },
+    } satisfies GuardianCliCommand<GuardianCliBaseOptions, ListRevokableCertificatesResult>,
     "kyc revoke": {
         key: "kyc revoke",
         usage: "guardian-aztec-connect kyc revoke --revocation-id <id> [--network <name>] [--json]",
         parse: parseRevokeCertificateFlags,
-        async execute(options) {
+        async execute(options: RevokeCertificateCliOptions) {
             if (!options.revocationId) {
                 throw new Error("Missing value for --revocation-id");
             }
@@ -225,11 +226,11 @@ const guardianCliCommands: Record<string, GuardianCliCommand> = {
         },
         format: formatRevokeCertificateResult,
         serialize: serializeRevokeCertificateResult,
-    },
-};
+    } satisfies GuardianCliCommand<RevokeCertificateCliOptions, RevokeCertificateResult>,
+} satisfies Record<string, GuardianCliCommand<object, GuardianCliCommandResult>>;
 
 export function getGuardianCliCommand(commandKey: string): GuardianCliCommand | undefined {
-    return guardianCliCommands[commandKey];
+    return guardianCliCommands[commandKey as keyof typeof guardianCliCommands];
 }
 
 export function listGuardianCliCommands(): GuardianCliCommand[] {

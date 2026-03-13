@@ -85,4 +85,55 @@ describe("deployGuardianAccountIfNeededFromDependencies", () => {
         expect(result.isRegisteredInWallet).toBe(true);
         expect(result.isContractInitialized).toBe(true);
     });
+
+    it("falls back to deploying from the guardian when ZERO sender fails", async () => {
+        const network = resolveNetworkConfig({ aztecEnv: "local-network" });
+        const address = createAddressStub() as AztecAddress;
+        const sentOptions: unknown[] = [];
+        let firstCall = true;
+
+        const result = await deployGuardianAccountIfNeededFromDependencies({
+            network,
+            paymentMethod: { kind: "sponsored" },
+            account: {
+                address,
+                async getDeployMethod() {
+                    return {
+                        async send(options: unknown) {
+                            sentOptions.push(options);
+                            if (firstCall) {
+                                firstCall = false;
+                                throw new Error("ZERO sender rejected");
+                            }
+                        },
+                    };
+                },
+            },
+            wallet: {
+                async getContractMetadata() {
+                    return { isContractInitialized: !firstCall };
+                },
+                async registerSender() {
+                    return undefined;
+                },
+                async getAccounts() {
+                    return [];
+                },
+            },
+        });
+
+        expect(sentOptions).toEqual([
+            {
+                from: AztecAddressValue.ZERO,
+                fee: { paymentMethod: { kind: "sponsored" } },
+                wait: { timeout: 60000, returnReceipt: true },
+            },
+            {
+                from: address,
+                fee: { paymentMethod: { kind: "sponsored" } },
+                wait: { timeout: 60000, returnReceipt: true },
+            },
+        ]);
+        expect(result.deployed).toBe(true);
+    });
 });

@@ -71,7 +71,6 @@ export function serializeListRevokableCertificatesResult(result: ListRevokableCe
         guardianAddress: result.guardianAddress.toString(),
         certificates: result.certificates.map((certificate) => ({
             ...certificate,
-            guardianAddress: certificate.guardianAddress.toString(),
             uniqueId: certificate.uniqueId.toString(),
             revocationId: certificate.revocationId.toString(),
             contentType: certificate.contentType.toString(),

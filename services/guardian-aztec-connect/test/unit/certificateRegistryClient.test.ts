@@ -215,13 +215,11 @@ describe("certificateRegistryClient", () => {
             count: 2,
             certificates: [
                 {
-                    guardianAddress,
                     uniqueId: 101n,
                     revocationId: 201n,
                     contentType: 1n,
                 },
                 {
-                    guardianAddress,
                     uniqueId: 102n,
                     revocationId: 202n,
                     contentType: 1n,
@@ -291,6 +289,46 @@ describe("certificateRegistryClient", () => {
         expect(registration?.adminAddress.toString()).toBe(AztecAddress.fromField(new Fr(32n)).toString());
         expect(registration?.deployerAddress.toString()).toBe(runtime.account.address.toString());
         expect(registration?.deploymentSalt.toString()).toBe(new Fr(33n).toString());
+    });
+
+    it("fails with an actionable error when the registry is missing from PXE and cannot be reconstructed", async () => {
+        const address = AztecAddress.fromField(new Fr(41n));
+        const originalEnv = { ...process.env };
+        const runtime = {
+            network: resolveNetworkConfig({ aztecEnv: "local-network" }),
+            account: {
+                address: createAddressStub(),
+            } as GuardianRuntime["account"],
+            wallet: {
+                pxe: {
+                    async getContractInstance() {
+                        return undefined;
+                    },
+                },
+                async getContractMetadata() {
+                    return {
+                        instance: undefined,
+                    };
+                },
+                async registerContract() {
+                    throw new Error("should not register");
+                },
+            } as unknown as GuardianRuntime["wallet"],
+        } as GuardianRuntime;
+
+        delete process.env.CERTIFICATE_REGISTRY_ADMIN_ADDRESS;
+        delete process.env.CERTIFICATE_REGISTRY_DEPLOYMENT_SALT;
+        delete process.env.CERTIFICATE_REGISTRY_DEPLOYER_ADDRESS;
+
+        try {
+            await expect(
+                ensureCertificateRegistryContractRegistered(runtime, address, {
+                    name: "CertificateRegistry",
+                } as ContractArtifact)
+            ).rejects.toThrow("Set CERTIFICATE_REGISTRY_ADMIN_ADDRESS and CERTIFICATE_REGISTRY_DEPLOYMENT_SALT");
+        } finally {
+            process.env = originalEnv;
+        }
     });
 
     it("registers the certificate registry in PXE from contract metadata when missing", async () => {

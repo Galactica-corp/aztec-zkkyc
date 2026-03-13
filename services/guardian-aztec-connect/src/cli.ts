@@ -1,5 +1,4 @@
 import { getGuardianCliCommand, listGuardianCliCommands } from "./cli/commands.js";
-import type { GuardianWalletSetupOptions } from "./types.js";
 
 function getUsage(): string {
     return [
@@ -8,7 +7,7 @@ function getUsage(): string {
     ].join("\n");
 }
 
-export function parseOptions(argv: string[]): { commandKey: string; options: GuardianWalletSetupOptions; json: boolean } {
+export function parseOptions(argv: string[]): { commandKey: string; options: object; json: boolean } {
     const commandKey = argv.slice(0, 2).join(" ").trim();
     const command = getGuardianCliCommand(commandKey);
     if (!command) {
