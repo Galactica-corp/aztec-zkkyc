@@ -2,6 +2,7 @@ import type {
     DeployGuardianAccountResult,
     GuardianAccountStatus,
     IssueKycCertificateResult,
+    ListRevokableCertificatesResult,
 } from "../types.js";
 
 export function serializeAccountResult(result: GuardianAccountStatus | DeployGuardianAccountResult) {
@@ -61,4 +62,42 @@ export function formatIssueKycResult(result: IssueKycCertificateResult): string 
         `Revocation ID: ${result.revocationId.toString()}`,
         `Transaction hash: ${result.txHash}`,
     ].join("\n");
+}
+
+export function serializeListRevokableCertificatesResult(result: ListRevokableCertificatesResult) {
+    return {
+        ...result,
+        guardianAddress: result.guardianAddress.toString(),
+        certificates: result.certificates.map((certificate) => ({
+            ...certificate,
+            guardianAddress: certificate.guardianAddress.toString(),
+            uniqueId: certificate.uniqueId.toString(),
+            revocationId: certificate.revocationId.toString(),
+            contentType: certificate.contentType.toString(),
+        })),
+        network: {
+            ...result.network,
+        },
+    };
+}
+
+export function formatListRevokableCertificatesResult(result: ListRevokableCertificatesResult): string {
+    const lines = [
+        `Network: ${result.network.name}`,
+        `Guardian address: ${result.guardianAddress.toString()}`,
+        `Revokable certificate count: ${result.count}`,
+    ];
+
+    if (result.certificates.length === 0) {
+        lines.push("No revokable certificates found.");
+        return lines.join("\n");
+    }
+
+    result.certificates.forEach((certificate, index) => {
+        lines.push(`[${index}] Unique ID: ${certificate.uniqueId.toString()}`);
+        lines.push(`[${index}] Revocation ID: ${certificate.revocationId.toString()}`);
+        lines.push(`[${index}] Content type: ${certificate.contentType.toString()}`);
+    });
+
+    return lines.join("\n");
 }

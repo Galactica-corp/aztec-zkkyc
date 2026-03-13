@@ -7,6 +7,7 @@ import {
     getGuardianWhitelistStatus,
     issueCertificate,
     isGuardianInWhitelist,
+    listGuardianCertificateCopies,
     resolveCertificateRegistryRegistration,
     resolveCertificateRegistryAddress,
     type CertificateRegistryContractInstance,
@@ -128,6 +129,115 @@ describe("certificateRegistryClient", () => {
         }, { from: "guardian" })).resolves.toEqual({
             txHash: "0xtxhash",
         });
+    });
+
+    it("lists guardian certificate copies across utility pages", async () => {
+        const guardianAddress = AztecAddress.fromField(new Fr(11n));
+        const pageCalls: number[] = [];
+        const client = {
+            contract: {
+                methods: {
+                    get_guardian_certificate_copies_count(requestedGuardian: AztecAddress) {
+                        expect(requestedGuardian.toString()).toBe(guardianAddress.toString());
+
+                        return {
+                            async simulate(options?: { from?: AztecAddress }) {
+                                expect(options?.from?.toString()).toBe(guardianAddress.toString());
+                                return 2;
+                            },
+                        };
+                    },
+                    get_guardian_certificate_copies(requestedGuardian: AztecAddress, pageIndex: number) {
+                        expect(requestedGuardian.toString()).toBe(guardianAddress.toString());
+                        pageCalls.push(pageIndex);
+
+                        return {
+                            async simulate(options?: { from?: AztecAddress }) {
+                                expect(options?.from?.toString()).toBe(guardianAddress.toString());
+
+                                if (pageIndex === 0) {
+                                    return {
+                                        count: 1,
+                                        guardian: 11n,
+                                        unique_id: 101n,
+                                        revocation_id: 201n,
+                                        content_type: 1n,
+                                        has_more: true,
+                                    };
+                                }
+
+                                return {
+                                    count: 1,
+                                    guardian: 11n,
+                                    unique_id: 102n,
+                                    revocation_id: 202n,
+                                    content_type: 1n,
+                                    has_more: false,
+                                };
+                            },
+                        };
+                    },
+                },
+            },
+        } as unknown as Awaited<ReturnType<typeof createCertificateRegistryClientFromRuntime>>;
+
+        await expect(listGuardianCertificateCopies(client, guardianAddress)).resolves.toEqual({
+            count: 2,
+            certificates: [
+                {
+                    guardianAddress,
+                    uniqueId: 101n,
+                    revocationId: 201n,
+                    contentType: 1n,
+                },
+                {
+                    guardianAddress,
+                    uniqueId: 102n,
+                    revocationId: 202n,
+                    contentType: 1n,
+                },
+            ],
+        });
+        expect(pageCalls).toEqual([0, 1]);
+    });
+
+    it("returns an empty list when the guardian has no certificate copies", async () => {
+        const guardianAddress = AztecAddress.fromField(new Fr(12n));
+        let pageCalls = 0;
+        const client = {
+            contract: {
+                methods: {
+                    get_guardian_certificate_copies_count() {
+                        return {
+                            async simulate() {
+                                return 0;
+                            },
+                        };
+                    },
+                    get_guardian_certificate_copies() {
+                        pageCalls += 1;
+                        return {
+                            async simulate() {
+                                return {
+                                    count: 0,
+                                    guardian: 0n,
+                                    unique_id: 0n,
+                                    revocation_id: 0n,
+                                    content_type: 0n,
+                                    has_more: false,
+                                };
+                            },
+                        };
+                    },
+                },
+            },
+        } as unknown as Awaited<ReturnType<typeof createCertificateRegistryClientFromRuntime>>;
+
+        await expect(listGuardianCertificateCopies(client, guardianAddress)).resolves.toEqual({
+            count: 0,
+            certificates: [],
+        });
+        expect(pageCalls).toBe(0);
     });
 
     it("resolves certificate registry reconstruction inputs from options and env", () => {

@@ -24,6 +24,22 @@ describe("guardian CLI parsing", () => {
         });
     });
 
+    it("parses the kyc list-revokable command", () => {
+        expect(parseOptions([
+            "kyc",
+            "list-revokable",
+            "--network",
+            "devnet",
+            "--json",
+        ])).toEqual({
+            commandKey: "kyc list-revokable",
+            json: true,
+            options: {
+                aztecEnv: "devnet",
+            },
+        });
+    });
+
     it("fails when the input flag is missing its value", () => {
         expect(() => parseOptions(["kyc", "issue", "--input"])).toThrow("Missing value for --input");
     });

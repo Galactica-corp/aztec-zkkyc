@@ -6,10 +6,16 @@ describe("guardian CLI command registry", () => {
     it("registers the account commands", () => {
         const commands = listGuardianCliCommands();
 
-        expect(commands.map((command) => command.key)).toEqual(["account status", "account deploy", "kyc issue"]);
+        expect(commands.map((command) => command.key)).toEqual([
+            "account status",
+            "account deploy",
+            "kyc issue",
+            "kyc list-revokable",
+        ]);
         expect(getGuardianCliCommand("account status")?.usage).toContain("account status");
         expect(getGuardianCliCommand("account deploy")?.usage).toContain("account deploy");
         expect(getGuardianCliCommand("kyc issue")?.usage).toContain("kyc issue");
+        expect(getGuardianCliCommand("kyc list-revokable")?.usage).toContain("kyc list-revokable");
     });
 
     it("formats and serializes command results", () => {
@@ -76,5 +82,49 @@ describe("guardian CLI command registry", () => {
         expect(command?.format(result)).toContain("User address: 0xuser");
         expect(command?.format(result)).toContain("Unique ID: 11");
         expect(command?.format(result)).toContain("Revocation ID: 22");
+    });
+
+    it("formats and serializes revokable certificate listing results", () => {
+        const command = getGuardianCliCommand("kyc list-revokable");
+        const result = {
+            guardianAddress: createAddressStub("0xguardian"),
+            network: resolveNetworkConfig({ aztecEnv: "local-network" }),
+            count: 2,
+            certificates: [
+                {
+                    guardianAddress: createAddressStub("0xguardian"),
+                    uniqueId: 11n,
+                    revocationId: 22n,
+                    contentType: 1n,
+                },
+                {
+                    guardianAddress: createAddressStub("0xguardian"),
+                    uniqueId: 33n,
+                    revocationId: 44n,
+                    contentType: 1n,
+                },
+            ],
+        };
+
+        expect(command?.serialize(result)).toMatchObject({
+            guardianAddress: "0xguardian",
+            count: 2,
+            certificates: [
+                {
+                    uniqueId: "11",
+                    revocationId: "22",
+                    contentType: "1",
+                },
+                {
+                    uniqueId: "33",
+                    revocationId: "44",
+                    contentType: "1",
+                },
+            ],
+        });
+        expect(command?.format(result)).toContain("Guardian address: 0xguardian");
+        expect(command?.format(result)).toContain("Revokable certificate count: 2");
+        expect(command?.format(result)).toContain("[0] Unique ID: 11");
+        expect(command?.format(result)).toContain("[1] Revocation ID: 44");
     });
 });

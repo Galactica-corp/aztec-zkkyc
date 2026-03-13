@@ -11,6 +11,7 @@ import type {
     CertificateRegistrySetupOptions,
     GuardianRuntime,
     GuardianWalletSetupOptions,
+    RevokableCertificateSummary,
 } from "../types.js";
 
 dotenv.config({ path: path.resolve(process.cwd(), ".env"), quiet: true });
@@ -44,9 +45,28 @@ interface IssueCertificateMethod {
     } | undefined>;
 }
 
+interface GuardianCertificateCopiesCountMethod {
+    simulate(options?: { from?: AztecAddress }): Promise<number | bigint>;
+}
+
+interface GuardianCertificatesPage {
+    count: number | bigint;
+    guardian: bigint;
+    unique_id: bigint;
+    revocation_id: bigint;
+    content_type: bigint;
+    has_more: boolean;
+}
+
+interface GuardianCertificateCopiesMethod {
+    simulate(options?: { from?: AztecAddress }): Promise<GuardianCertificatesPage>;
+}
+
 interface GuardianWhitelistContract {
     methods: {
         get_whitelisted_guardians(): GuardianWhitelistMethod;
+        get_guardian_certificate_copies(guardian: AztecAddress, pageIndex: number): GuardianCertificateCopiesMethod;
+        get_guardian_certificate_copies_count(guardian: AztecAddress): GuardianCertificateCopiesCountMethod;
         issue_certificate(
             user: AztecAddress,
             uniqueId: Fr,
@@ -211,6 +231,68 @@ export async function getGuardianWhitelistStatus(
     });
 
     return isGuardianInWhitelist(guardianAddress, guardianWhitelist);
+}
+
+function normalizePageCount(value: number | bigint): number {
+    return typeof value === "bigint" ? Number(value) : value;
+}
+
+function mapGuardianCertificateCopy(
+    guardianAddress: AztecAddress,
+    page: GuardianCertificatesPage
+): RevokableCertificateSummary {
+    return {
+        guardianAddress,
+        uniqueId: page.unique_id,
+        revocationId: page.revocation_id,
+        contentType: page.content_type,
+    };
+}
+
+/**
+ * Lists all guardian-held certificate copies that can later be revoked by revocation ID.
+ */
+export async function listGuardianCertificateCopies(
+    client: Pick<CertificateRegistryClient, "contract">,
+    guardianAddress: AztecAddress
+): Promise<{ count: number; certificates: RevokableCertificateSummary[] }> {
+    const contract = client.contract as unknown as GuardianWhitelistContract;
+    const totalCount = normalizePageCount(
+        await contract.methods.get_guardian_certificate_copies_count(guardianAddress).simulate({
+            from: guardianAddress,
+        })
+    );
+    if (totalCount === 0) {
+        return {
+            count: 0,
+            certificates: [],
+        };
+    }
+
+    const certificates: RevokableCertificateSummary[] = [];
+    let pageIndex = 0;
+
+    while (pageIndex < totalCount) {
+        const page = await contract.methods.get_guardian_certificate_copies(guardianAddress, pageIndex).simulate({
+            from: guardianAddress,
+        });
+        if (normalizePageCount(page.count) === 0) {
+            break;
+        }
+
+        certificates.push(mapGuardianCertificateCopy(guardianAddress, page));
+
+        if (!page.has_more) {
+            break;
+        }
+
+        pageIndex += 1;
+    }
+
+    return {
+        count: totalCount,
+        certificates,
+    };
 }
 
 /**

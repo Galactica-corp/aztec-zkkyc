@@ -91,3 +91,17 @@ export interface IssueKycCertificateResult {
     revocationId: bigint;
     txHash: string;
 }
+
+export interface RevokableCertificateSummary {
+    guardianAddress: AztecAddress;
+    uniqueId: bigint;
+    revocationId: bigint;
+    contentType: bigint;
+}
+
+export interface ListRevokableCertificatesResult {
+    guardianAddress: AztecAddress;
+    network: GuardianNetworkConfig;
+    count: number;
+    certificates: RevokableCertificateSummary[];
+}

@@ -1,24 +1,29 @@
 import { issueKycCertificate } from "../issuance/issueKycCertificate.js";
+import { listRevokableCertificates } from "../certificates/listRevokableCertificates.js";
 import type {
     DeployGuardianAccountResult,
     GuardianAccountStatus,
     GuardianWalletSetupOptions,
     IssueKycCertificateResult,
+    ListRevokableCertificatesResult,
 } from "../types.js";
 import { getGuardianAccountStatus } from "../wallet/accountStatus.js";
 import { deployGuardianAccountIfNeeded } from "../wallet/deployAccount.js";
 import {
     formatAccountResult,
     formatIssueKycResult,
+    formatListRevokableCertificatesResult,
     serializeAccountResult,
     serializeIssueKycResult,
+    serializeListRevokableCertificatesResult,
 } from "./output.js";
 import { loadKycInputFromFile } from "./loadKycInput.js";
 
 export type GuardianCliCommandResult =
     | GuardianAccountStatus
     | DeployGuardianAccountResult
-    | IssueKycCertificateResult;
+    | IssueKycCertificateResult
+    | ListRevokableCertificatesResult;
 
 export interface ParsedGuardianCliCommand<TOptions extends object> {
     json: boolean;
@@ -143,6 +148,14 @@ const guardianCliCommands: Record<string, GuardianCliCommand> = {
         },
         format: formatIssueKycResult,
         serialize: serializeIssueKycResult,
+    },
+    "kyc list-revokable": {
+        key: "kyc list-revokable",
+        usage: "guardian-aztec-connect kyc list-revokable [--network <name>] [--json]",
+        parse: parseNetworkJsonFlags,
+        execute: listRevokableCertificates,
+        format: formatListRevokableCertificatesResult,
+        serialize: serializeListRevokableCertificatesResult,
     },
 };
 
