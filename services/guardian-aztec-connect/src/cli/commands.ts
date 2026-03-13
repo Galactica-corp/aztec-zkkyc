@@ -1,11 +1,14 @@
 import { issueKycCertificate } from "../issuance/issueKycCertificate.js";
 import { listRevokableCertificates } from "../certificates/listRevokableCertificates.js";
+import { revokeCertificate } from "../revocation/revokeCertificate.js";
 import type {
     DeployGuardianAccountResult,
     GuardianAccountStatus,
     GuardianWalletSetupOptions,
     IssueKycCertificateResult,
     ListRevokableCertificatesResult,
+    RevokeCertificateOptions,
+    RevokeCertificateResult,
 } from "../types.js";
 import { getGuardianAccountStatus } from "../wallet/accountStatus.js";
 import { deployGuardianAccountIfNeeded } from "../wallet/deployAccount.js";
@@ -13,9 +16,11 @@ import {
     formatAccountResult,
     formatIssueKycResult,
     formatListRevokableCertificatesResult,
+    formatRevokeCertificateResult,
     serializeAccountResult,
     serializeIssueKycResult,
     serializeListRevokableCertificatesResult,
+    serializeRevokeCertificateResult,
 } from "./output.js";
 import { loadKycInputFromFile } from "./loadKycInput.js";
 
@@ -23,7 +28,8 @@ export type GuardianCliCommandResult =
     | GuardianAccountStatus
     | DeployGuardianAccountResult
     | IssueKycCertificateResult
-    | ListRevokableCertificatesResult;
+    | ListRevokableCertificatesResult
+    | RevokeCertificateResult;
 
 export interface ParsedGuardianCliCommand<TOptions extends object> {
     json: boolean;
@@ -115,6 +121,50 @@ function parseIssueKycFlags(args: string[]): ParsedGuardianCliCommand<GuardianWa
     };
 }
 
+function parseRevokeCertificateFlags(args: string[]): ParsedGuardianCliCommand<RevokeCertificateOptions> {
+    let json = false;
+    let aztecEnv: string | undefined;
+    let revocationId: string | undefined;
+
+    for (let index = 0; index < args.length; index += 1) {
+        const argument = args[index];
+        if (argument === "--json") {
+            json = true;
+            continue;
+        }
+
+        if (argument === "--network") {
+            aztecEnv = args[index + 1];
+            if (!aztecEnv) {
+                throw new Error("Missing value for --network");
+            }
+
+            index += 1;
+            continue;
+        }
+
+        if (argument === "--revocation-id") {
+            revocationId = args[index + 1];
+            if (!revocationId) {
+                throw new Error("Missing value for --revocation-id");
+            }
+
+            index += 1;
+            continue;
+        }
+
+        throw new Error(`Unknown argument: ${argument}`);
+    }
+
+    return {
+        json,
+        options: {
+            aztecEnv,
+            revocationId: revocationId ?? "",
+        },
+    };
+}
+
 const guardianCliCommands: Record<string, GuardianCliCommand> = {
     "account status": {
         key: "account status",
@@ -156,6 +206,25 @@ const guardianCliCommands: Record<string, GuardianCliCommand> = {
         execute: listRevokableCertificates,
         format: formatListRevokableCertificatesResult,
         serialize: serializeListRevokableCertificatesResult,
+    },
+    "kyc revoke": {
+        key: "kyc revoke",
+        usage: "guardian-aztec-connect kyc revoke --revocation-id <id> [--network <name>] [--json]",
+        parse: parseRevokeCertificateFlags,
+        async execute(options) {
+            if (!options.revocationId) {
+                throw new Error("Missing value for --revocation-id");
+            }
+
+            return await revokeCertificate({
+                aztecEnv: options.aztecEnv,
+                ephemeral: options.ephemeral,
+                registerInitialAccounts: options.registerInitialAccounts,
+                revocationId: options.revocationId,
+            });
+        },
+        format: formatRevokeCertificateResult,
+        serialize: serializeRevokeCertificateResult,
     },
 };
 

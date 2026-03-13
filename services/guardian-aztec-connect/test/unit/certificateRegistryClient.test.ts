@@ -8,6 +8,7 @@ import {
     issueCertificate,
     isGuardianInWhitelist,
     listGuardianCertificateCopies,
+    revokeCertificateByRevocationId,
     resolveCertificateRegistryRegistration,
     resolveCertificateRegistryAddress,
     type CertificateRegistryContractInstance,
@@ -128,6 +129,35 @@ describe("certificateRegistryClient", () => {
             addressData: [new Fr(7), new Fr(8), new Fr(9), new Fr(10), new Fr(11), new Fr(0), new Fr(0)],
         }, { from: "guardian" })).resolves.toEqual({
             txHash: "0xtxhash",
+        });
+    });
+
+    it("submits the revoke_certificate call through the registry client", async () => {
+        const client = {
+            contract: {
+                methods: {
+                    revoke_certificate(revocationId: Fr) {
+                        expect(revocationId.toBigInt()).toBe(222n);
+
+                        return {
+                            async send(options: unknown) {
+                                expect(options).toEqual({ from: "guardian" });
+                                return {
+                                    txHash: {
+                                        toString() {
+                                            return "0xrevokehash";
+                                        },
+                                    },
+                                };
+                            },
+                        };
+                    },
+                },
+            },
+        } as unknown as Awaited<ReturnType<typeof createCertificateRegistryClientFromRuntime>>;
+
+        await expect(revokeCertificateByRevocationId(client, 222n, { from: "guardian" })).resolves.toEqual({
+            txHash: "0xrevokehash",
         });
     });
 

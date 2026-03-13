@@ -45,6 +45,14 @@ interface IssueCertificateMethod {
     } | undefined>;
 }
 
+interface RevokeCertificateMethod {
+    send(options: unknown): Promise<{
+        txHash?: {
+            toString(): string;
+        };
+    } | undefined>;
+}
+
 interface GuardianCertificateCopiesCountMethod {
     simulate(options?: { from?: AztecAddress }): Promise<number | bigint>;
 }
@@ -67,6 +75,7 @@ interface GuardianWhitelistContract {
         get_whitelisted_guardians(): GuardianWhitelistMethod;
         get_guardian_certificate_copies(guardian: AztecAddress, pageIndex: number): GuardianCertificateCopiesMethod;
         get_guardian_certificate_copies_count(guardian: AztecAddress): GuardianCertificateCopiesCountMethod;
+        revoke_certificate(revocationId: Fr): RevokeCertificateMethod;
         issue_certificate(
             user: AztecAddress,
             uniqueId: Fr,
@@ -292,6 +301,22 @@ export async function listGuardianCertificateCopies(
     return {
         count: totalCount,
         certificates,
+    };
+}
+
+/**
+ * Submits the private `revoke_certificate` call through an already loaded certificate registry client.
+ */
+export async function revokeCertificateByRevocationId(
+    client: Pick<CertificateRegistryClient, "contract">,
+    revocationId: bigint | number | string,
+    sendOptions: unknown
+): Promise<{ txHash: string }> {
+    const contract = client.contract as unknown as GuardianWhitelistContract;
+    const receipt = await contract.methods.revoke_certificate(Fr.fromString(revocationId.toString())).send(sendOptions);
+
+    return {
+        txHash: requireTransactionHash(receipt, "Certificate revocation"),
     };
 }
 

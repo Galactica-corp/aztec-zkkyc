@@ -3,6 +3,7 @@ import type {
     GuardianAccountStatus,
     IssueKycCertificateResult,
     ListRevokableCertificatesResult,
+    RevokeCertificateResult,
 } from "../types.js";
 
 export function serializeAccountResult(result: GuardianAccountStatus | DeployGuardianAccountResult) {
@@ -100,4 +101,24 @@ export function formatListRevokableCertificatesResult(result: ListRevokableCerti
     });
 
     return lines.join("\n");
+}
+
+export function serializeRevokeCertificateResult(result: RevokeCertificateResult) {
+    return {
+        ...result,
+        guardianAddress: result.guardianAddress.toString(),
+        revocationId: result.revocationId.toString(),
+        network: {
+            ...result.network,
+        },
+    };
+}
+
+export function formatRevokeCertificateResult(result: RevokeCertificateResult): string {
+    return [
+        `Network: ${result.network.name}`,
+        `Guardian address: ${result.guardianAddress.toString()}`,
+        `Revocation ID: ${result.revocationId.toString()}`,
+        `Transaction hash: ${result.txHash}`,
+    ].join("\n");
 }

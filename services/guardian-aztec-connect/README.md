@@ -48,6 +48,7 @@ This package currently implements the wallet setup slice:
 - deploy the guardian account if needed
 - issue a ZK-KYC certificate from a normalized KYC JSON document
 - list revokable certificate copies and their revocation IDs for the guardian account
+- revoke a certificate by revocation ID
 
 `AZTEC_ENV` follows the repository-wide `config/<env>.json` convention. Use `local-network` by default or set `AZTEC_ENV=devnet`.
 
@@ -63,20 +64,14 @@ yarn cli -- account deploy
 # Select a network explicitly
 yarn cli -- account status --network devnet
 
-# Print JSON for scripting
-yarn cli -- account status --json
-
 # Issue a ZK-KYC certificate from a normalized JSON file
 yarn cli -- kyc issue --input ./examples/kyc.json
 
 # List all revokable certificate copies held by the guardian
 yarn cli -- kyc list-revokable
 
-# Print issuance result as JSON
-yarn cli -- kyc issue --input ./examples/kyc.json --json
-
-# Print the revokable certificate list as JSON
-yarn cli -- kyc list-revokable --json
+# Revoke a certificate by its revocation ID
+yarn cli -- kyc revoke --revocation-id 123
 ```
 
 The `kyc issue` command expects a normalized provider-agnostic JSON payload shaped like:
@@ -118,6 +113,7 @@ Field format requirements:
 import {
     issueKycCertificate,
     listRevokableCertificates,
+    revokeCertificate,
     deployGuardianAccountIfNeeded,
     getGuardianAccountStatus,
 } from "@galactica-net/guardian-aztec-connect";
@@ -164,4 +160,11 @@ const revokableCertificates = await listRevokableCertificates({
 
 console.log(revokableCertificates.count);
 console.log(revokableCertificates.certificates[0]?.revocationId);
+
+const revoked = await revokeCertificate({
+    aztecEnv: "local-network",
+    revocationId: revokableCertificates.certificates[0]!.revocationId,
+});
+
+console.log(revoked.txHash);
 ```

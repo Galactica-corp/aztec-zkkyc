@@ -21,6 +21,7 @@ export interface GuardianWalletSetupOptions {
     ephemeral?: boolean;
     registerInitialAccounts?: boolean;
     inputPath?: string;
+    revocationId?: bigint | number | string;
 }
 
 export interface CertificateRegistrySetupOptions {
@@ -104,4 +105,15 @@ export interface ListRevokableCertificatesResult {
     network: GuardianNetworkConfig;
     count: number;
     certificates: RevokableCertificateSummary[];
+}
+
+export interface RevokeCertificateOptions extends GuardianStatusOptions {
+    revocationId: bigint | number | string;
+}
+
+export interface RevokeCertificateResult {
+    guardianAddress: AztecAddress;
+    network: GuardianNetworkConfig;
+    revocationId: bigint;
+    txHash: string;
 }

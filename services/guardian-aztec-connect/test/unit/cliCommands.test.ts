@@ -11,11 +11,13 @@ describe("guardian CLI command registry", () => {
             "account deploy",
             "kyc issue",
             "kyc list-revokable",
+            "kyc revoke",
         ]);
         expect(getGuardianCliCommand("account status")?.usage).toContain("account status");
         expect(getGuardianCliCommand("account deploy")?.usage).toContain("account deploy");
         expect(getGuardianCliCommand("kyc issue")?.usage).toContain("kyc issue");
         expect(getGuardianCliCommand("kyc list-revokable")?.usage).toContain("kyc list-revokable");
+        expect(getGuardianCliCommand("kyc revoke")?.usage).toContain("kyc revoke");
     });
 
     it("formats and serializes command results", () => {
@@ -126,5 +128,24 @@ describe("guardian CLI command registry", () => {
         expect(command?.format(result)).toContain("Revokable certificate count: 2");
         expect(command?.format(result)).toContain("[0] Unique ID: 11");
         expect(command?.format(result)).toContain("[1] Revocation ID: 44");
+    });
+
+    it("formats and serializes revocation results", () => {
+        const command = getGuardianCliCommand("kyc revoke");
+        const result = {
+            guardianAddress: createAddressStub("0xguardian"),
+            network: resolveNetworkConfig({ aztecEnv: "local-network" }),
+            revocationId: 22n,
+            txHash: "0xrevokehash",
+        };
+
+        expect(command?.serialize(result)).toMatchObject({
+            guardianAddress: "0xguardian",
+            revocationId: "22",
+            txHash: "0xrevokehash",
+        });
+        expect(command?.format(result)).toContain("Guardian address: 0xguardian");
+        expect(command?.format(result)).toContain("Revocation ID: 22");
+        expect(command?.format(result)).toContain("Transaction hash: 0xrevokehash");
     });
 });
