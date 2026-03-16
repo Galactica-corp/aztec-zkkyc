@@ -15,7 +15,7 @@
     "cli": "NODE_NO_WARNINGS=1 node --loader ts-node/esm src/cli.ts"
   },
   "dependencies": {
-    "@galactica-net/guardian-aztec-connect": "workspace:*",
+    "@galactica-net/guardian-aztec-connect": "1.0.0",
     "dotenv": "^17.2.2"
   },
   "devDependencies": {
