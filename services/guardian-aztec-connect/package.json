@@ -2,16 +2,16 @@
   "name": "@galactica-net/guardian-aztec-connect",
   "version": "1.0.0",
   "type": "module",
-  "main": "./dist/src/index.js",
-  "module": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "bin": {
     "guardian-aztec-connect": "./dist/cli.js"
   },
   "exports": {
     ".": {
-      "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "files": [
@@ -19,6 +19,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist .tsbuildinfo && find src -type f \\( -name '*.js' -o -name '*.d.ts' -o -name '*.d.ts.map' \\) -delete",
     "test": "yarn test:unit && yarn test:integration",
     "test:unit": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.config.json --testPathPattern=test/unit/",
     "test:integration": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.config.json --testPathPattern=test/integration/",

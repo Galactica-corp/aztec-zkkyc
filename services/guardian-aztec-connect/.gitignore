@@ -5,3 +5,9 @@
 node_modules/
 dist/
 coverage/
+*.tsbuildinfo
+
+# Avoid committing build artifacts that may be emitted into src by mistake
+src/**/*.js
+src/**/*.d.ts
+src/**/*.d.ts.map
