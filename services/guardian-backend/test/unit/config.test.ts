@@ -18,7 +18,7 @@ describe("loadConfig", () => {
         expect(config.sumsub.appToken).toBe("test-app-token");
         expect(config.sumsub.secretKey).toBe("test-secret-key");
         expect(config.sumsub.webhookSecretKey).toBe("test-webhook-secret");
-        expect(config.port).toBe(3000);
+        expect(config.port).toBe(3005);
     });
 
     it("uses PORT when set", async () => {

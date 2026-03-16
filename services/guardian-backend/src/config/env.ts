@@ -36,6 +36,6 @@ export function loadConfig(): Config {
             secretKey: process.env.SUMSUB_SECRET_KEY!,
             webhookSecretKey: process.env.SUMSUB_WEBHOOK_SECRET_KEY!,
         },
-        port: port ? parseInt(port, 10) : 3000,
+        port: port ? parseInt(port, 10) : 3005,
     };
 }
