@@ -29,17 +29,17 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const DEPLOYMENT_JSON_PATHS = {
+export const DEPLOYMENT_JSON_PATHS = {
   sandbox: path.join(__dirname, '../src/config/deployments/sandbox.json'),
   devnet: path.join(__dirname, '../src/config/deployments/devnet.json'),
 } as const;
 
-const NETWORK_NODE_URLS = {
+export const NETWORK_NODE_URLS = {
   sandbox: 'http://localhost:8080',
   devnet: 'https://v4-devnet-2.aztec-labs.com/',
 } as const;
 
-type DeploymentNetwork = keyof typeof DEPLOYMENT_JSON_PATHS;
+export type DeploymentNetwork = keyof typeof DEPLOYMENT_JSON_PATHS;
 
 export interface DeploymentPayload {
   network?: DeploymentNetwork;

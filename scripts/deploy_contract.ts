@@ -18,8 +18,8 @@ import { BasicDisclosureContract } from "../artifacts/BasicDisclosure.js";
 import { ShamirDisclosureContract } from "../artifacts/ShamirDisclosure.js";
 import { UseCaseExampleContract } from "../artifacts/UseCaseExample.js";
 import { ContractBase, DeployMethod } from "@aztec/aztec.js/contracts";
-import { updateDemoSandboxDeployment } from "./utils/update-demo-sandbox.js";
-import { updateGuardianAztecConnectEnv } from "./utils/update-guardian-aztec-connect-env.js";
+import { updateDeploymentTargets } from "./utils/update-demo-sandbox.js";
+import { updateGuardianEnvFiles } from "./utils/update-guardian-aztec-connect-env.js";
 import { inspect } from "util";
 
 /** Serialize any thrown value for logging (handles null-prototype and non-Error). */
@@ -110,7 +110,7 @@ async function main() {
   if (!certificateRegistryInstance) {
     throw new Error("Certificate registry deployment did not return instantiation data");
   }
-  await updateGuardianAztecConnectEnv(
+  await updateGuardianEnvFiles(
     certificateRegistryContract.address.toString(),
     certificateRegistryInstance.salt.toString(),
     adminAddress.toString(),
@@ -250,7 +250,7 @@ async function main() {
   logger.info(`   - Admin Address: ${adminAddress}`);
   logger.info(`   - Sponsored FPC: ${sponsoredFPC.address}`);
 
-  // Update demo app deployment config so Settings show these contracts.
+  // Update demo app deployment config and guardian-aztec-connect env so Settings show these contracts.
   const targetNetwork = getEnv() === "devnet" ? "devnet" : "sandbox";
   const certInstance = certificateRegistryInstance;
   const ageCheckInstance = await ageCheckDeployMethod.getInstance();
@@ -266,7 +266,7 @@ async function main() {
     shamirDisclosureInstance &&
     useCaseInstance
   ) {
-    updateDemoSandboxDeployment({
+    await updateDeploymentTargets({
       certificateRegistryContract: {
         address: certificateRegistryContract.address.toString(),
         salt: certInstance.salt.toString(),

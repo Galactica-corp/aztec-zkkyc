@@ -8,30 +8,39 @@ import { writeFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { spawnSync } from "child_process";
+import { updateGuardianAztecConnectEnv } from "./update-guardian-aztec-connect-env.js";
+type DeploymentNetwork = "sandbox" | "devnet";
+
+export interface DeploymentPayload {
+    network?: DeploymentNetwork;
+    certificateRegistryContract: { address: string; salt: string };
+    ageCheckRequirementContract: { address: string; salt: string };
+    sanctionListRequirementContract: { address: string; salt: string };
+    basicDisclosureContract: { address: string; salt: string };
+    shamirDisclosureContract: { address: string; salt: string };
+    shamirDisclosureConstructorArgs: {
+        recipientCount: number;
+        threshold: number;
+        recipients: [string, string, string];
+        participantAddresses: [string, string, string, string, string];
+    };
+    useCaseExampleContract: { address: string; salt: string };
+    certificateRegistryAdminAddress: string;
+    deployer: string;
+    nodeUrl?: string;
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const APPS_DEMO = path.join(__dirname, "../../apps/demo");
 const DEPLOY_OUTPUT_JSON = path.join(APPS_DEMO, ".deploy-output.json");
 
-export interface UpdateDemoSandboxParams {
-  certificateRegistryContract: { address: string; salt: string };
-  ageCheckRequirementContract: { address: string; salt: string };
-  sanctionListRequirementContract: { address: string; salt: string };
-  basicDisclosureContract: { address: string; salt: string };
-  shamirDisclosureContract: { address: string; salt: string };
-  shamirDisclosureConstructorArgs: {
-    recipientCount: number;
-    threshold: number;
-    recipients: [string, string, string];
-    participantAddresses: [string, string, string, string, string];
-  };
-  useCaseExampleContract: { address: string; salt: string };
-  /** Admin address used in Certificate Registry constructor (from getCertificateRegistryAdminAddress) */
-  certificateRegistryAdminAddress: string;
-  deployer: string;
-  network?: "sandbox" | "devnet";
-  nodeUrl?: string;
-  logger?: { info: (msg: string) => void; warn: (msg: string) => void };
+export interface UpdateDemoSandboxParams extends DeploymentPayload {
+    network?: DeploymentNetwork;
+    logger?: { info: (msg: string) => void; warn: (msg: string) => void };
+}
+
+export interface UpdateDeploymentTargetsParams extends UpdateDemoSandboxParams {
+    logger: { info: (msg: string) => void; warn: (msg: string) => void };
 }
 
 /**
@@ -43,19 +52,19 @@ export function updateDemoSandboxDeployment(
 ): boolean {
   const { logger } = params;
   try {
-    const network = params.network ?? "sandbox";
-    const payload = {
-      network,
-      certificateRegistryContract: params.certificateRegistryContract,
-      ageCheckRequirementContract: params.ageCheckRequirementContract,
-      sanctionListRequirementContract: params.sanctionListRequirementContract,
-      basicDisclosureContract: params.basicDisclosureContract,
-      shamirDisclosureContract: params.shamirDisclosureContract,
-      shamirDisclosureConstructorArgs: params.shamirDisclosureConstructorArgs,
-      useCaseExampleContract: params.useCaseExampleContract,
-      certificateRegistryAdminAddress: params.certificateRegistryAdminAddress,
-      deployer: params.deployer,
-      nodeUrl: params.nodeUrl ?? "http://localhost:8080",
+    const network: DeploymentNetwork = params.network ?? "sandbox";
+    const payload: DeploymentPayload = {
+        network,
+        certificateRegistryContract: params.certificateRegistryContract,
+        ageCheckRequirementContract: params.ageCheckRequirementContract,
+        sanctionListRequirementContract: params.sanctionListRequirementContract,
+        basicDisclosureContract: params.basicDisclosureContract,
+        shamirDisclosureContract: params.shamirDisclosureContract,
+        shamirDisclosureConstructorArgs: params.shamirDisclosureConstructorArgs,
+        useCaseExampleContract: params.useCaseExampleContract,
+        certificateRegistryAdminAddress: params.certificateRegistryAdminAddress,
+        deployer: params.deployer,
+        nodeUrl: params.nodeUrl ?? "http://localhost:8080",
     };
     writeFileSync(DEPLOY_OUTPUT_JSON, JSON.stringify(payload, null, 2));
     const result = spawnSync(
@@ -80,3 +89,29 @@ export function updateDemoSandboxDeployment(
     return false;
   }
 }
+
+/**
+ * General helper that updates both guardian-aztec-connect env variables and
+ * the demo app sandbox/devnet deployment configuration in a single call.
+ */
+export async function updateDeploymentTargets(
+    params: UpdateDeploymentTargetsParams
+): Promise<boolean> {
+    const {
+        certificateRegistryContract,
+        certificateRegistryAdminAddress,
+        deployer,
+        logger,
+    } = params;
+
+    await updateGuardianAztecConnectEnv(
+        certificateRegistryContract.address,
+        certificateRegistryContract.salt,
+        certificateRegistryAdminAddress,
+        deployer,
+        logger
+    );
+
+    return updateDemoSandboxDeployment(params);
+}
+
