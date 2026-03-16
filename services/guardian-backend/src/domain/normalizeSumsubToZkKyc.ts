@@ -1,3 +1,4 @@
+import countries from "i18n-iso-countries";
 import type { GetApplicantDataResponse } from "../sumsub/types.js";
 import type { NormalizedZkKyc } from "./normalizedZkKyc.js";
 
@@ -18,8 +19,8 @@ function normalizeCountry(value: string | undefined, fieldName: string): string 
     const up = s.toUpperCase();
     if (up.length === 3 && ISO_ALPHA3.test(up)) return up;
     if (up.length === 2) {
-        const alpha3 = COUNTRY_ALPHA2_TO_ALPHA3[up];
-        if (alpha3) return alpha3;
+        const alpha3 = countries.alpha2ToAlpha3(up);
+        if (alpha3 && ISO_ALPHA3.test(alpha3.toUpperCase())) return alpha3.toUpperCase();
     }
     throw new Error(`${fieldName} must be ISO 3166-1 alpha-2 or alpha-3`);
 }
@@ -48,29 +49,6 @@ function requireNonEmpty(value: string | undefined, fieldName: string): string {
     if (!s) throw new Error(`${fieldName} is required`);
     return s;
 }
-
-const COUNTRY_ALPHA2_TO_ALPHA3: Record<string, string> = {
-    DE: "DEU",
-    US: "USA",
-    GB: "GBR",
-    FR: "FRA",
-    ES: "ESP",
-    IT: "ITA",
-    NL: "NLD",
-    PL: "POL",
-    AT: "AUT",
-    CH: "CHE",
-    BE: "BEL",
-    SE: "SWE",
-    NO: "NOR",
-    FI: "FIN",
-    IE: "IRL",
-    PT: "PRT",
-    GR: "GRC",
-    CZ: "CZE",
-    RO: "ROU",
-    HU: "HUN",
-};
 
 /**
  * Map Sumsub applicant data to normalized ZK-KYC input for guardian-aztec-connect.
