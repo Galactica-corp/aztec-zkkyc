@@ -78,6 +78,65 @@ Definition of done:
 - Our port will use the `guardian-aztec-connect` package and its JS SDK function to work with the blockchain instead of `github.com/galactica-corp/guardians-sdk`. It will take care of all the blockchain interaction. The KYC certificate content and API differ a bit. Resolve those differences.
 - Keep the port simple and effective. You can drop irrelevant or redundant features.
 
+## Migration Spec (from Go Reference)
+
+### Preserved REST API
+
+The backend must expose exactly three routes compatible with `@apps/guardian-frontend-reference`:
+
+1. **POST /api/v1/access-token**
+   - Request body: `{ "holderCommitment": string }`
+   - Response: JSON-encoded string (the Sumsub SDK access token). The frontend expects `response.json()` to yield a plain string.
+   - Behavior: generate Sumsub access token for the given holder; cache optional.
+
+2. **PUT /api/v1/applicants/:applicantId/encryption-public-key**
+   - Request body: `{ "encryptionPublicKey": string }` (base64 or raw per client; backend stores as provided for applicant metadata).
+   - Response: JSON body required so frontend `response.json()` does not throw. Use e.g. `{ "ok": true }`.
+   - Behavior: store encryption public key in Sumsub applicant metadata under key `encryption_public_key`.
+
+3. **POST /api/v1/sumsub-webhook**
+   - Headers: `X-Payload-Digest` (hex), `X-Payload-Digest-Alg` (e.g. HMAC_SHA256_HEX, HMAC_SHA512_HEX).
+   - Body: raw request body for digest verification.
+   - Behavior: verify HMAC; on `applicantReviewed` with `reviewAnswer === "GREEN"`, run the issuance workflow (fetch applicant, normalize KYC, issue via guardian-aztec-connect, persist result).
+
+### Dropped Go-Only Features
+
+Do not port:
+
+- AWS S3 storage for certificate artifacts
+- Email delivery of certificate download links
+- Ethereum / go-ethereum / guardians-sdk and EVM registry
+- Merkle proof service
+- Redis Streams as a queue (optional later; first implementation is synchronous webhook-to-issuance in-process)
+
+### Internal Processing Record
+
+The backend keeps a correlation record per KYC session to bridge frontend, Sumsub, and Aztec. Recommended fields:
+
+- `holderCommitment` (string): from frontend when requesting access token
+- `userAddress` (string): Aztec address for issuance; **provided by the frontend** (see below)
+- `applicantId` (string): Sumsub applicant id
+- `sumsubExternalUserId` (string): typically equals holderCommitment in Sumsub
+- `encryptionPublicKey` (string, optional): from PUT applicants endpoint
+- `status`: e.g. `accessTokenIssued` | `applicantLoaded` | `approved` | `issuing` | `issued` | `failed`
+- `normalizedKycPayload`: provider-agnostic KYC shape for guardian-aztec-connect
+- `issuanceResult`: `{ uniqueId, revocationId, txHash }` when status is `issued`
+- `lastError` (string, optional): last failure reason
+- `createdAt`, `updatedAt` (timestamps)
+
+### User Address Source
+
+The Aztec SDK requires `userAddress` for issuance. The **frontend will be updated** to send the user's Aztec address to the backend. Until that change lands, the backend may accept `userAddress` via an extended access-token request body (e.g. optional `userAddress` in POST /api/v1/access-token) or a dedicated endpoint; the exact contract will be aligned with the frontend. The processing record must store `userAddress` so the webhook handler can issue without further frontend round-trips.
+
+### Issuance Flow (First Implementation)
+
+- **Synchronous**: When Sumsub sends `applicantReviewed` with GREEN, the webhook handler runs the full flow in-process: load/create processing record, fetch applicant from Sumsub, normalize to ZkKycInput, call guardian-aztec-connect `issueKycCertificate()`, persist result. No queue worker in the first milestone.
+- **Idempotency**: Duplicate webhooks for the same applicant must not double-issue; use processing record status and stored issuance result to skip or return existing result.
+
+### Legacy Certificate Page
+
+The frontend route `/certificate/:certificateId` and S3-based certificate download are **out of scope** for the first backend migration milestone. Document this in README; do not reintroduce S3 for compatibility.
+
 ## Preferred Sources
 
 Prefer sources in this order:
