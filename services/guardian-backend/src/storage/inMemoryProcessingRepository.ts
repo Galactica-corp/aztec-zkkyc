@@ -7,13 +7,13 @@ import type { ProcessingRepository } from "../domain/processingRepository.js";
 export class InMemoryProcessingRepository implements ProcessingRepository {
     private readonly byId = new Map<string, ProcessingRecord>();
     private readonly byApplicantId = new Map<string, string>();
-    private readonly byHolderCommitment = new Map<string, string>();
+    private readonly byUserAddress = new Map<string, string>();
 
     async save(record: ProcessingRecord): Promise<void> {
         const copy = { ...record, updatedAt: new Date().toISOString() };
         this.byId.set(record.id, copy);
         if (record.applicantId) this.byApplicantId.set(record.applicantId, record.id);
-        this.byHolderCommitment.set(record.holderCommitment, record.id);
+        this.byUserAddress.set(record.userAddress, record.id);
     }
 
     async getById(id: string): Promise<ProcessingRecord | null> {
@@ -25,8 +25,8 @@ export class InMemoryProcessingRepository implements ProcessingRepository {
         return id ? this.byId.get(id) ?? null : null;
     }
 
-    async getByHolderCommitment(holderCommitment: string): Promise<ProcessingRecord | null> {
-        const id = this.byHolderCommitment.get(holderCommitment);
+    async getByUserAddress(userAddress: string): Promise<ProcessingRecord | null> {
+        const id = this.byUserAddress.get(userAddress);
         return id ? this.byId.get(id) ?? null : null;
     }
 

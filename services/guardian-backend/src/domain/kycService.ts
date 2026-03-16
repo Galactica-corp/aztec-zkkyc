@@ -4,6 +4,5 @@
  */
 export interface KYCService {
     generateAccessToken(userId: string): Promise<string>;
-    attachEncryptionPublicKey(applicantId: string, encryptionPublicKey: Uint8Array | string): Promise<void>;
     handleWebhook(expectedDigest: Uint8Array, digestAlgorithm: string, body: Uint8Array): Promise<void>;
 }

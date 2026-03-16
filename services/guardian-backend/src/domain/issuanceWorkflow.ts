@@ -22,10 +22,10 @@ export function createIssuanceWorkflow(repository: ProcessingRepository): Issuan
                 });
                 return;
             }
-            const byHolder = await repository.getByHolderCommitment(externalUserId);
-            if (byHolder) {
-                if (byHolder.status === "issued") return;
-                await repository.updateStatus(byHolder.id, "approved", {
+            const byUser = await repository.getByUserAddress(externalUserId);
+            if (byUser) {
+                if (byUser.status === "issued") return;
+                await repository.updateStatus(byUser.id, "approved", {
                     applicantId,
                     sumsubExternalUserId: externalUserId,
                 });

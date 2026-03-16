@@ -11,7 +11,6 @@ export type RequestHandler = (
  */
 export function createApp(handlers: {
     generateAccessToken: RequestHandler;
-    attachEncryptionPublicKey: RequestHandler;
     handleWebhook: RequestHandler;
 }): (req: IncomingMessage, res: ServerResponse) => void {
     return (req: IncomingMessage, res: ServerResponse) => {
@@ -20,10 +19,6 @@ export function createApp(handlers: {
 
         if (method === "POST" && path === "/api/v1/access-token") {
             void handlers.generateAccessToken(req, res);
-            return;
-        }
-        if (method === "PUT" && path.startsWith("/api/v1/applicants/") && path.endsWith("/encryption-public-key")) {
-            void handlers.attachEncryptionPublicKey(req, res);
             return;
         }
         if (method === "POST" && path === "/api/v1/sumsub-webhook") {

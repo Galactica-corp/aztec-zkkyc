@@ -18,11 +18,9 @@ export interface IssuanceResult {
 
 export interface ProcessingRecord {
     id: string;
-    holderCommitment: string;
-    userAddress?: string;
+    userAddress: string;
     applicantId?: string;
     sumsubExternalUserId?: string;
-    encryptionPublicKey?: string;
     status: ProcessingStatus;
     normalizedKycPayload?: unknown;
     issuanceResult?: IssuanceResult;
@@ -33,13 +31,13 @@ export interface ProcessingRecord {
 
 export function createProcessingRecord(
     id: string,
-    holderCommitment: string,
-    overrides?: Partial<Omit<ProcessingRecord, "id" | "holderCommitment" | "createdAt" | "updatedAt">>
+    userAddress: string,
+    overrides?: Partial<Omit<ProcessingRecord, "id" | "userAddress" | "createdAt" | "updatedAt">>
 ): ProcessingRecord {
     const now = new Date().toISOString();
     return {
         id,
-        holderCommitment,
+        userAddress,
         status: "accessTokenIssued",
         createdAt: now,
         updatedAt: now,

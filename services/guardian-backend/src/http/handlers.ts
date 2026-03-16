@@ -39,68 +39,32 @@ export function createHandlers(options: CreateHandlersOptions | KYCService) {
 
     return {
         async generateAccessToken(req: IncomingMessage, res: ServerResponse): Promise<void> {
-            let body: { holderCommitment?: string; userAddress?: string };
+            let body: { userAddress?: string };
             try {
                 const raw = await readBody(req);
-                body = JSON.parse(raw.toString(UTF8)) as { holderCommitment?: string; userAddress?: string };
+                body = JSON.parse(raw.toString(UTF8)) as { userAddress?: string };
             } catch {
                 sendError(res, 400, "Invalid JSON");
                 return;
             }
-            const holderCommitment = typeof body.holderCommitment === "string" ? body.holderCommitment.trim() : "";
-            if (!holderCommitment) {
-                sendError(res, 400, "Missing or invalid holderCommitment");
+            const userAddress = typeof body.userAddress === "string" ? body.userAddress.trim() : "";
+            if (!userAddress) {
+                sendError(res, 400, "Missing or invalid userAddress");
                 return;
             }
             if (repository) {
-                const userAddress = typeof body.userAddress === "string" ? body.userAddress.trim() : undefined;
-                const existing = await repository.getByHolderCommitment(holderCommitment);
+                const existing = await repository.getByUserAddress(userAddress);
                 if (existing) {
-                    if (userAddress) {
-                        await repository.updateStatus(existing.id, existing.status, { userAddress });
-                    }
+                    await repository.updateStatus(existing.id, existing.status, { userAddress });
                 } else {
-                    const record = createProcessingRecord(randomUUID(), holderCommitment, { userAddress });
+                    const record = createProcessingRecord(randomUUID(), userAddress);
                     await repository.save(record);
                 }
             }
             try {
-                const token = await kycService.generateAccessToken(holderCommitment);
+                const token = await kycService.generateAccessToken(userAddress);
                 res.writeHead(200, { "Content-Type": "application/json" });
                 res.end(JSON.stringify(token));
-            } catch (err) {
-                const message = err instanceof Error ? err.message : "Internal error";
-                sendError(res, 500, message);
-            }
-        },
-
-        async attachEncryptionPublicKey(req: IncomingMessage, res: ServerResponse): Promise<void> {
-            const match = req.url?.split("?")[0]?.match(/^\/api\/v1\/applicants\/([^/]+)\/encryption-public-key$/);
-            const applicantId = match?.[1];
-            if (!applicantId) {
-                sendError(res, 404, "Not Found");
-                return;
-            }
-            let body: { encryptionPublicKey?: string };
-            try {
-                const raw = await readBody(req);
-                body = JSON.parse(raw.toString(UTF8)) as { encryptionPublicKey?: string };
-            } catch {
-                sendError(res, 400, "Invalid JSON");
-                return;
-            }
-            const key = body.encryptionPublicKey;
-            if (key === undefined || key === null) {
-                sendError(res, 400, "Missing encryptionPublicKey");
-                return;
-            }
-            try {
-                const bytes =
-                    typeof key === "string" && /^[A-Za-z0-9+/=]+$/.test(key)
-                        ? Buffer.from(key, "base64")
-                        : Buffer.from(key, UTF8);
-                await kycService.attachEncryptionPublicKey(applicantId, bytes);
-                sendJson(res, 200, { ok: true });
             } catch (err) {
                 const message = err instanceof Error ? err.message : "Internal error";
                 sendError(res, 500, message);

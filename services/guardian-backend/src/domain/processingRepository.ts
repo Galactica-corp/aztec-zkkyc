@@ -7,7 +7,7 @@ export interface ProcessingRepository {
     save(record: ProcessingRecord): Promise<void>;
     getById(id: string): Promise<ProcessingRecord | null>;
     getByApplicantId(applicantId: string): Promise<ProcessingRecord | null>;
-    getByHolderCommitment(holderCommitment: string): Promise<ProcessingRecord | null>;
+    getByUserAddress(userAddress: string): Promise<ProcessingRecord | null>;
     updateStatus(
         id: string,
         status: ProcessingStatus,

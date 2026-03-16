@@ -85,16 +85,11 @@ Definition of done:
 The backend must expose exactly three routes compatible with `@apps/guardian-frontend-reference`:
 
 1. **POST /api/v1/access-token**
-   - Request body: `{ "holderCommitment": string }`
+   - Request body: `{ "userAddress": string }` (Aztec address of the holder).
    - Response: JSON-encoded string (the Sumsub SDK access token). The frontend expects `response.json()` to yield a plain string.
-   - Behavior: generate Sumsub access token for the given holder; cache optional.
+   - Behavior: generate Sumsub access token for the given Aztec user address; cache optional.
 
-2. **PUT /api/v1/applicants/:applicantId/encryption-public-key**
-   - Request body: `{ "encryptionPublicKey": string }` (base64 or raw per client; backend stores as provided for applicant metadata).
-   - Response: JSON body required so frontend `response.json()` does not throw. Use e.g. `{ "ok": true }`.
-   - Behavior: store encryption public key in Sumsub applicant metadata under key `encryption_public_key`.
-
-3. **POST /api/v1/sumsub-webhook**
+2. **POST /api/v1/sumsub-webhook**
    - Headers: `X-Payload-Digest` (hex), `X-Payload-Digest-Alg` (e.g. HMAC_SHA256_HEX, HMAC_SHA512_HEX).
    - Body: raw request body for digest verification.
    - Behavior: verify HMAC; on `applicantReviewed` with `reviewAnswer === "GREEN"`, run the issuance workflow (fetch applicant, normalize KYC, issue via guardian-aztec-connect, persist result).
@@ -111,13 +106,11 @@ Do not port:
 
 ### Internal Processing Record
 
-The backend keeps a correlation record per KYC session to bridge frontend, Sumsub, and Aztec. Recommended fields:
+The backend keeps a correlation record per KYC session to bridge frontend, Sumsub, and Aztec. Recommended fields (first migration after API change):
 
-- `holderCommitment` (string): from frontend when requesting access token
-- `userAddress` (string): Aztec address for issuance; **provided by the frontend** (see below)
+- `userAddress` (string): Aztec address for issuance; **provided by the frontend** (see below) and used as Sumsub external user id.
 - `applicantId` (string): Sumsub applicant id
-- `sumsubExternalUserId` (string): typically equals holderCommitment in Sumsub
-- `encryptionPublicKey` (string, optional): from PUT applicants endpoint
+- `sumsubExternalUserId` (string): equals `userAddress` in Sumsub
 - `status`: e.g. `accessTokenIssued` | `applicantLoaded` | `approved` | `issuing` | `issued` | `failed`
 - `normalizedKycPayload`: provider-agnostic KYC shape for guardian-aztec-connect
 - `issuanceResult`: `{ uniqueId, revocationId, txHash }` when status is `issued`
@@ -126,7 +119,7 @@ The backend keeps a correlation record per KYC session to bridge frontend, Sumsu
 
 ### User Address Source
 
-The Aztec SDK requires `userAddress` for issuance. The **frontend will be updated** to send the user's Aztec address to the backend. Until that change lands, the backend may accept `userAddress` via an extended access-token request body (e.g. optional `userAddress` in POST /api/v1/access-token) or a dedicated endpoint; the exact contract will be aligned with the frontend. The processing record must store `userAddress` so the webhook handler can issue without further frontend round-trips.
+The Aztec SDK requires `userAddress` for issuance. The frontend sends the user's Aztec address to the backend as the only field in the access-token request body (`POST /api/v1/access-token` with `{ "userAddress": "..." }`). The processing record stores `userAddress` and uses it as Sumsub external user id so the webhook handler can issue without further frontend round-trips.
 
 ### Issuance Flow (First Implementation)
 

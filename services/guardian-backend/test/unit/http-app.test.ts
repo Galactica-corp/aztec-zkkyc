@@ -57,17 +57,7 @@ describe("createApp", () => {
     const app = createApp(createHandlers(stubKycService));
 
     it("mounts POST /api/v1/access-token", async () => {
-        const res = await request(app, "POST", "/api/v1/access-token", JSON.stringify({ holderCommitment: "x" }));
-        expect(res.statusCode).toBe(200);
-    });
-
-    it("mounts PUT /api/v1/applicants/:id/encryption-public-key", async () => {
-        const res = await request(
-            app,
-            "PUT",
-            "/api/v1/applicants/abc123/encryption-public-key",
-            JSON.stringify({ encryptionPublicKey: "dGVzdA==" })
-        );
+        const res = await request(app, "POST", "/api/v1/access-token", JSON.stringify({ userAddress: "x" }));
         expect(res.statusCode).toBe(200);
     });
 

@@ -9,25 +9,25 @@ describe("InMemoryProcessingRepository", () => {
     });
 
     it("saves and retrieves by id", async () => {
-        const record = createProcessingRecord("id-1", "holder-1");
+        const record = createProcessingRecord("id-1", "user-1");
         await repo.save(record);
         const got = await repo.getById("id-1");
         expect(got).not.toBeNull();
-        expect(got!.holderCommitment).toBe("holder-1");
+        expect(got!.userAddress).toBe("user-1");
         expect(got!.status).toBe("accessTokenIssued");
     });
 
     it("retrieves by applicantId after save with applicantId", async () => {
-        const record = createProcessingRecord("id-2", "holder-2", { applicantId: "app-2" });
+        const record = createProcessingRecord("id-2", "user-2", { applicantId: "app-2" });
         await repo.save(record);
         const got = await repo.getByApplicantId("app-2");
         expect(got!.id).toBe("id-2");
     });
 
-    it("retrieves by holderCommitment", async () => {
-        const record = createProcessingRecord("id-3", "holder-3");
+    it("retrieves by userAddress", async () => {
+        const record = createProcessingRecord("id-3", "user-3");
         await repo.save(record);
-        const got = await repo.getByHolderCommitment("holder-3");
+        const got = await repo.getByUserAddress("user-3");
         expect(got!.id).toBe("id-3");
     });
 

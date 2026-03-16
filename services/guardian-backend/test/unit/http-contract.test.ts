@@ -58,9 +58,9 @@ describe("HTTP contract", () => {
     const app = createApp(handlers);
 
     describe("POST /api/v1/access-token", () => {
-        it("returns 200 and JSON-encoded string token for valid holderCommitment", async () => {
+        it("returns 200 and JSON-encoded string token for valid userAddress", async () => {
             const res = await request(app, "POST", "/api/v1/access-token", {
-                body: JSON.stringify({ holderCommitment: "0x1234" }),
+                body: JSON.stringify({ userAddress: "0x1234" }),
             });
             expect(res.statusCode).toBe(200);
             const parsed = JSON.parse(res.body);
@@ -74,35 +74,11 @@ describe("HTTP contract", () => {
             expect(JSON.parse(res.body).error).toMatch(/Invalid JSON|Missing/);
         });
 
-        it("returns 400 when holderCommitment is missing", async () => {
+        it("returns 400 when userAddress is missing", async () => {
             const res = await request(app, "POST", "/api/v1/access-token", {
                 body: JSON.stringify({}),
             });
             expect(res.statusCode).toBe(400);
-        });
-    });
-
-    describe("PUT /api/v1/applicants/:id/encryption-public-key", () => {
-        it("returns 200 and { ok: true } for valid body", async () => {
-            const res = await request(app, "PUT", "/api/v1/applicants/app-123/encryption-public-key", {
-                body: JSON.stringify({ encryptionPublicKey: "dGVzdA==" }),
-            });
-            expect(res.statusCode).toBe(200);
-            expect(JSON.parse(res.body)).toEqual({ ok: true });
-        });
-
-        it("returns 400 when encryptionPublicKey is missing", async () => {
-            const res = await request(app, "PUT", "/api/v1/applicants/app-123/encryption-public-key", {
-                body: JSON.stringify({}),
-            });
-            expect(res.statusCode).toBe(400);
-        });
-
-        it("returns 404 for path without applicant id", async () => {
-            const res = await request(app, "PUT", "/api/v1/applicants/encryption-public-key", {
-                body: JSON.stringify({ encryptionPublicKey: "x" }),
-            });
-            expect(res.statusCode).toBe(404);
         });
     });
 

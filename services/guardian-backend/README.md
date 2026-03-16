@@ -30,7 +30,7 @@ All settings come from environment variables; see `.env.example`. Do not commit 
 - **Aztec / issuance**: `AZTEC_ENV`, `SECRET`, `SIGNING_KEY`, `SALT`, `CERTIFICATE_REGISTRY_ADDRESS`, `CERTIFICATE_REGISTRY_ADMIN_ADDRESS`, `CERTIFICATE_REGISTRY_DEPLOYMENT_SALT`, `CERTIFICATE_REGISTRY_DEPLOYER_ADDRESS`.
 - **Server**: `PORT` (default 3005).
 
-The frontend must send `userAddress` (Aztec address) with the access-token request so the backend can issue on approval; optional body field: `{ "holderCommitment": "...", "userAddress": "..." }`.
+The frontend must send `userAddress` (Aztec address) as the only field in the access-token request body so the backend can issue on approval: `{ "userAddress": "..." }`.
 
 ## Legacy Certificate Page
 

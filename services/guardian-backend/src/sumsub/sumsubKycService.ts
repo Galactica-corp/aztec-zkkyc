@@ -33,20 +33,6 @@ export function createSumsubKycService(options: SumsubKycServiceOptions): KYCSer
             return res.token;
         },
 
-        async attachEncryptionPublicKey(
-            applicantId: string,
-            encryptionPublicKey: Uint8Array | string
-        ): Promise<void> {
-            const bytes =
-                typeof encryptionPublicKey === "string"
-                    ? Buffer.from(encryptionPublicKey, "base64")
-                    : encryptionPublicKey;
-            const value = Buffer.from(bytes).toString("base64");
-            await client.changeProfileDataDetails(applicantId, {
-                metadata: [{ key: "encryption_public_key", value }],
-            });
-        },
-
         async handleWebhook(
             expectedDigest: Uint8Array,
             digestAlgorithm: string,

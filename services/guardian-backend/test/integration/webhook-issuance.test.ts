@@ -42,12 +42,11 @@ describe("webhook to issuance", () => {
             },
         });
 
-        const holderCommitment = "holder-1";
         const userAddress = "0x1234";
-        const record = createProcessingRecord("id-1", holderCommitment, { userAddress });
+        const record = createProcessingRecord("id-1", userAddress);
         await repository.save(record);
 
-        await workflow.processApprovedApplicant("app-1", holderCommitment);
+        await workflow.processApprovedApplicant("app-1", userAddress);
         await runner.run("app-1");
 
         const after = await repository.getByApplicantId("app-1");
@@ -65,10 +64,10 @@ describe("webhook to issuance", () => {
             repository,
         });
 
-        const holderCommitment = "holder-2";
-        const record = createProcessingRecord("id-2", holderCommitment);
+        const userAddress = "";
+        const record = createProcessingRecord("id-2", userAddress);
         await repository.save(record);
-        await workflow.processApprovedApplicant("app-2", holderCommitment);
+        await workflow.processApprovedApplicant("app-2", userAddress);
 
         await runner.run("app-2");
 
@@ -90,8 +89,7 @@ describe("webhook to issuance", () => {
             },
         });
 
-        const record = createProcessingRecord("id-3", "holder-3", {
-            userAddress: "0x",
+        const record = createProcessingRecord("id-3", "0x", {
             applicantId: "app-3",
             status: "issued",
             issuanceResult: { uniqueId: 1n, revocationId: 2n, txHash: "0xold" },

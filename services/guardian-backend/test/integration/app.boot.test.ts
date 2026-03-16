@@ -29,7 +29,7 @@ describe("app boot", () => {
                 const url = `http://localhost:${address.port}/api/v1/access-token`;
                 fetch(url, {
                     method: "POST",
-                    body: JSON.stringify({ holderCommitment: "test-holder" }),
+                    body: JSON.stringify({ userAddress: "test-user" }),
                     headers: { "Content-Type": "application/json" },
                 })
                     .then((r) => {
