@@ -166,8 +166,17 @@ export default defineConfig({
       // Fix json-stringify-deterministic CommonJS exports
       'json-stringify-deterministic': 'json-stringify-deterministic/lib/index.js',
     },
-    // Dedupe critical packages to prevent class identity issues
-    dedupe: ['@aztec/foundation', '@aztec/circuits.js', '@aztec/stdlib', '@aztec/aztec.js', '@noble/curves'],
+    // Dedupe critical packages to prevent class identity issues and duplicate React
+    dedupe: [
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      '@aztec/foundation',
+      '@aztec/circuits.js',
+      '@aztec/stdlib',
+      '@aztec/aztec.js',
+      '@noble/curves',
+    ],
   },
   server: {
     port: 3000,
