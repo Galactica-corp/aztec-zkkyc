@@ -19,8 +19,7 @@ See `AGENTS.md` for the migration spec, preserved API contracts, dropped Go feat
 
 - `yarn test` / `yarn test:unit` / `yarn test:integration` — run tests.
 - `yarn dev` — start the HTTP server for local development.
-- `yarn cli -- status` — check guardian account and whitelist readiness.
-- `yarn cli -- revoke <revocationId>` — revoke a certificate by revocation ID.
+- `yarn cli -- <command> [options]` — forwards to `guardian-aztec-connect` CLI; same usage (e.g. `yarn cli account status`, `yarn cli kyc revoke --revocation-id <id>`). Run `yarn cli -- --help` for full usage.
 
 ## Configuration
 
