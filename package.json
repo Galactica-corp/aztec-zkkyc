@@ -68,6 +68,10 @@
   "jest": {
     "testTimeout": 200000
   },
+  "resolutions": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
   "engines": {
     "node": ">=24.0.0"
   },
