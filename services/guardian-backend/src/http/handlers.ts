@@ -72,13 +72,16 @@ export function createHandlers(options: CreateHandlersOptions | KYCService) {
         },
 
         async handleWebhook(req: IncomingMessage, res: ServerResponse): Promise<void> {
+            console.log("[webhook] POST /api/v1/sumsub-webhook received");
             const digestHeader = req.headers["x-payload-digest"];
             const digestAlg = req.headers["x-payload-digest-alg"];
             if (typeof digestHeader !== "string" || !digestHeader.trim()) {
+                console.log("[webhook] Rejected: missing X-Payload-Digest");
                 sendError(res, 400, "Missing X-Payload-Digest");
                 return;
             }
             if (typeof digestAlg !== "string" || !digestAlg.trim()) {
+                console.log("[webhook] Rejected: missing X-Payload-Digest-Alg");
                 sendError(res, 400, "Missing X-Payload-Digest-Alg");
                 return;
             }
@@ -91,16 +94,20 @@ export function createHandlers(options: CreateHandlersOptions | KYCService) {
                     expectedDigest[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
                 }
             } catch {
+                console.log("[webhook] Rejected: invalid X-Payload-Digest hex");
                 sendError(res, 400, "Invalid X-Payload-Digest");
                 return;
             }
             const body = await readBody(req);
+            console.log("[webhook] Headers: X-Payload-Digest-Alg=%s, body length=%d", digestAlg.trim(), body.length);
             try {
                 await kycService.handleWebhook(expectedDigest, digestAlg.trim(), new Uint8Array(body));
+                console.log("[webhook] Handled successfully (200)");
                 res.writeHead(200);
                 res.end();
             } catch (err) {
                 const message = err instanceof Error ? err.message : "Internal error";
+                console.log("[webhook] Error: %s", message);
                 sendError(res, 500, message);
             }
         },

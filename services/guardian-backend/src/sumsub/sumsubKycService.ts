@@ -38,14 +38,23 @@ export function createSumsubKycService(options: SumsubKycServiceOptions): KYCSer
             digestAlgorithm: string,
             body: Uint8Array
         ): Promise<void> {
-            if (!verifyWebhookDigest(webhookSecret, expectedDigest, digestAlgorithm, body)) {
+            console.log("[webhook] Verifying digest: alg=%s, bodyLength=%d", digestAlgorithm, body.length);
+            const valid = verifyWebhookDigest(webhookSecret, expectedDigest, digestAlgorithm, body);
+            if (!valid) {
+                console.log("[webhook] Digest verification FAILED (check SUMSUB_WEBHOOK_SECRET_KEY)");
                 throw new Error("invalid digest");
             }
+            console.log("[webhook] Digest OK");
             const envelope = JSON.parse(new TextDecoder().decode(body)) as { type?: string };
+            console.log("[webhook] Event type: %s", envelope.type ?? "(missing)");
             if (envelope.type === "applicantReviewed") {
                 const event = JSON.parse(new TextDecoder().decode(body)) as ApplicantReviewed;
+                const answer = event.reviewResult?.reviewAnswer;
+                console.log("[webhook] applicantReviewed reviewAnswer=%s", answer ?? "(missing)");
                 if (event.reviewResult?.reviewAnswer === "GREEN" && onApplicantReviewed) {
+                    console.log("[webhook] Calling onApplicantReviewed (issuance flow)");
                     await onApplicantReviewed(event);
+                    console.log("[webhook] onApplicantReviewed completed");
                 }
             }
         },

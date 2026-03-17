@@ -21,6 +21,17 @@ See `AGENTS.md` for the migration spec, preserved API contracts, dropped Go feat
 - `yarn dev` — start the HTTP server for local development.
 - `yarn cli -- <command> [options]` — forwards to `guardian-aztec-connect` CLI; same usage (e.g. `yarn cli account status`, `yarn cli kyc revoke --revocation-id <id>`). Run `yarn cli -- --help` for full usage.
 
+## Webhook debug logs
+
+When the Sumsub webhook is called (`POST /api/v1/sumsub-webhook`), the server logs lines prefixed with `[webhook]` to **stdout**. Run `yarn dev` in this package and watch the terminal where the server is running to see:
+
+- Incoming webhook request and headers (`X-Payload-Digest-Alg`, body length).
+- Digest verification: `Digest OK` or `Digest verification FAILED (check SUMSUB_WEBHOOK_SECRET_KEY)`.
+- Parsed event type and, for `applicantReviewed`, the `reviewAnswer` (e.g. `GREEN`).
+- When the issuance callback runs (`Calling onApplicantReviewed` / `onApplicantReviewed completed`).
+
+Use these logs to confirm that Sumsub is hitting your endpoint and that `SUMSUB_WEBHOOK_SECRET_KEY` matches the secret configured in the Sumsub dashboard.
+
 ## Configuration
 
 All settings come from environment variables; see `.env.example`. Do not commit `.env` or secrets.
