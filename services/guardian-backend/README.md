@@ -28,6 +28,7 @@ All settings come from environment variables; see `.env.example`. Do not commit 
 - **Sumsub** (required for API and webhook): `SUMSUB_APP_TOKEN`, `SUMSUB_SECRET_KEY`, `SUMSUB_WEBHOOK_SECRET_KEY`.
 - **Aztec / issuance**: `AZTEC_ENV`, `SECRET`, `SIGNING_KEY`, `SALT`, `CERTIFICATE_REGISTRY_ADDRESS`, `CERTIFICATE_REGISTRY_ADMIN_ADDRESS`, `CERTIFICATE_REGISTRY_DEPLOYMENT_SALT`, `CERTIFICATE_REGISTRY_DEPLOYER_ADDRESS`.
 - **Server**: `PORT` (default 3005).
+- **CORS**: `CORS_ALLOW_ORIGINS` — comma-separated list of origins allowed for browser requests (default: `http://localhost:5173`). Set this when the frontend runs on a different origin (e.g. Vite dev server) so the backend can respond with the appropriate `Access-Control-Allow-Origin` header.
 
 The frontend must send `userAddress` (Aztec address) as the only field in the access-token request body so the backend can issue on approval: `{ "userAddress": "..." }`.
 

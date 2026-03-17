@@ -11,6 +11,9 @@ export interface Config {
         webhookSecretKey: string;
     };
     port: number;
+    cors: {
+        allowedOrigins: string[];
+    };
 }
 
 const required = [
@@ -30,6 +33,12 @@ export function loadConfig(): Config {
         );
     }
     const port = process.env.PORT?.trim();
+
+    const rawCorsOrigins = process.env.CORS_ALLOW_ORIGINS?.trim();
+    const allowedOrigins = rawCorsOrigins
+        ? rawCorsOrigins.split(",").map((s) => s.trim()).filter(Boolean)
+        : ["http://localhost:5173"];
+
     return {
         sumsub: {
             appToken: process.env.SUMSUB_APP_TOKEN!,
@@ -37,5 +46,8 @@ export function loadConfig(): Config {
             webhookSecretKey: process.env.SUMSUB_WEBHOOK_SECRET_KEY!,
         },
         port: port ? parseInt(port, 10) : 3005,
+        cors: {
+            allowedOrigins,
+        },
     };
 }

@@ -7,13 +7,10 @@ export const useAccessTokenQuery = (params: Params) => {
   return useQuery({
     queryKey: ["access-token", userAddress],
     queryFn: async () => {
-      const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL ?? window.location.origin}/api/v1/access-token`,
-        {
-          method: "POST",
-          body: JSON.stringify({ userAddress }),
-        }
-      );
+      const response = await fetch("/api/v1/access-token", {
+        method: "POST",
+        body: JSON.stringify({ userAddress }),
+      });
       const data: string = await response.json();
       return data;
     },

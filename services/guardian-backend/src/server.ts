@@ -7,6 +7,7 @@ import { SumsubClient } from "./sumsub/client.js";
 import { InMemoryProcessingRepository } from "./storage/inMemoryProcessingRepository.js";
 import { createIssuanceWorkflow } from "./domain/issuanceWorkflow.js";
 import { createIssuanceRunner } from "./domain/issuanceRunner.js";
+import { withCors } from "./http/cors.js";
 
 const config = loadConfig();
 const repository = new InMemoryProcessingRepository();
@@ -29,7 +30,9 @@ const kycService = createSumsubKycService({
     },
 });
 const handlers = createHandlers({ kycService, processingRepository: repository });
-const app = createApp(handlers);
+const app = withCors(createApp(handlers), {
+    allowedOrigins: config.cors.allowedOrigins,
+});
 const server = createServer(app);
 
 server.listen(config.port, () => {
