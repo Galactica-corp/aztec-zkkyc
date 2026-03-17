@@ -1,0 +1,42 @@
+{
+  "name": "syntetika-guardian-app-fe",
+  "compatibility_date": "2025-04-03",
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "directory": "./dist",
+  },
+  "env": {
+    "cassiopeia": {
+      "name": "syntetika-guardian-app-fe-cassiopeia",
+      "vars": {
+        "VITE_BACKEND_URL": "https://synt-stage-kyc-guard.fulgur.tech",
+        "VITE_S3": "https://syntetika-kyc-guardian-stage.s3.amazonaws.com/syntetika-kyc-guardian-stage",
+        "VITE_CHAIN_ID": "843843",
+        "VITE_SNAP_ID": "npm:@galactica-net/snap",
+        "VITE_SNAP_VERSION": "1.0.3",
+      },
+      "routes": [
+        {
+          "pattern": "guardian-cassiopeia.syntetika.io",
+          "custom_domain": true,
+        },
+      ],
+    },
+    "mainnet": {
+      "name": "syntetika-guardian-app-fe-mainnet",
+      "vars": {
+        "VITE_BACKEND_URL": "https://kyc-guardian.syntetika.io",
+        "VITE_S3": "https://syntetika-kyc-guardian-prod.s3.amazonaws.com/syntetika-kyc-guardian-prod",
+        "VITE_CHAIN_ID": "613419",
+        "VITE_SNAP_ID": "npm:@galactica-net/snap",
+        "VITE_SNAP_VERSION": "1.0.3",
+      },
+      "routes": [
+        {
+          "pattern": "guardian.syntetika.io",
+          "custom_domain": true,
+        },
+      ],
+    },
+  },
+}

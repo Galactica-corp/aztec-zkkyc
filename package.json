@@ -8,6 +8,7 @@
   "private": true,
   "workspaces": [
     "apps/demo",
+    "apps/guardian-frontend-reference",
     "services/guardian-aztec-connect",
     "services/guardian-backend"
   ],
