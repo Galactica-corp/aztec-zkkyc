@@ -2,8 +2,8 @@
   "name": "@galactica-net/guardian-backend",
   "version": "1.0.0",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "repository": "https://github.com/Galactica-corp/aztec-zkkyc.git",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -11,7 +11,7 @@
     "test:unit": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.config.json --testPathPattern=test/unit/",
     "test:integration": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.config.json --testPathPattern=test/integration/",
     "dev": "NODE_NO_WARNINGS=1 node --loader ts-node/esm src/server.ts",
-    "start": "node dist/server.js",
+    "start": "node dist/src/server.js",
     "cli": "NODE_NO_WARNINGS=1 node --loader ts-node/esm src/cli.ts"
   },
   "dependencies": {
