@@ -1,0 +1,30 @@
+services:
+  guardian-backend:
+    image: aztec-guardian-monorepo-dev
+    build:
+      context: ../..
+      dockerfile: services/guardian-backend/Dockerfile
+    env_file:
+      - ./.env
+    ports:
+      - "3005:3005"
+    command: ["yarn", "start"]
+    working_dir: /workspace/services/guardian-backend
+
+  guardian-frontend-reference:
+    image: aztec-guardian-monorepo-dev
+    env_file:
+      - ../../apps/guardian-frontend-reference/.env
+    environment:
+      # Inside Docker, `localhost` would point at the frontend container itself.
+      # Use compose DNS (`guardian-backend`) so Vite can proxy `/api` to the backend.
+      VITE_BACKEND_URL: "http://guardian-backend:3005"
+      VITE_PORT: "5173"
+    ports:
+      - "5173:5173"
+    depends_on:
+      - guardian-backend
+    # Ensure Vite binds on all interfaces so the host can access it.
+    command: ["yarn", "dev", "--", "--host", "0.0.0.0"]
+    working_dir: /workspace/apps/guardian-frontend-reference
+

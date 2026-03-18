@@ -15,6 +15,28 @@ See `AGENTS.md` for the migration spec, preserved API contracts, dropped Go feat
 - Node.js 24+, Yarn.
 - Copy `.env.example` to `.env` and set required variables.
 
+## Docker (monorepo dev)
+
+This package includes a Docker image (built from the repo) and a `docker-compose.yml` that starts:
+
+- `services/guardian-backend` with `yarn start`
+- `apps/guardian-frontend-reference` with `yarn dev`
+
+### Environment files
+
+`docker-compose` expects these files to exist:
+
+- `services/guardian-backend/.env` (copy from `.env.example`; must include `SUMSUB_APP_TOKEN`, `SUMSUB_SECRET_KEY`, `SUMSUB_WEBHOOK_SECRET_KEY`)
+- `apps/guardian-frontend-reference/.env` (copy from `.env.example`; values are overridden by `docker-compose` for container networking)
+
+### Run
+
+From the repo root:
+
+```bash
+docker compose -f services/guardian-backend/docker-compose.yml up --build
+```
+
 ## Scripts
 
 - `yarn test` / `yarn test:unit` / `yarn test:integration` — run tests.
