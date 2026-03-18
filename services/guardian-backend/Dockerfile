@@ -60,7 +60,6 @@ COPY crates ./crates
 COPY apps ./apps
 COPY services ./services
 COPY config ./config
-COPY src ./src
 COPY scripts ./scripts
 
 RUN yarn install && yarn compile && yarn codegen
