@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => {
   const isDev = mode === "development";
   const env = loadEnv(mode, process.cwd(), "");
   const backendUrl = env.VITE_BACKEND_URL ?? "http://localhost:3005";
+  const port = Number(env.VITE_PORT ?? 5173);
 
   return {
     resolve: {
@@ -40,6 +41,7 @@ export default defineConfig(({ mode }) => {
       }),
     ],
     server: {
+      port,
       // Proxy /api to backend; target comes from VITE_BACKEND_URL in .env
       proxy: {
         "/api": {
