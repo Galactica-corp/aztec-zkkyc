@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { apiBaseUrl } from "./base-url";
+
 type Params = { userAddress: string | undefined };
 
 export const useAccessTokenQuery = (params: Params) => {
@@ -7,7 +9,7 @@ export const useAccessTokenQuery = (params: Params) => {
   return useQuery({
     queryKey: ["access-token", userAddress],
     queryFn: async () => {
-      const response = await fetch("/api/v1/access-token", {
+      const response = await fetch(`${apiBaseUrl}/api/v1/access-token`, {
         method: "POST",
         body: JSON.stringify({ userAddress }),
       });
