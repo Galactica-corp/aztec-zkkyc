@@ -13,6 +13,9 @@ services:
 
   guardian-frontend-reference:
     image: aztec-guardian-monorepo-dev
+    build:
+      context: ../..
+      dockerfile: services/guardian-backend/Dockerfile
     env_file:
       - ../../apps/guardian-frontend-reference/.env
     environment:
