@@ -7,7 +7,7 @@ services:
     env_file:
       - ./.env
     ports:
-      - "3005:3005"
+      - "3004:3004"
     command: ["yarn", "start"]
     working_dir: /workspace/services/guardian-backend
 
@@ -21,10 +21,10 @@ services:
     environment:
       # Keep the Docker-only backend hostname in a server-side env var so the browser
       # still requests `/api/...` from the frontend origin and Vite proxies internally.
-      BACKEND_PROXY_TARGET: "http://guardian-backend:3005"
-      VITE_PORT: "5173"
+      BACKEND_PROXY_TARGET: "http://guardian-backend:3004"
+      VITE_PORT: "3005"
     ports:
-      - "5173:5173"
+      - "3005:3005"
     depends_on:
       - guardian-backend
     # Ensure Vite binds on all interfaces so the host can access it.

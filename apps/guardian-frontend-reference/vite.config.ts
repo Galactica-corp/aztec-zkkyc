@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
   const isDev = mode === "development";
   const env = loadEnv(mode, process.cwd(), "");
   const proxyTarget = env.BACKEND_PROXY_TARGET ?? "http://localhost:3005";
-  const port = Number(env.VITE_PORT ?? 5173);
+  const port = Number(env.VITE_PORT ?? 3005);
 
   return {
     resolve: {
