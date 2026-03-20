@@ -1,6 +1,7 @@
 /**
- * Base URL for Guardian API requests. Leave this empty to make browser requests
- * relative to the current origin so a dev proxy or reverse proxy can forward them.
- * Set it only when the browser should call a public backend URL directly.
+ * In Vite dev we always use same-origin `/api` requests so the dev server proxy can
+ * forward them internally. Direct browser-to-backend URLs are only used outside dev.
  */
-export const apiBaseUrl = (import.meta.env.VITE_BACKEND_URL as string | undefined) ?? "";
+export const apiBaseUrl = import.meta.env.DEV
+  ? ""
+  : ((import.meta.env.VITE_BACKEND_URL as string | undefined) ?? "");

@@ -12,9 +12,9 @@ Reference frontend for the Guardian KYC flow. It runs in the Aztec ZK-KYC monore
   ```
 
 - **Environment**: copy `.env.example` to `.env` (or `.env.development`).
-- Leave `VITE_BACKEND_URL` empty when the browser should use relative `/api` requests and let a dev proxy or reverse proxy forward them.
+- During `vite dev`, the frontend always uses relative `/api` requests and relies on `server.proxy`.
 - Set `BACKEND_PROXY_TARGET` to the backend URL that the Vite dev server can reach locally (for example a Docker Compose service name).
-- Set `VITE_BACKEND_URL` only when the browser should call a public backend URL directly.
+- Set `VITE_BACKEND_URL` only for non-dev deployments where the browser should call a public backend URL directly.
 
 ## Run
 
