@@ -55,10 +55,59 @@ describe("normalizeSumsubToZkKyc", () => {
 
     it("throws when address is missing", () => {
         const noAddress: GetApplicantDataResponse = {
-            info: { ...minimalApplicant.info, addresses: [] },
+            info: { ...minimalApplicant.info, addresses: [], address: undefined },
             metadata: [],
         };
         expect(() => normalizeSumsubToZkKyc(noAddress, "0x")).toThrow("no address");
+    });
+
+    it("uses singular info.address when addresses array is empty (ID-only / no PoA)", () => {
+        const applicant: GetApplicantDataResponse = {
+            info: {
+                ...minimalApplicant.info,
+                addresses: [],
+                address: {
+                    country: "DEU",
+                    stateCode: "DE-BE",
+                    town: "Berlin",
+                    postCode: "10115",
+                    street: "Musterstrasse",
+                    buildingNumber: "10",
+                },
+            },
+            metadata: [],
+        };
+        const result = normalizeSumsubToZkKyc(applicant, "0xabc");
+        expect(result.address.streetAndNumber).toContain("Musterstrasse");
+        expect(result.address.town).toBe("Berlin");
+        expect(result.address.postcode).toBe("10115");
+    });
+
+    it("falls back to fixedInfo when info has no usable address", () => {
+        const applicant: GetApplicantDataResponse = {
+            info: {
+                firstNameEn: "Jane",
+                lastNameEn: "Doe",
+                dob: "1990-06-01",
+                country: "DEU",
+                addresses: [],
+            },
+            fixedInfo: {
+                addresses: [
+                    {
+                        country: "DEU",
+                        townEn: "Munich",
+                        postCode: "80331",
+                        streetEn: "Viktualienmarkt",
+                        buildingNumber: "1",
+                    },
+                ],
+            },
+            metadata: [],
+        };
+        const result = normalizeSumsubToZkKyc(applicant, "0x");
+        expect(result.address.town).toBe("Munich");
+        expect(result.address.postcode).toBe("80331");
     });
 
     it("throws when required personal field is missing", () => {

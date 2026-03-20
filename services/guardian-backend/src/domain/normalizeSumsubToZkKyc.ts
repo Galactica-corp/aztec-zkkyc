@@ -1,5 +1,5 @@
 import countries from "i18n-iso-countries";
-import type { GetApplicantDataResponse } from "../sumsub/types.js";
+import type { ApplicantAddressBlock, ApplicantDataInfo, GetApplicantDataResponse } from "../sumsub/types.js";
 import type { NormalizedZkKyc } from "./normalizedZkKyc.js";
 
 const ISO_ALPHA3 = /^[A-Za-z]{3}$/;
@@ -50,6 +50,58 @@ function requireNonEmpty(value: string | undefined, fieldName: string): string {
     return s;
 }
 
+function addressBlockHasData(b: ApplicantAddressBlock | undefined): b is ApplicantAddressBlock {
+    if (!b) return false;
+    return Boolean(
+        b.country?.trim() ||
+            b.postCode?.trim() ||
+            b.townEn?.trim() ||
+            b.town?.trim() ||
+            b.streetEn?.trim() ||
+            b.street?.trim() ||
+            b.buildingNumber?.trim() ||
+            b.formattedAddress?.trim()
+    );
+}
+
+/**
+ * Sumsub splits residential data: `addresses[]` comes from PoA docs; `address` is a single object
+ * (e.g. from ID). `fixedInfo` mirrors `info` for user-entered data. Integration tests often hit
+ * GREEN without a separate PoA step, leaving `addresses` empty.
+ */
+function pickAddressFromApplicantData(info: ApplicantDataInfo | undefined): ApplicantAddressBlock | undefined {
+    if (!info) return undefined;
+    for (const row of info.addresses ?? []) {
+        if (addressBlockHasData(row)) return row;
+    }
+    if (addressBlockHasData(info.address)) return info.address;
+    return undefined;
+}
+
+function resolveApplicantAddress(applicant: GetApplicantDataResponse): ApplicantAddressBlock | undefined {
+    return (
+        pickAddressFromApplicantData(applicant.info) ?? pickAddressFromApplicantData(applicant.fixedInfo)
+    );
+}
+
+function streetAndNumberFromBlock(addr: ApplicantAddressBlock): string {
+    const street = (addr.streetEn ?? addr.street ?? "").trim();
+    const building = (addr.buildingNumber ?? "").trim();
+    if (street && building) return `${street} ${building}`.trim();
+    if (street) return street;
+    if (building) return building;
+    const formatted = addr.formattedAddress?.trim();
+    return formatted ?? "";
+}
+
+function townFromBlock(addr: ApplicantAddressBlock): string {
+    return (addr.townEn ?? addr.town ?? "").trim();
+}
+
+function regionFromBlock(addr: ApplicantAddressBlock): string {
+    return (addr.stateCode ?? addr.stateEn ?? addr.state ?? "").trim();
+}
+
 /**
  * Map Sumsub applicant data to normalized ZK-KYC input for guardian-aztec-connect.
  * userAddress must be provided by the caller (from processing record / frontend).
@@ -59,11 +111,14 @@ export function normalizeSumsubToZkKyc(
     userAddress: string
 ): NormalizedZkKyc {
     const info = applicant.info ?? {};
-    const addr = info.addresses?.[0];
+    const addr = resolveApplicantAddress(applicant);
     if (!addr) throw new Error("Applicant has no address");
 
     const birthday = normalizeBirthday(info.dob, "personal.birthday");
     if (!BIRTHDAY.test(birthday)) throw new Error("birthday must be YYYY-MM-DD");
+
+    const streetAndNumber = streetAndNumberFromBlock(addr);
+    const town = townFromBlock(addr);
 
     return {
         userAddress,
@@ -76,14 +131,11 @@ export function normalizeSumsubToZkKyc(
             verificationLevel: SUMSUB_APPROVED_VERIFICATION_LEVEL,
         },
         address: {
-            streetAndNumber: requireNonEmpty(
-                [addr.streetEn, addr.buildingNumber].filter(Boolean).join(" ").trim() || addr.streetEn,
-                "address.streetAndNumber"
-            ),
+            streetAndNumber: requireNonEmpty(streetAndNumber, "address.streetAndNumber"),
             postcode: requireNonEmpty(addr.postCode, "address.postcode"),
-            town: requireNonEmpty(addr.townEn, "address.town"),
-            region: addr.stateCode?.trim() ?? "",
-            country: normalizeCountry(addr.country, "address.country"),
+            town: requireNonEmpty(town, "address.town"),
+            region: regionFromBlock(addr),
+            country: normalizeCountry(addr.country ?? info.country, "address.country"),
         },
     };
 }

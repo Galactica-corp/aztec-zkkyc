@@ -7,14 +7,26 @@ export interface Metadata {
     value: string;
 }
 
-export interface Address {
-    country: string;
+/**
+ * Address fields as returned on Sumsub `addresses[]` entries and the singular `address` object.
+ * PoA rows often fill `streetEn` / `townEn`; ID-only flows may use `street` / `town` or only `formattedAddress`.
+ */
+export interface ApplicantAddressBlock {
+    country?: string;
     stateCode?: string;
+    state?: string;
+    stateEn?: string;
     townEn?: string;
+    town?: string;
     postCode?: string;
     streetEn?: string;
+    street?: string;
     buildingNumber?: string;
+    formattedAddress?: string;
 }
+
+/** @deprecated Use ApplicantAddressBlock; kept as alias for callers that expect the old name. */
+export type Address = ApplicantAddressBlock;
 
 export interface ApplicantDataInfo {
     firstNameEn?: string;
@@ -22,12 +34,17 @@ export interface ApplicantDataInfo {
     lastNameEn?: string;
     dob?: string;
     country?: string;
-    addresses?: Address[];
+    /** From proof-of-address documents when configured. */
+    addresses?: ApplicantAddressBlock[];
+    /** Single address object (e.g. from ID or registry) when `addresses` is empty. */
+    address?: ApplicantAddressBlock;
 }
 
 export interface GetApplicantDataResponse {
     email?: string;
     info: ApplicantDataInfo;
+    /** User-submitted profile; same attribute shape as `info` per Sumsub docs. */
+    fixedInfo?: ApplicantDataInfo;
     metadata: Metadata[];
 }
 
