@@ -19,9 +19,9 @@ services:
     env_file:
       - ../../apps/guardian-frontend-reference/.env
     environment:
-      # Inside Docker, `localhost` would point at the frontend container itself.
-      # Use compose DNS (`guardian-backend`) so Vite can proxy `/api` to the backend.
-      VITE_BACKEND_URL: "http://guardian-backend:3005"
+      # Keep the Docker-only backend hostname in a server-side env var so the browser
+      # still requests `/api/...` from the frontend origin and Vite proxies internally.
+      BACKEND_PROXY_TARGET: "http://guardian-backend:3005"
       VITE_PORT: "5173"
     ports:
       - "5173:5173"
