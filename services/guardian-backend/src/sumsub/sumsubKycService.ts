@@ -1,6 +1,7 @@
 import type { ApplicantReviewed } from "./types.js";
 import { SumsubClient } from "./client.js";
 import { verifyWebhookDigest } from "./webhookDigest.js";
+import { logWebhookPayloadSummary } from "./webhookDebug.js";
 import type { KYCService } from "../domain/kycService.js";
 
 const LEVEL_NAME = "id-only";
@@ -46,9 +47,10 @@ export function createSumsubKycService(options: SumsubKycServiceOptions): KYCSer
             }
             console.log("[webhook] Digest OK");
             const envelope = JSON.parse(new TextDecoder().decode(body)) as { type?: string };
+            logWebhookPayloadSummary(envelope);
             console.log("[webhook] Event type: %s", envelope.type ?? "(missing)");
             if (envelope.type === "applicantReviewed") {
-                const event = JSON.parse(new TextDecoder().decode(body)) as ApplicantReviewed;
+                const event = envelope as ApplicantReviewed;
                 const answer = event.reviewResult?.reviewAnswer;
                 console.log("[webhook] applicantReviewed reviewAnswer=%s", answer ?? "(missing)");
                 if (event.reviewResult?.reviewAnswer === "GREEN" && onApplicantReviewed) {

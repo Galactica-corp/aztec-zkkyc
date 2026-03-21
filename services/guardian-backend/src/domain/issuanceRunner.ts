@@ -1,5 +1,6 @@
 import type { ProcessingRepository } from "./processingRepository.js";
 import type { GetApplicantDataResponse } from "../sumsub/types.js";
+import { logApplicantDataForWebhook } from "../sumsub/webhookDebug.js";
 import type { NormalizedZkKyc } from "./normalizedZkKyc.js";
 import { normalizeSumsubToZkKyc } from "./normalizeSumsubToZkKyc.js";
 
@@ -54,6 +55,7 @@ export function createIssuanceRunner(deps: IssuanceRunnerDeps) {
             try {
                 await doPreflight();
                 const applicant = await deps.getApplicantData(applicantId);
+                logApplicantDataForWebhook(applicant);
                 const normalized = normalizeSumsubToZkKyc(applicant, userAddress);
                 const result = await doIssue(normalized);
                 await deps.repository.updateStatus(record.id, "issued", {

@@ -29,7 +29,7 @@ services:
       - "3005:3005"
     depends_on:
       - guardian-backend
-    # Bind on all interfaces and pin the internal dev-server port to the one we publish.
-    command: ["yarn", "dev", "--", "--host", "0.0.0.0", "--port", "3005"]
+    # Ensure Vite binds on all interfaces so the host can access it.
+    command: ["yarn", "dev", "--", "--host", "0.0.0.0"]
     working_dir: /workspace/apps/guardian-frontend-reference
 
