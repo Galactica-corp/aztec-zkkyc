@@ -31,7 +31,7 @@ export async function deploySchnorrAccountFromEnv(wallet?: EmbeddedWallet): Prom
   logger.info('✅ Sponsored fee payment method configured for account deployment');
 
   // Deploy account (use config timeouts; devnet first tx can take longer for proving keys)
-  const receipt = await deployMethod.send({
+  const deployTx = await deployMethod.send({
     from: AztecAddress.ZERO,
     fee: { paymentMethod: sponsoredPaymentMethod },
     wait: { timeout: getTimeouts().txTimeout, returnReceipt: true },
@@ -40,7 +40,7 @@ export async function deploySchnorrAccountFromEnv(wallet?: EmbeddedWallet): Prom
   try {
     logger.info(`✅ Account deployment transaction successful!`);
     logger.info(`📋 Account address: ${account.address}`);
-    logger.info(`📋 Transaction hash: ${receipt.txHash}`);
+    logger.info(`📋 Transaction hash: ${deployTx.receipt.txHash}`);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes("Timeout awaiting isMined")) {

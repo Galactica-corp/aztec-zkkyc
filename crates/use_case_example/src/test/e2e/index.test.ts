@@ -19,7 +19,6 @@ import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { Fr as FoundationFr } from "@aztec/foundation/curves/bn254";
 import { poseidon2Hash } from "@aztec/foundation/crypto/poseidon";
-import { TxHash } from "@aztec/aztec.js/tx";
 import { decryptShamirSecret } from "../../../../shamir_disclosure/utils/shamir_decrypt.js";
 
 // Test constants (aligned with Noir tests)
@@ -156,60 +155,62 @@ describe("ZK Certificate and UseCaseExample", () => {
 
     // 1. Contract setup: deploy CertificateRegistry then UseCaseExample
     logger.info("Deploying CertificateRegistry...");
-    certificateRegistry = await CertificateRegistryContract.deploy(
-      wallet,
-      adminAccount.address
-    )
-      .send({
+    certificateRegistry = (
+      await CertificateRegistryContract.deploy(wallet, adminAccount.address).send({
         from: adminAccount.address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      });
+      })
+    ).contract;
 
     logger.info("Deploying AgeCheckRequirement...");
-    ageCheckRequirement = await AgeCheckRequirementContract.deploy(wallet, 18)
-      .send({
+    ageCheckRequirement = (
+      await AgeCheckRequirementContract.deploy(wallet, 18).send({
         from: adminAccount.address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      });
+      })
+    ).contract;
 
     logger.info("Deploying BasicDisclosure...");
-    basicDisclosure = await BasicDisclosureContract.deploy(wallet, adminAccount.address)
-      .send({
+    basicDisclosure = (
+      await BasicDisclosureContract.deploy(wallet, adminAccount.address).send({
         from: adminAccount.address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      });
+      })
+    ).contract;
 
     logger.info("Deploying ShamirDisclosure...");
-    shamirDisclosure = await ShamirDisclosureContract.deploy(
-      wallet,
-      3,
-      2,
-      adminAccount.address,
-      guardianAccount.address,
-      userAccount.address,
-      AztecAddress.ZERO,
-      AztecAddress.ZERO,
-      AztecAddress.ZERO,
-      AztecAddress.ZERO,
-      AztecAddress.ZERO
-    )
-      .send({
+    shamirDisclosure = (
+      await ShamirDisclosureContract.deploy(
+        wallet,
+        3,
+        2,
+        adminAccount.address,
+        guardianAccount.address,
+        userAccount.address,
+        AztecAddress.ZERO,
+        AztecAddress.ZERO,
+        AztecAddress.ZERO,
+        AztecAddress.ZERO,
+        AztecAddress.ZERO
+      ).send({
         from: adminAccount.address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      });
+      })
+    ).contract;
 
     logger.info("Deploying UseCaseExample...");
-    useCaseExample = await UseCaseExampleContract.deploy(
-      wallet,
-      certificateRegistry.address,
-      ageCheckRequirement.address,
-      basicDisclosure.address,
-      DISCLOSURE_CONTEXT
-    )
-      .send({
+    useCaseExample = (
+      await UseCaseExampleContract.deploy(
+        wallet,
+        certificateRegistry.address,
+        ageCheckRequirement.address,
+        basicDisclosure.address,
+        DISCLOSURE_CONTEXT
+      ).send({
         from: adminAccount.address,
         fee: { paymentMethod: sponsoredPaymentMethod },
-      });
+      })
+    ).contract;
 
     logger.info(
       `CertificateRegistry at ${certificateRegistry.address.toString()}, UseCaseExample at ${useCaseExample.address.toString()}`
@@ -231,7 +232,7 @@ describe("ZK Certificate and UseCaseExample", () => {
         fee: { paymentMethod: sponsoredPaymentMethod },
       });
 
-    expect(tx.executionResult).toBe(TxExecutionResult.SUCCESS);
+    expect(tx.receipt.executionResult).toBe(TxExecutionResult.SUCCESS);
     logger.info("Guardian whitelisted");
   }, 600000);
 
@@ -273,12 +274,12 @@ describe("ZK Certificate and UseCaseExample", () => {
         fee: { paymentMethod: sponsoredPaymentMethod },
       });
 
-    expect(tx.executionResult).toBe(TxExecutionResult.SUCCESS);
+    expect(tx.receipt.executionResult).toBe(TxExecutionResult.SUCCESS);
     logger.info("Certificate issued");
   }, 600000);
 
   it("User certificate count is 1", async () => {
-    const count = await certificateRegistry.methods
+    const { result: count } = await certificateRegistry.methods
       .get_certificate_count(userAccount.address)
       .simulate({ from: userAccount.address });
 
@@ -306,7 +307,7 @@ describe("ZK Certificate and UseCaseExample", () => {
         fee: { paymentMethod: sponsoredPaymentMethod },
       });
 
-    expect(tx.executionResult).toBe(TxExecutionResult.SUCCESS);
+    expect(tx.receipt.executionResult).toBe(TxExecutionResult.SUCCESS);
     logger.info("User used certificate with authwit successfully");
 
     // Assert BasicDisclosure emitted one private event scoped to the configured recipient.
@@ -318,7 +319,7 @@ describe("ZK Certificate and UseCaseExample", () => {
     }>(BasicDisclosureContract.events.BasicDisclosureEvent, {
       contractAddress: basicDisclosure.address,
       scopes: [adminAccount.address],
-      txHash: tx.txHash,
+      txHash: tx.receipt.txHash,
     });
 
     expect(disclosureEvents).toHaveLength(1);
@@ -334,7 +335,7 @@ describe("ZK Certificate and UseCaseExample", () => {
       {
         contractAddress: basicDisclosure.address,
         scopes: [guardianAccount.address],
-        txHash: tx.txHash,
+        txHash: tx.receipt.txHash,
       }
     );
     expect(wrongScopeEvents).toHaveLength(0);
@@ -356,7 +357,7 @@ describe("ZK Certificate and UseCaseExample", () => {
         fee: { paymentMethod: sponsoredPaymentMethod },
       });
 
-    expect(tx.executionResult).toBe(TxExecutionResult.SUCCESS);
+    expect(tx.receipt.executionResult).toBe(TxExecutionResult.SUCCESS);
 
     const recipients = [
       { scope: adminAccount.address, expectedX: 1n },
@@ -376,7 +377,7 @@ describe("ZK Certificate and UseCaseExample", () => {
       }>(ShamirDisclosureContract.events.ShamirDisclosureShardEvent, {
         contractAddress: shamirDisclosure.address,
         scopes: [recipient.scope],
-        txHash: tx.txHash as TxHash,
+        txHash: tx.receipt.txHash,
       });
 
       expect(shardEvents).toHaveLength(1);
@@ -408,7 +409,7 @@ describe("ZK Certificate and UseCaseExample", () => {
         fee: { paymentMethod: sponsoredPaymentMethod },
       });
 
-    expect(tx.executionResult).toBe(TxExecutionResult.SUCCESS);
+    expect(tx.receipt.executionResult).toBe(TxExecutionResult.SUCCESS);
     logger.info("Certificate revoked (takes effect after REVOCATION_DELAY)");
   }, 600000);
 

@@ -48,7 +48,7 @@ export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<Acc
   });
 
   logger.info(`✅ Account deployment transaction successful!`);
-  logger.info(`📋 Transaction hash: ${tx.txHash}`);
+  logger.info(`📋 Transaction hash: ${tx.receipt.txHash}`);
 
   return account;
 }

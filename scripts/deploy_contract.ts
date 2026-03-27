@@ -97,7 +97,7 @@ async function main() {
   logger.info(`📋 Admin address for certificate registry contract: ${adminAddress}`);
   const certificateDeployMethod = CertificateRegistryContract.deploy(wallet, adminAddress);
   logger.info('⏳ Waiting for deployment transaction to be mined...');
-  const certificateRegistryContract = await certificateDeployMethod.send({
+  const { contract: certificateRegistryContract } = await certificateDeployMethod.send({
     from: address,
     fee: { paymentMethod: sponsoredPaymentMethod },
     wait: { timeout: timeouts.deployTimeout },
@@ -123,7 +123,7 @@ async function main() {
   logger.info(`📋 Minimum required age: ${AGE_CHECK_MINIMUM_AGE}`);
   const ageCheckDeployMethod = AgeCheckRequirementContract.deploy(wallet, AGE_CHECK_MINIMUM_AGE);
   logger.info('⏳ Waiting for deployment transaction to be mined...');
-  const ageCheckRequirementContract = await ageCheckDeployMethod.send({
+  const { contract: ageCheckRequirementContract } = await ageCheckDeployMethod.send({
     from: address,
     fee: { paymentMethod: sponsoredPaymentMethod },
     wait: { timeout: timeouts.deployTimeout },
@@ -137,7 +137,7 @@ async function main() {
   logger.info(`📋 Admin address for sanction list contract: ${adminAddress}`);
   const sanctionListDeployMethod = SanctionListRequirementContract.deploy(wallet, adminAddress);
   logger.info('⏳ Waiting for deployment transaction to be mined...');
-  const sanctionListRequirementContract = await sanctionListDeployMethod.send({
+  const { contract: sanctionListRequirementContract } = await sanctionListDeployMethod.send({
     from: address,
     fee: { paymentMethod: sponsoredPaymentMethod },
     wait: { timeout: timeouts.deployTimeout },
@@ -157,7 +157,7 @@ async function main() {
     basicDisclosureRecipient
   );
   logger.info("⏳ Waiting for deployment transaction to be mined...");
-  const basicDisclosureContract = await basicDisclosureDeployMethod.send({
+  const { contract: basicDisclosureContract } = await basicDisclosureDeployMethod.send({
     from: address,
     fee: { paymentMethod: sponsoredPaymentMethod },
     wait: { timeout: timeouts.deployTimeout },
@@ -190,7 +190,7 @@ async function main() {
     address
   );
   logger.info("⏳ Waiting for deployment transaction to be mined...");
-  const shamirDisclosureContract = await shamirDisclosureDeployMethod.send({
+  const { contract: shamirDisclosureContract } = await shamirDisclosureDeployMethod.send({
     from: address,
     fee: { paymentMethod: sponsoredPaymentMethod },
     wait: { timeout: timeouts.deployTimeout },
@@ -221,7 +221,7 @@ async function main() {
     DISCLOSURE_CONTEXT
   );
   logger.info('⏳ Waiting for deployment transaction to be mined...');
-  const useCaseExampleContract = await useCaseExampleDeployMethod.send({
+  const { contract: useCaseExampleContract } = await useCaseExampleDeployMethod.send({
     from: address,
     fee: { paymentMethod: sponsoredPaymentMethod },
     wait: { timeout: timeouts.deployTimeout },

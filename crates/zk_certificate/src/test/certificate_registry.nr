@@ -176,10 +176,10 @@ unconstrained fn test_whitelisted_guardian_issue_certificate() {
     );
 
     let certificates_count =
-        env.simulate_utility(CertificateRegistry::at(contract_address).get_certificate_count(user));
+        env.execute_utility(CertificateRegistry::at(contract_address).get_certificate_count(user));
     assert_eq(certificates_count, 1);
 
-    let guardian_copies_count = env.simulate_utility(
+    let guardian_copies_count = env.execute_utility(
         CertificateRegistry::at(contract_address).get_guardian_certificate_copies_count(guardian),
     );
     assert_eq(guardian_copies_count, 1);
@@ -208,7 +208,7 @@ unconstrained fn test_get_user_certificates_and_content_returns_correct_data() {
         ),
     );
 
-    let result: UserCertificatesPage = env.simulate_utility(
+    let result: UserCertificatesPage = env.execute_utility(
         CertificateRegistry::at(contract_address).get_user_certificates_and_content(user, 0),
     );
     assert_eq(result.count, 1);
@@ -244,7 +244,7 @@ unconstrained fn test_get_guardian_certificate_copies_returns_correct_data() {
         ),
     );
 
-    let result: GuardianCertificatesPage = env.simulate_utility(
+    let result: GuardianCertificatesPage = env.execute_utility(
         CertificateRegistry::at(contract_address).get_guardian_certificate_copies(guardian, 0),
     );
     assert_eq(result.count, 1);
@@ -617,7 +617,7 @@ unconstrained fn test_guardian_revoke_certificate() {
         ),
     );
 
-    let guardian_copies_count = env.simulate_utility(
+    let guardian_copies_count = env.execute_utility(
         CertificateRegistry::at(contract_address).get_guardian_certificate_copies_count(guardian),
     );
     assert_eq(guardian_copies_count, 1);
