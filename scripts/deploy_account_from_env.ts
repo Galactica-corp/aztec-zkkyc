@@ -9,6 +9,25 @@ import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { createAccountFromEnv } from "../crates/zk_certificate/src/utils/create_account_from_env.js";
 import { getTimeouts } from "../config/config.js";
 
+/** True when the node rejects a deploy because the account instance was already published (duplicate nullifier). */
+function isAlreadyDeployedChainError(err: unknown): boolean {
+  const collect = (e: unknown): string[] => {
+    if (e instanceof Error) {
+      const parts = [e.message];
+      const c = (e as Error & { cause?: unknown }).cause;
+      if (c !== undefined) parts.push(...collect(c));
+      return parts;
+    }
+    if (e && typeof e === "object" && "message" in e) {
+      return [String((e as { message: unknown }).message)];
+    }
+    return [];
+  };
+  return collect(err).some(
+    (m) => m.includes("Existing nullifier") || m.includes("existing nullifier")
+  );
+}
+
 export async function deploySchnorrAccountFromEnv(wallet?: EmbeddedWallet): Promise<AccountManager> {
   let logger: Logger;
   logger = createLogger('aztec:aztec-starter');
@@ -17,6 +36,12 @@ export async function deploySchnorrAccountFromEnv(wallet?: EmbeddedWallet): Prom
   const activeWallet = wallet ?? await setupWallet();
   const account = await createAccountFromEnv(activeWallet);
   logger.info(`📍 Account address will be: ${account.address}`);
+
+  const metadata = await activeWallet.getContractMetadata(account.address);
+  if (metadata.isContractInitialized) {
+    logger.info('✅ Account contract is already deployed on chain; skipping deployment.');
+    return account;
+  }
 
   const deployMethod = await account.getDeployMethod();
 
@@ -30,18 +55,25 @@ export async function deploySchnorrAccountFromEnv(wallet?: EmbeddedWallet): Prom
   const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
   logger.info('✅ Sponsored fee payment method configured for account deployment');
 
-  // Deploy account (use config timeouts; devnet first tx can take longer for proving keys)
-  const deployTx = await deployMethod.send({
-    from: AztecAddress.ZERO,
-    fee: { paymentMethod: sponsoredPaymentMethod },
-    wait: { timeout: getTimeouts().txTimeout, returnReceipt: true },
-  });
-
   try {
+    // Deploy account (use config timeouts; devnet first tx can take longer for proving keys)
+    const deployTx = await deployMethod.send({
+      from: AztecAddress.ZERO,
+      fee: { paymentMethod: sponsoredPaymentMethod },
+      wait: { timeout: getTimeouts().txTimeout, returnReceipt: true },
+    });
+
     logger.info(`✅ Account deployment transaction successful!`);
     logger.info(`📋 Account address: ${account.address}`);
     logger.info(`📋 Transaction hash: ${deployTx.receipt.txHash}`);
   } catch (err: unknown) {
+    if (isAlreadyDeployedChainError(err)) {
+      logger.info(
+        '✅ Account appears already deployed on chain (duplicate nullifier); treating as success.'
+      );
+      logger.info(`📋 Account address: ${account.address}`);
+      return account;
+    }
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes("Timeout awaiting isMined")) {
       logger.info(
