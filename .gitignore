@@ -5,7 +5,6 @@ log/
 .vscode
 .DS_Store
 codegenCache.json
-store/
 .tsbuildinfo
 .env
 
