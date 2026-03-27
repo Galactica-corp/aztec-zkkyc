@@ -42,8 +42,8 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-VERSION=4.0.0-devnet.2-patch.1 bash -i <(curl -sL https://install.aztec.network/4.0.0-devnet.2-patch.1)
-aztec-up use 4.0.0-devnet.2-patch.1
+VERSION=4.1.0-rc.4 bash -i <(curl -sL https://install.aztec.network/4.1.0-rc.4)
+aztec-up use 4.1.0-rc.4
 ```
 
 ### Environment Configuration
