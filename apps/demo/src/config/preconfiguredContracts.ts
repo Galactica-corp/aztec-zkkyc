@@ -1,3 +1,5 @@
+import { PrivateStablecoinContract } from '../../../../artifacts/PrivateStablecoin';
+import { TokenBridgeContract } from '../../../../artifacts/TokenBridge';
 import ageCheckRequirementSandbox from '../../../../target/age_check_requirement-AgeCheckRequirement.json' with { type: 'json' };
 import useCaseExampleSandbox from '../../../../target/use_case_example-UseCaseExample.json' with { type: 'json' };
 import certificateRegistrySandbox from '../../../../target/zk_certificate-CertificateRegistry.json' with { type: 'json' };
@@ -34,5 +36,33 @@ export const PRECONFIGURED_CONTRACTS: PreconfiguredContract[] = [
     address: SANDBOX_CONFIG.ageCheckRequirementContractAddress,
     artifactJson: JSON.stringify(ageCheckRequirementSandbox),
     network: 'sandbox',
+  },
+  {
+    id: 'token-bridge-sandbox',
+    label: 'Token Bridge (Sandbox)',
+    address: SANDBOX_CONFIG.tokenBridgeContractAddress,
+    artifactJson: JSON.stringify(TokenBridgeContract.artifact),
+    network: 'sandbox',
+  },
+  {
+    id: 'private-stablecoin-sandbox',
+    label: 'Private Stablecoin (Sandbox)',
+    address: SANDBOX_CONFIG.privateStablecoinContractAddress,
+    artifactJson: JSON.stringify(PrivateStablecoinContract.artifact),
+    network: 'sandbox',
+  },
+  {
+    id: 'token-bridge-devnet',
+    label: 'Token Bridge (Devnet)',
+    address: DEVNET_CONFIG.tokenBridgeContractAddress,
+    artifactJson: JSON.stringify(TokenBridgeContract.artifact),
+    network: 'devnet',
+  },
+  {
+    id: 'private-stablecoin-devnet',
+    label: 'Private Stablecoin (Devnet)',
+    address: DEVNET_CONFIG.privateStablecoinContractAddress,
+    artifactJson: JSON.stringify(PrivateStablecoinContract.artifact),
+    network: 'devnet',
   },
 ];

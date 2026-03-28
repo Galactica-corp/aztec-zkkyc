@@ -3,6 +3,7 @@ import {
   getSandboxDeployment,
   isDeploymentValid,
   PLACEHOLDER_ADDRESS,
+  PLACEHOLDER_ETH_ADDRESS,
   PLACEHOLDER_SALT,
 } from '../deployments';
 import { NetworkConfig } from './types';
@@ -23,6 +24,8 @@ const sanctionListRequirement = deployment.sanctionListRequirementContract;
 const basicDisclosure = deployment.basicDisclosureContract;
 const shamirDisclosure = deployment.shamirDisclosureContract;
 const useCaseExample = deployment.useCaseExampleContract;
+const tokenBridge = deployment.tokenBridgeContract;
+const privateStablecoin = deployment.privateStablecoinContract;
 
 /**
  * Sandbox configuration for local development.
@@ -68,17 +71,36 @@ export const SANDBOX_CONFIG: NetworkConfig = {
       PLACEHOLDER_ADDRESS,
       PLACEHOLDER_ADDRESS,
     ],
-    participantAddresses:
-      deployment.shamirDisclosureConstructorArgs?.participantAddresses ?? [
-        PLACEHOLDER_ADDRESS,
-        PLACEHOLDER_ADDRESS,
-        PLACEHOLDER_ADDRESS,
-        PLACEHOLDER_ADDRESS,
-        PLACEHOLDER_ADDRESS,
-      ],
+    participantAddresses: deployment.shamirDisclosureConstructorArgs
+      ?.participantAddresses ?? [
+      PLACEHOLDER_ADDRESS,
+      PLACEHOLDER_ADDRESS,
+      PLACEHOLDER_ADDRESS,
+      PLACEHOLDER_ADDRESS,
+      PLACEHOLDER_ADDRESS,
+    ],
   },
   useCaseExampleContractAddress: useCaseExample?.address ?? PLACEHOLDER_ADDRESS,
   useCaseExampleDeploymentSalt: useCaseExample?.salt ?? PLACEHOLDER_SALT,
+  tokenBridgeContractAddress: tokenBridge?.address ?? PLACEHOLDER_ADDRESS,
+  tokenBridgeDeploymentSalt: tokenBridge?.salt ?? PLACEHOLDER_SALT,
+  tokenBridgeTokenAddress:
+    deployment.tokenBridgeConstructorArgs?.tokenAddress ?? PLACEHOLDER_ADDRESS,
+  tokenBridgePortalAddress:
+    deployment.tokenBridgeConstructorArgs?.portalAddress ??
+    PLACEHOLDER_ETH_ADDRESS,
+  privateStablecoinContractAddress:
+    privateStablecoin?.address ?? PLACEHOLDER_ADDRESS,
+  privateStablecoinDeploymentSalt: privateStablecoin?.salt ?? PLACEHOLDER_SALT,
+  privateStablecoinName:
+    deployment.privateStablecoinConstructorArgs?.name ?? 'Private Stablecoin',
+  privateStablecoinSymbol:
+    deployment.privateStablecoinConstructorArgs?.symbol ?? 'STBL',
+  privateStablecoinDecimals:
+    deployment.privateStablecoinConstructorArgs?.decimals ?? 18,
+  privateStablecoinAdminAddress:
+    deployment.privateStablecoinConstructorArgs?.adminAddress ??
+    PLACEHOLDER_ADDRESS,
   deployerAddress: deployment.deployer,
   dripperDeploymentSalt: deployment.dripperContract.salt,
   tokenDeploymentSalt: deployment.tokenContract.salt,

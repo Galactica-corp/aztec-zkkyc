@@ -9,7 +9,7 @@ import { EthAddress } from '@aztec/aztec.js/addresses';
 import { Fr, Point } from '@aztec/aztec.js/fields';
 import { type PublicKey, PublicKeys } from '@aztec/aztec.js/keys';
 import type { Wallet } from '@aztec/aztec.js/wallet';
-import TokenBridgeContractArtifactJson from '../../../../target/bridge-TokenBridge.json' with { type: 'json' };
+import TokenBridgeContractArtifactJson from '../target/bridge-TokenBridge.json' with { type: 'json' };
 export const TokenBridgeContractArtifact = loadContractArtifact(TokenBridgeContractArtifactJson as NoirCompiledContract);
 
 

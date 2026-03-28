@@ -36,6 +36,38 @@ const CONFIG_FIELDS: ConfigField[] = [
     label: 'Basic Disclosure Contract',
   },
   {
+    key: 'tokenBridgeContractAddress',
+    label: 'Token Bridge Contract',
+  },
+  {
+    key: 'tokenBridgeTokenAddress',
+    label: 'Token Bridge Token',
+  },
+  {
+    key: 'tokenBridgePortalAddress',
+    label: 'Token Bridge Portal',
+  },
+  {
+    key: 'privateStablecoinContractAddress',
+    label: 'Private Stablecoin Contract',
+  },
+  {
+    key: 'privateStablecoinAdminAddress',
+    label: 'Private Stablecoin Admin',
+  },
+  {
+    key: 'privateStablecoinName',
+    label: 'Private Stablecoin Name',
+  },
+  {
+    key: 'privateStablecoinSymbol',
+    label: 'Private Stablecoin Symbol',
+  },
+  {
+    key: 'privateStablecoinDecimals',
+    label: 'Private Stablecoin Decimals',
+  },
+  {
     key: 'shamirDisclosureContractAddress',
     label: 'Shamir Disclosure Contract',
   },
@@ -56,6 +88,14 @@ const CONFIG_FIELDS: ConfigField[] = [
   {
     key: 'basicDisclosureDeploymentSalt',
     label: 'Basic Disclosure Salt',
+  },
+  {
+    key: 'tokenBridgeDeploymentSalt',
+    label: 'Token Bridge Salt',
+  },
+  {
+    key: 'privateStablecoinDeploymentSalt',
+    label: 'Private Stablecoin Salt',
   },
   {
     key: 'shamirDisclosureDeploymentSalt',

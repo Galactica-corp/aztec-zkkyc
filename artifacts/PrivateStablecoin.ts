@@ -9,7 +9,7 @@ import { EthAddress } from '@aztec/aztec.js/addresses';
 import { Fr, Point } from '@aztec/aztec.js/fields';
 import { type PublicKey, PublicKeys } from '@aztec/aztec.js/keys';
 import type { Wallet } from '@aztec/aztec.js/wallet';
-import PrivateStablecoinContractArtifactJson from '../../../../target/private_stablecoin-PrivateStablecoin.json' with { type: 'json' };
+import PrivateStablecoinContractArtifactJson from '../target/private_stablecoin-PrivateStablecoin.json' with { type: 'json' };
 export const PrivateStablecoinContractArtifact = loadContractArtifact(PrivateStablecoinContractArtifactJson as NoirCompiledContract);
 
 

@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
-import { FileCheck, Puzzle, Wrench, Settings, Eye } from 'lucide-react';
+import { FileCheck, Puzzle, Wrench, Settings, Eye, Coins } from 'lucide-react';
 import { useAztecWallet, isEmbeddedConnector } from '../aztec-wallet';
 import { Tabs, SecurityWarning } from '../components';
 import { TabConfig, TabType } from '../types';
 import { iconSize } from '../utils';
 import { CertificateRegistryCard } from './CertificateRegistryCard';
 import { ContractInteractionCard } from './ContractInteractionCard';
-import { UseCaseExampleCard } from './UseCaseExampleCard';
 import { DisclosuresCard } from './DisclosuresCard';
 import { SettingsCard } from './SettingsCard';
+import { StablecoinCard } from './StablecoinCard';
+import { UseCaseExampleCard } from './UseCaseExampleCard';
 
 const styles = {
   main: 'flex flex-col gap-6',
+  settingsTabTrigger: 'flex-none px-3',
+  settingsTabLabel: 'sr-only',
 } as const;
 
 export const MainContent: React.FC = () => {
@@ -38,21 +41,29 @@ export const MainContent: React.FC = () => {
     },
     {
       id: 'use-case-example',
-      label: 'Use Case Example',
+      label: 'Use Case',
       icon: <Puzzle size={iconSize('md')} />,
       component: <UseCaseExampleCard />,
     },
     {
       id: 'contract',
-      label: 'Contract UI',
+      label: 'Contract',
       icon: <Wrench size={iconSize('md')} />,
       component: <ContractInteractionCard />,
+    },
+    {
+      id: 'stablecoin',
+      label: 'Stablecoin',
+      icon: <Coins size={iconSize('md')} />,
+      component: <StablecoinCard />,
     },
     {
       id: 'settings',
       label: 'Settings',
       icon: <Settings size={iconSize('md')} />,
       component: <SettingsCard />,
+      triggerClassName: styles.settingsTabTrigger,
+      labelClassName: styles.settingsTabLabel,
     },
   ];
 

@@ -6,6 +6,7 @@ export type TabType =
   | 'certificate-registry'
   | 'disclosures'
   | 'use-case-example'
+  | 'stablecoin'
   | 'settings'
   | 'contract'
   | 'components';
@@ -15,4 +16,6 @@ export interface TabConfig {
   label: string;
   icon: React.ReactNode;
   component: React.ReactNode;
+  triggerClassName?: string;
+  labelClassName?: string;
 }

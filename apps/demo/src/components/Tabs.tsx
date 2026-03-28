@@ -1,6 +1,7 @@
 import React from 'react';
 import { TabType, TabConfig } from '../types';
 import { Tabs as RadixTabs, TabsList, TabsTrigger, TabsContent } from './ui';
+import { cn } from '../utils';
 
 const styles = {
   tabs: 'w-full',
@@ -41,9 +42,15 @@ export const Tabs: React.FC<TabsProps> = ({
       {/* Tab Navigation */}
       <TabsList>
         {tabs.map((tab) => (
-          <TabsTrigger key={tab.id} value={tab.id}>
+          <TabsTrigger
+            key={tab.id}
+            value={tab.id}
+            className={tab.triggerClassName}
+          >
             {tab.icon}
-            <span className={styles.tabLabel}>{tab.label}</span>
+            <span className={cn(styles.tabLabel, tab.labelClassName)}>
+              {tab.label}
+            </span>
           </TabsTrigger>
         ))}
       </TabsList>

@@ -50,6 +50,16 @@ export interface NetworkConfig {
   shamirDisclosureConstructorArgs: ShamirDisclosureNetworkConfig;
   useCaseExampleContractAddress: string;
   useCaseExampleDeploymentSalt: string;
+  tokenBridgeContractAddress: string;
+  tokenBridgeDeploymentSalt: string;
+  tokenBridgeTokenAddress: string;
+  tokenBridgePortalAddress: string;
+  privateStablecoinContractAddress: string;
+  privateStablecoinDeploymentSalt: string;
+  privateStablecoinName: string;
+  privateStablecoinSymbol: string;
+  privateStablecoinDecimals: number;
+  privateStablecoinAdminAddress: string;
   proverEnabled: boolean;
   isTestnet: boolean;
   /** Fee payment contracts configuration (keyed by contract name, e.g., 'metered') */

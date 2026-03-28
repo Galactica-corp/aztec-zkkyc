@@ -19,10 +19,23 @@ export interface ShamirDisclosureConstructorArgs {
   participantAddresses: [string, string, string, string, string];
 }
 
+export interface TokenBridgeConstructorArgs {
+  tokenAddress: string;
+  portalAddress: string;
+}
+
+export interface PrivateStablecoinConstructorArgs {
+  name: string;
+  symbol: string;
+  decimals: number;
+  adminAddress: string;
+}
+
 /**
  * Full deployment configuration for a network.
  * certificateRegistryContract, ageCheckRequirementContract, sanctionListRequirementContract,
- * basicDisclosureContract, shamirDisclosureContract, and useCaseExampleContract
+ * basicDisclosureContract, shamirDisclosureContract, useCaseExampleContract,
+ * tokenBridgeContract, and privateStablecoinContract
  * are populated by scripts/deploy_contract.ts (root).
  */
 export interface DeploymentConfig {
@@ -44,6 +57,14 @@ export interface DeploymentConfig {
   shamirDisclosureConstructorArgs?: ShamirDisclosureConstructorArgs;
   /** Set by root yarn deploy (scripts/deploy_contract.ts) */
   useCaseExampleContract?: ContractDeployment;
+  /** Set manually until bridge deployment is wired into scripts */
+  tokenBridgeContract?: ContractDeployment;
+  /** Placeholder constructor args until real bridge deployment data is known */
+  tokenBridgeConstructorArgs?: TokenBridgeConstructorArgs;
+  /** Set manually until stablecoin deployment is wired into scripts */
+  privateStablecoinContract?: ContractDeployment;
+  /** Placeholder constructor args until real stablecoin deployment data is known */
+  privateStablecoinConstructorArgs?: PrivateStablecoinConstructorArgs;
   /** Admin address used in Certificate Registry constructor; set by root yarn deploy */
   certificateRegistryAdminAddress?: string;
   deployer: string;
@@ -58,6 +79,8 @@ export const PLACEHOLDER_ADDRESS =
   '0x0000000000000000000000000000000000000000000000000000000000000000';
 export const PLACEHOLDER_SALT =
   '0x0000000000000000000000000000000000000000000000000000000000000000';
+export const PLACEHOLDER_ETH_ADDRESS =
+  '0x0000000000000000000000000000000000000000';
 
 /**
  * Check if a deployment config has valid (non-placeholder) contract addresses
@@ -121,6 +144,24 @@ export const DEFAULT_SANDBOX_DEPLOYMENT: DeploymentConfig = {
     address: PLACEHOLDER_ADDRESS,
     salt: PLACEHOLDER_SALT,
   },
+  tokenBridgeContract: {
+    address: PLACEHOLDER_ADDRESS,
+    salt: PLACEHOLDER_SALT,
+  },
+  tokenBridgeConstructorArgs: {
+    tokenAddress: PLACEHOLDER_ADDRESS,
+    portalAddress: PLACEHOLDER_ETH_ADDRESS,
+  },
+  privateStablecoinContract: {
+    address: PLACEHOLDER_ADDRESS,
+    salt: PLACEHOLDER_SALT,
+  },
+  privateStablecoinConstructorArgs: {
+    name: 'Private Stablecoin',
+    symbol: 'STBL',
+    decimals: 18,
+    adminAddress: PLACEHOLDER_ADDRESS,
+  },
   certificateRegistryAdminAddress: PLACEHOLDER_ADDRESS,
   deployer: PLACEHOLDER_ADDRESS,
   proverEnabled: false,
@@ -176,6 +217,24 @@ export const DEFAULT_DEVNET_DEPLOYMENT: DeploymentConfig = {
   useCaseExampleContract: {
     address: PLACEHOLDER_ADDRESS,
     salt: PLACEHOLDER_SALT,
+  },
+  tokenBridgeContract: {
+    address: PLACEHOLDER_ADDRESS,
+    salt: PLACEHOLDER_SALT,
+  },
+  tokenBridgeConstructorArgs: {
+    tokenAddress: PLACEHOLDER_ADDRESS,
+    portalAddress: PLACEHOLDER_ETH_ADDRESS,
+  },
+  privateStablecoinContract: {
+    address: PLACEHOLDER_ADDRESS,
+    salt: PLACEHOLDER_SALT,
+  },
+  privateStablecoinConstructorArgs: {
+    name: 'Private Stablecoin',
+    symbol: 'STBL',
+    decimals: 18,
+    adminAddress: PLACEHOLDER_ADDRESS,
   },
   certificateRegistryAdminAddress: PLACEHOLDER_ADDRESS,
   deployer: PLACEHOLDER_ADDRESS,

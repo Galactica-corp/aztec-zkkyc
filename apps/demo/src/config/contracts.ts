@@ -3,13 +3,11 @@ import { Fr } from '@aztec/aztec.js/fields';
 import { AgeCheckRequirementContract } from '../../../../artifacts/AgeCheckRequirement';
 import { BasicDisclosureContract } from '../../../../artifacts/BasicDisclosure';
 import { CertificateRegistryContract } from '../../../../artifacts/CertificateRegistry';
+import { PrivateStablecoinContract } from '../../../../artifacts/PrivateStablecoin';
 import { SanctionListRequirementContract } from '../../../../artifacts/SanctionListRequirement';
+import { TokenBridgeContract } from '../../../../artifacts/TokenBridge';
 import { UseCaseExampleContract } from '../../../../artifacts/UseCaseExample';
-import {
-  createContractConfig,
-  getDeployerAddress,
-  getTokenConstructorArgs,
-} from '../contract-registry';
+import { createContractConfig, getDeployerAddress } from '../contract-registry';
 
 const DISCLOSURE_CONTEXT = 777;
 
@@ -105,6 +103,40 @@ export const contractsConfig = createContractConfig({
         DISCLOSURE_CONTEXT,
       ],
       constructorArtifact: 'constructor',
+    }),
+    lazyRegister: true,
+  },
+
+  tokenBridge: {
+    artifact: TokenBridgeContract.artifact,
+    contract: TokenBridgeContract,
+    address: (config) => config.tokenBridgeContractAddress,
+    deployParams: (config) => ({
+      salt: Fr.fromString(config.tokenBridgeDeploymentSalt),
+      deployer: getDeployerAddress(config),
+      constructorArgs: [
+        config.tokenBridgeTokenAddress,
+        config.tokenBridgePortalAddress,
+      ],
+      constructorArtifact: 'constructor',
+    }),
+    lazyRegister: true,
+  },
+
+  privateStablecoin: {
+    artifact: PrivateStablecoinContract.artifact,
+    contract: PrivateStablecoinContract,
+    address: (config) => config.privateStablecoinContractAddress,
+    deployParams: (config) => ({
+      salt: Fr.fromString(config.privateStablecoinDeploymentSalt),
+      deployer: getDeployerAddress(config),
+      constructorArgs: [
+        config.privateStablecoinName,
+        config.privateStablecoinSymbol,
+        config.privateStablecoinDecimals,
+        config.privateStablecoinAdminAddress,
+      ],
+      constructorArtifact: 'constructor_with_minter',
     }),
     lazyRegister: true,
   },
