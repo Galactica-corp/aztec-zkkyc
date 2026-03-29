@@ -6,7 +6,7 @@ import { createAztecWalletConfig } from '../config';
 import { createConnectorRegistry } from '../connectors/registry';
 import { useEIP6963Discovery } from '../hooks/useEIP6963Discovery';
 import { getEIP6963Service, getEVMWalletService } from '../services/evm';
-import { getNetworkStore, useNetworkStore } from '../store/network';
+import { useNetworkStore } from '../store/network';
 import {
   useWalletStore,
   getWalletStore,
@@ -210,12 +210,32 @@ export const AztecWalletProvider: React.FC<AztecWalletProviderProps> = ({
       disconnect: state.disconnect,
     }))
   );
-  const { initialize: initializeNetwork, resetToDefault } = useNetworkStore(
+  const { resetToDefault } = useNetworkStore(
     useShallow((state) => ({
-      initialize: state.initialize,
       resetToDefault: state.resetToDefault,
     }))
   );
+
+  const networkPresets = useMemo(
+    () => toStoreNetworkPresets(userConfig.networks),
+    [userConfig.networks]
+  );
+
+  /**
+   * Hydrate the network store from localStorage during render (not in useEffect).
+   * If we only initialized in useEffect, the first render still had the zustand
+   * default (devnet). The connector effect depends on nodeUrl, so when the store
+   * later switched to the saved network its cleanup ran disconnect() while
+   * AutoReconnect had already fired once — leaving the wallet on the wrong network
+   * or disconnected after refresh.
+   */
+  if (typeof globalThis.window !== 'undefined') {
+    const net = useNetworkStore.getState();
+    if (!net.isInitialized) {
+      net.initialize(networkPresets);
+    }
+  }
+
   const currentConfig = useNetworkStore((state) => state.currentConfig);
 
   // Trigger EIP-6963 wallet discovery for EVM wallets
@@ -229,16 +249,10 @@ export const AztecWalletProvider: React.FC<AztecWalletProviderProps> = ({
     [userConfig]
   );
 
-  // Initialize network store
+  // Wallet cross-tab sync must register a window listener once.
   useEffect(() => {
-    const networkPresets = toStoreNetworkPresets(userConfig.networks);
-
-    if (!getNetworkStore().isInitialized) {
-      initializeNetwork(networkPresets);
-    }
-
     setupWalletCrossTabSync();
-  }, [userConfig.networks, initializeNetwork]);
+  }, []);
 
   // Validate network config
   useEffect(() => {
