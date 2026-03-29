@@ -13,7 +13,7 @@ import {
 } from '../contract-registry';
 import { useToast } from '../hooks';
 import { useContractRegistryStore } from '../store/contractRegistry';
-import { iconSize, queuePxeCall } from '../utils';
+import { iconSize } from '../utils';
 import type { NetworkConfig } from '../config/networks';
 
 /**
@@ -119,7 +119,7 @@ export function ContractRegistryInitializer<
           currentConfig
         );
         const start = performance.now();
-        await queuePxeCall(() => registry.registerAll(initialContracts));
+        await registry.registerAll(initialContracts);
         const elapsedMs = performance.now() - start;
 
         if (showTimingToast && initialContracts.length > 0) {

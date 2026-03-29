@@ -2,6 +2,7 @@ import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { ContractInstanceWithAddress } from '@aztec/aztec.js/contracts';
 import { createLogger } from '@aztec/foundation/log';
 import type { PXE } from '@aztec/pxe/server';
+import { queuePxeCall } from '../utils';
 import type {
   ContractConfigMap,
   ContractNames,
@@ -226,8 +227,9 @@ export class ContractRegistry<T extends ContractConfigMap>
           contractConfig.address(this.config)
         );
 
-        const storedInstance =
-          await this.pxe.getContractInstance(expectedAddress);
+        const storedInstance = await queuePxeCall(() =>
+          this.pxe.getContractInstance(expectedAddress)
+        );
 
         if (storedInstance) {
           // Reuse the instance currently known by PXE at this exact address.
@@ -301,23 +303,48 @@ export class ContractRegistry<T extends ContractConfigMap>
   }
 
   /**
-   * Resolve the contract instance to register: prefer recomputation from
-   * deployParams, but if that address differs from config (stale salt/args in
-   * deployments/*.json), fall back to the canonical instance from the Aztec node
-   * at the configured address when the artifact class id still matches.
+   * Resolve the contract instance to register.
+   *
+   * Prefer the canonical instance from the Aztec node at the configured
+   * address. Local recomputation can diverge for contracts deployed with
+   * account-specific public keys that are not stored in deployments/*.json.
+   * If the node has no contract at the configured address, fall back to local
+   * recomputation so we still catch genuinely stale config values.
    */
   private async resolveInstanceForRegistration(
     name: ContractNames<T>,
     contractConfig: T[ContractNames<T>],
     expectedAddress: AztecAddress
   ): Promise<ContractInstanceWithAddress> {
-    const deployParams = contractConfig.deployParams(this.config);
-
     const {
       getContractInstanceFromInstantiationParams,
       getContractClassFromArtifact,
     } = await import('@aztec/aztec.js/contracts');
 
+    const contractClass = await getContractClassFromArtifact(
+      contractConfig.artifact
+    );
+    const nodeUrl = this.config.nodeUrl.replace(/\/$/, '');
+    const { createAztecNodeClient } = await import('@aztec/aztec.js/node');
+    const node = createAztecNodeClient(nodeUrl);
+    const chainInstance = await node.getContract(expectedAddress);
+
+    if (chainInstance) {
+      if (!chainInstance.currentContractClassId.equals(contractClass.id)) {
+        throw new Error(
+          `Contract "${String(name)}" at ${expectedAddress.toString()} has class id ` +
+            `${chainInstance.currentContractClassId.toString()} but the app artifact expects ` +
+            `${contractClass.id.toString()}. Rebuild contracts or fix the configured address.`
+        );
+      }
+
+      logger.info(
+        `Contract "${String(name)}" resolved from node at ${expectedAddress.toString()}`
+      );
+      return chainInstance;
+    }
+
+    const deployParams = contractConfig.deployParams(this.config);
     const localInstance = await getContractInstanceFromInstantiationParams(
       contractConfig.artifact,
       {
@@ -332,38 +359,12 @@ export class ContractRegistry<T extends ContractConfigMap>
       return localInstance;
     }
 
-    logger.warn(
-      `Contract "${String(name)}" local instantiation address ${localInstance.address.toString()} ` +
-        `does not match config ${expectedAddress.toString()}; fetching instance from node`
+    throw new Error(
+      `Contract "${String(name)}" config address ${expectedAddress.toString()} ` +
+        `does not match locally derived ${localInstance.address.toString()}, ` +
+        `and the node has no contract at the configured address. ` +
+        `Update apps/demo/src/config/deployments (address, salt, deployer, constructor args) or redeploy.`
     );
-
-    const nodeUrl = this.config.nodeUrl.replace(/\/$/, '');
-    const { createAztecNodeClient } = await import('@aztec/aztec.js/node');
-    const node = createAztecNodeClient(nodeUrl);
-    const chainInstance = await node.getContract(expectedAddress);
-
-    if (!chainInstance) {
-      throw new Error(
-        `Contract "${String(name)}" address mismatch! ` +
-          `Computed: ${localInstance.address.toString()}, ` +
-          `Expected: ${expectedAddress.toString()}, ` +
-          `and the node has no contract at the expected address. ` +
-          `Update apps/demo/src/config/deployments (salt, deployer, constructor args) or redeploy.`
-      );
-    }
-
-    const contractClass = await getContractClassFromArtifact(
-      contractConfig.artifact
-    );
-    if (!chainInstance.currentContractClassId.equals(contractClass.id)) {
-      throw new Error(
-        `Contract "${String(name)}" at ${expectedAddress.toString()} has class id ` +
-          `${chainInstance.currentContractClassId.toString()} but the app artifact expects ` +
-          `${contractClass.id.toString()}. Rebuild contracts or fix the configured address.`
-      );
-    }
-
-    return chainInstance;
   }
 
   /**
@@ -380,10 +381,12 @@ export class ContractRegistry<T extends ContractConfigMap>
       expectedAddress
     );
 
-    await this.pxe.registerContract({
-      instance,
-      artifact: contractConfig.artifact,
-    });
+    await queuePxeCall(() =>
+      this.pxe.registerContract({
+        instance,
+        artifact: contractConfig.artifact,
+      })
+    );
 
     return instance;
   }

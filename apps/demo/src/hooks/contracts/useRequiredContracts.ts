@@ -3,9 +3,10 @@ import { useAztecWallet, WalletType } from '../../aztec-wallet';
 import { useContractRegistry } from '../context/useContractRegistry';
 import type { ContractStatus, ContractName } from '../../contract-registry';
 
-type ContractStatusMap<T extends readonly ContractName[]> = {
-  [K in T[number]]: ContractStatus;
-};
+type ContractStatusMap<T extends readonly ContractName[]> = Record<
+  T[number],
+  ContractStatus
+>;
 
 interface UseRequiredContractsReturn<T extends readonly ContractName[]> {
   isReady: boolean;
@@ -53,8 +54,13 @@ export function useRequiredContracts<T extends readonly ContractName[]>(
     return JSON.stringify(statuses);
   };
 
-  // React will re-render when snapshot changes
-  useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  // React will re-render when snapshot changes; use the snapshot in memoized
+  // derived state so loading/error flags stay in sync with registry updates.
+  const serializedStatuses = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getSnapshot
+  );
 
   // Trigger registration when registry is ready
   useEffect(() => {
@@ -62,10 +68,21 @@ export function useRequiredContracts<T extends readonly ContractName[]>(
       return;
     }
 
+    const currentStatuses = JSON.parse(serializedStatuses) as Record<
+      T[number],
+      ContractStatus
+    >;
+    const hasIdleContracts = contractNames.some(
+      (name) => currentStatuses[name] === 'idle'
+    );
+    if (!hasIdleContracts) {
+      return;
+    }
+
     registerMany([...contractNames]).catch((err) => {
       console.error('[useRequiredContracts] Registration failed:', err);
     });
-  }, [contractNames, registerMany, registryStatus]);
+  }, [contractNames, registerMany, registryStatus, serializedStatuses]);
 
   // Compute derived state
   return useMemo(() => {
@@ -87,8 +104,11 @@ export function useRequiredContracts<T extends readonly ContractName[]>(
       };
     }
 
+    const snapshotStatuses = JSON.parse(serializedStatuses) as Partial<
+      Record<T[number], ContractStatus>
+    >;
     const statuses = contractNames.reduce((acc, name) => {
-      acc[name as T[number]] = getStatus(name);
+      acc[name as T[number]] = snapshotStatuses[name] ?? 'idle';
       return acc;
     }, {} as ContractStatusMap<T>);
 
@@ -111,5 +131,5 @@ export function useRequiredContracts<T extends readonly ContractName[]>(
       pendingContracts,
       statuses,
     };
-  }, [contractNames, getStatus, isBrowserWallet, isConnected]);
+  }, [contractNames, serializedStatuses, isBrowserWallet, isConnected]);
 }
