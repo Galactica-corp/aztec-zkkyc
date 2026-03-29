@@ -1,4 +1,4 @@
-import { AztecAddress } from '@aztec/aztec.js/addresses';
+import { AztecAddress, EthAddress } from '@aztec/aztec.js/addresses';
 import { Fr } from '@aztec/aztec.js/fields';
 import { AgeCheckRequirementContract } from '../../../../artifacts/AgeCheckRequirement';
 import { BasicDisclosureContract } from '../../../../artifacts/BasicDisclosure';
@@ -107,16 +107,24 @@ export const contractsConfig = createContractConfig({
     lazyRegister: true,
   },
 
+  /**
+   * Bridge and private stablecoin are deployed like Certificate Registry (real
+   * deployer in sandbox.json), not universal deploy (ZERO deployer). Use
+   * deployerAddress when present so getContractInstanceFromInstantiationParams
+   * matches the address recorded in deployments/*.json.
+   */
   tokenBridge: {
     artifact: TokenBridgeContract.artifact,
     contract: TokenBridgeContract,
     address: (config) => config.tokenBridgeContractAddress,
     deployParams: (config) => ({
       salt: Fr.fromString(config.tokenBridgeDeploymentSalt),
-      deployer: getDeployerAddress(config),
+      deployer: config.deployerAddress
+        ? AztecAddress.fromString(config.deployerAddress)
+        : getDeployerAddress(config),
       constructorArgs: [
-        config.tokenBridgeTokenAddress,
-        config.tokenBridgePortalAddress,
+        AztecAddress.fromString(config.tokenBridgeTokenAddress),
+        EthAddress.fromString(config.tokenBridgePortalAddress),
       ],
       constructorArtifact: 'constructor',
     }),
@@ -129,12 +137,14 @@ export const contractsConfig = createContractConfig({
     address: (config) => config.privateStablecoinContractAddress,
     deployParams: (config) => ({
       salt: Fr.fromString(config.privateStablecoinDeploymentSalt),
-      deployer: getDeployerAddress(config),
+      deployer: config.deployerAddress
+        ? AztecAddress.fromString(config.deployerAddress)
+        : getDeployerAddress(config),
       constructorArgs: [
         config.privateStablecoinName,
         config.privateStablecoinSymbol,
         config.privateStablecoinDecimals,
-        config.privateStablecoinAdminAddress,
+        AztecAddress.fromString(config.privateStablecoinAdminAddress),
       ],
       constructorArtifact: 'constructor_with_minter',
     }),

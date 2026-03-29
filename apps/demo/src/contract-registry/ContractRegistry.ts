@@ -44,11 +44,14 @@ export class ContractRegistry<T extends ContractConfigMap>
     new Map();
   private subscribers: Set<() => void> = new Set();
 
-  constructor(
-    private readonly pxe: PXE,
-    private readonly contracts: T,
-    private readonly config: NetworkConfig
-  ) {
+  private readonly pxe: PXE;
+  private readonly contracts: T;
+  private readonly config: NetworkConfig;
+
+  constructor(pxe: PXE, contracts: T, config: NetworkConfig) {
+    this.pxe = pxe;
+    this.contracts = contracts;
+    this.config = config;
     logger.info('ContractRegistry initialized', {
       contracts: Object.keys(contracts),
     });
@@ -223,7 +226,8 @@ export class ContractRegistry<T extends ContractConfigMap>
           contractConfig.address(this.config)
         );
 
-        const storedInstance = await this.pxe.getContractInstance(expectedAddress);
+        const storedInstance =
+          await this.pxe.getContractInstance(expectedAddress);
 
         if (storedInstance) {
           // Reuse the instance currently known by PXE at this exact address.
@@ -270,16 +274,11 @@ export class ContractRegistry<T extends ContractConfigMap>
         contractConfig.address(this.config)
       );
 
-      const instance = await this.registerInstanceWithPXE(name, contractConfig);
-
-      // Validate address matches expected
-      if (!instance.address.equals(expectedAddress)) {
-        throw new Error(
-          `Contract "${name}" address mismatch! ` +
-            `Computed: ${instance.address.toString()}, ` +
-            `Expected: ${expectedAddress.toString()}`
-        );
-      }
+      const instance = await this.registerInstanceWithPXE(
+        name,
+        contractConfig,
+        expectedAddress
+      );
 
       this.updateCache(name, { status: 'ready', instance });
       this.notifySubscribers();
@@ -302,19 +301,24 @@ export class ContractRegistry<T extends ContractConfigMap>
   }
 
   /**
-   * Create contract instance from deploy params and register with PXE
+   * Resolve the contract instance to register: prefer recomputation from
+   * deployParams, but if that address differs from config (stale salt/args in
+   * deployments/*.json), fall back to the canonical instance from the Aztec node
+   * at the configured address when the artifact class id still matches.
    */
-  private async registerInstanceWithPXE(
+  private async resolveInstanceForRegistration(
     name: ContractNames<T>,
-    contractConfig: T[ContractNames<T>]
+    contractConfig: T[ContractNames<T>],
+    expectedAddress: AztecAddress
   ): Promise<ContractInstanceWithAddress> {
     const deployParams = contractConfig.deployParams(this.config);
 
-    const { getContractInstanceFromInstantiationParams } = await import(
-      '@aztec/aztec.js/contracts'
-    );
+    const {
+      getContractInstanceFromInstantiationParams,
+      getContractClassFromArtifact,
+    } = await import('@aztec/aztec.js/contracts');
 
-    const instance = await getContractInstanceFromInstantiationParams(
+    const localInstance = await getContractInstanceFromInstantiationParams(
       contractConfig.artifact,
       {
         salt: deployParams.salt,
@@ -322,6 +326,58 @@ export class ContractRegistry<T extends ContractConfigMap>
         constructorArgs: deployParams.constructorArgs,
         constructorArtifact: deployParams.constructorArtifact,
       }
+    );
+
+    if (localInstance.address.equals(expectedAddress)) {
+      return localInstance;
+    }
+
+    logger.warn(
+      `Contract "${String(name)}" local instantiation address ${localInstance.address.toString()} ` +
+        `does not match config ${expectedAddress.toString()}; fetching instance from node`
+    );
+
+    const nodeUrl = this.config.nodeUrl.replace(/\/$/, '');
+    const { createAztecNodeClient } = await import('@aztec/aztec.js/node');
+    const node = createAztecNodeClient(nodeUrl);
+    const chainInstance = await node.getContract(expectedAddress);
+
+    if (!chainInstance) {
+      throw new Error(
+        `Contract "${String(name)}" address mismatch! ` +
+          `Computed: ${localInstance.address.toString()}, ` +
+          `Expected: ${expectedAddress.toString()}, ` +
+          `and the node has no contract at the expected address. ` +
+          `Update apps/demo/src/config/deployments (salt, deployer, constructor args) or redeploy.`
+      );
+    }
+
+    const contractClass = await getContractClassFromArtifact(
+      contractConfig.artifact
+    );
+    if (!chainInstance.currentContractClassId.equals(contractClass.id)) {
+      throw new Error(
+        `Contract "${String(name)}" at ${expectedAddress.toString()} has class id ` +
+          `${chainInstance.currentContractClassId.toString()} but the app artifact expects ` +
+          `${contractClass.id.toString()}. Rebuild contracts or fix the configured address.`
+      );
+    }
+
+    return chainInstance;
+  }
+
+  /**
+   * Resolve instance (local params or node fallback) and register with PXE.
+   */
+  private async registerInstanceWithPXE(
+    name: ContractNames<T>,
+    contractConfig: T[ContractNames<T>],
+    expectedAddress: AztecAddress
+  ): Promise<ContractInstanceWithAddress> {
+    const instance = await this.resolveInstanceForRegistration(
+      name,
+      contractConfig,
+      expectedAddress
     );
 
     await this.pxe.registerContract({

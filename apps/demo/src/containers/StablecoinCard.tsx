@@ -22,6 +22,7 @@ import {
 import { PLACEHOLDER_ADDRESS } from '../config/deployments';
 import { useToast } from '../hooks';
 import { useReadContract, useWriteContract } from '../hooks/contracts';
+import { useRequiredContracts } from '../hooks/contracts/useRequiredContracts';
 import { useFeePayment } from '../store/feePayment';
 import { cn, iconSize } from '../utils';
 
@@ -48,6 +49,10 @@ const styles = {
   balanceHint: 'text-xs text-muted',
   inlineStatus: 'text-sm text-muted',
   errorText: 'text-sm text-red-500',
+  loadingContainer:
+    'flex flex-col items-center justify-center gap-3 py-6 text-muted',
+  loadingSpinner:
+    'animate-spin rounded-full h-6 w-6 border-2 border-current border-t-transparent',
 } as const;
 
 const ZERO_FIELD = 0n;
@@ -126,6 +131,24 @@ export const StablecoinCard: React.FC = () => {
     bridgeAddress !== '' && bridgeAddress !== PLACEHOLDER_ADDRESS;
   const isStablecoinConfigured =
     stablecoinAddress !== '' && stablecoinAddress !== PLACEHOLDER_ADDRESS;
+  const requiredContracts = useMemo(
+    () =>
+      [
+        ...(isBridgeConfigured ? (['tokenBridge'] as const) : []),
+        ...(isStablecoinConfigured ? (['privateStablecoin'] as const) : []),
+      ] as ('tokenBridge' | 'privateStablecoin')[],
+    [isBridgeConfigured, isStablecoinConfigured]
+  );
+  const {
+    isLoading: contractsLoading,
+    hasError: contractsHasError,
+    failedContracts,
+    pendingContracts,
+    statuses,
+  } = useRequiredContracts(requiredContracts);
+  const isBridgeReady = !isBridgeConfigured || statuses.tokenBridge === 'ready';
+  const isStablecoinReady =
+    !isStablecoinConfigured || statuses.privateStablecoin === 'ready';
 
   const stablecoinDescription = useMemo(() => {
     const tokenName = stablecoinName.trim() || 'Private stablecoin';
@@ -139,6 +162,12 @@ export const StablecoinCard: React.FC = () => {
         setPrivateBalance(null);
         setStablecoinLoadError(null);
         setIsStablecoinLoading(false);
+        setIsStablecoinRefreshing(false);
+        return;
+      }
+
+      if (!isStablecoinReady) {
+        setIsStablecoinLoading(true);
         setIsStablecoinRefreshing(false);
         return;
       }
@@ -191,6 +220,7 @@ export const StablecoinCard: React.FC = () => {
     },
     [
       connectedAddress,
+      isStablecoinReady,
       isStablecoinConfigured,
       readContract,
       stablecoinAddress,
@@ -207,8 +237,19 @@ export const StablecoinCard: React.FC = () => {
     void loadStablecoinData(false);
   }, [isAnyWalletConnected, isPXEInitialized, loadStablecoinData]);
 
+  useEffect(() => {
+    if (!isStablecoinConfigured) {
+      setIsStablecoinLoading(false);
+      return;
+    }
+
+    if (failedContracts.includes('privateStablecoin')) {
+      setIsStablecoinLoading(false);
+    }
+  }, [failedContracts, isStablecoinConfigured]);
+
   const handleBridgeClaim = useCallback(async () => {
-    if (!isBridgeConfigured || !bridgeClaimRecipient.trim()) {
+    if (!isBridgeReady || !isBridgeConfigured || !bridgeClaimRecipient.trim()) {
       return;
     }
 
@@ -257,6 +298,7 @@ export const StablecoinCard: React.FC = () => {
     bridgeClaimRecipient,
     bridgeClaimSecret,
     feePaymentMethod,
+    isBridgeReady,
     isBridgeConfigured,
     loadStablecoinData,
     success,
@@ -265,7 +307,11 @@ export const StablecoinCard: React.FC = () => {
   ]);
 
   const handlePrepareWithdrawal = useCallback(async () => {
-    if (!isBridgeConfigured || !bridgeWithdrawalRecipient.trim()) {
+    if (
+      !isBridgeReady ||
+      !isBridgeConfigured ||
+      !bridgeWithdrawalRecipient.trim()
+    ) {
       return;
     }
 
@@ -311,6 +357,7 @@ export const StablecoinCard: React.FC = () => {
     bridgeWithdrawalAmount,
     bridgeWithdrawalRecipient,
     feePaymentMethod,
+    isBridgeReady,
     isBridgeConfigured,
     loadStablecoinData,
     success,
@@ -320,6 +367,7 @@ export const StablecoinCard: React.FC = () => {
 
   const handleTransfer = useCallback(async () => {
     if (
+      !isStablecoinReady ||
       !isStablecoinConfigured ||
       !connectedAddress ||
       !stablecoinTransferTo.trim()
@@ -368,6 +416,7 @@ export const StablecoinCard: React.FC = () => {
   }, [
     connectedAddress,
     feePaymentMethod,
+    isStablecoinReady,
     isStablecoinConfigured,
     loadStablecoinData,
     stablecoinAddress,
@@ -463,6 +512,17 @@ export const StablecoinCard: React.FC = () => {
 
           {isBridgeConfigured && (
             <>
+              {contractsLoading && pendingContracts.includes('tokenBridge') && (
+                <div className={styles.loadingContainer}>
+                  <div className={styles.loadingSpinner} />
+                  <p>Registering bridge contract with PXE...</p>
+                </div>
+              )}
+              {contractsHasError && failedContracts.includes('tokenBridge') && (
+                <div className={styles.sectionUnavailable}>
+                  Failed to register the token bridge with PXE.
+                </div>
+              )}
               <div className={styles.formGroup}>
                 <Input
                   label="Claim recipient"
@@ -510,6 +570,7 @@ export const StablecoinCard: React.FC = () => {
                   !bridgeClaimAmount.trim() ||
                   !bridgeClaimSecret.trim() ||
                   !bridgeClaimLeafIndex.trim() ||
+                  !isBridgeReady ||
                   writePending ||
                   isWalletBusy
                 }
@@ -547,6 +608,7 @@ export const StablecoinCard: React.FC = () => {
                   disabled={
                     !bridgeWithdrawalRecipient.trim() ||
                     !bridgeWithdrawalAmount.trim() ||
+                    !isBridgeReady ||
                     writePending ||
                     isWalletBusy
                   }
@@ -577,6 +639,19 @@ export const StablecoinCard: React.FC = () => {
 
           {isStablecoinConfigured && (
             <>
+              {contractsLoading &&
+                pendingContracts.includes('privateStablecoin') && (
+                  <div className={styles.loadingContainer}>
+                    <div className={styles.loadingSpinner} />
+                    <p>Registering private stablecoin contract with PXE...</p>
+                  </div>
+                )}
+              {contractsHasError &&
+                failedContracts.includes('privateStablecoin') && (
+                  <div className={styles.sectionUnavailable}>
+                    Failed to register the private stablecoin with PXE.
+                  </div>
+                )}
               <div className={styles.balancePanel}>
                 <div className={styles.balanceHeader}>
                   <span className={styles.balanceTitle}>Private balance</span>
@@ -588,7 +663,11 @@ export const StablecoinCard: React.FC = () => {
                         onClick={() => {
                           void loadStablecoinData(true);
                         }}
-                        disabled={isStablecoinRefreshing || isWalletBusy}
+                        disabled={
+                          !isStablecoinReady ||
+                          isStablecoinRefreshing ||
+                          isWalletBusy
+                        }
                         isLoading={isStablecoinRefreshing}
                         aria-label="Reload private stablecoin balance"
                       >
@@ -643,6 +722,7 @@ export const StablecoinCard: React.FC = () => {
                   !connectedAddress ||
                   !stablecoinTransferTo.trim() ||
                   !stablecoinTransferAmount.trim() ||
+                  !isStablecoinReady ||
                   writePending ||
                   isWalletBusy
                 }
