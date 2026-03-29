@@ -56,3 +56,11 @@ export const queuePxeCall = async <T>(
     resolve!();
   }
 };
+
+/**
+ * Yield to the next task so IndexedDB transactions created by PXE can commit.
+ * This avoids TransactionInactiveError when chaining storage-backed PXE calls.
+ */
+export const yieldToEventLoop = (): Promise<void> => {
+  return new Promise((resolve) => setTimeout(resolve, 0));
+};

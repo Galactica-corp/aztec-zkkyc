@@ -12,7 +12,7 @@ export { cn } from './cn';
 export { formatBalance, formatFeeJuiceBalance } from './format';
 export { iconSize, type IconSize } from './iconSize';
 export { MinimalWallet } from './MinimalWallet';
-export { queuePxeCall } from './pxeQueue';
+export { queuePxeCall, yieldToEventLoop } from './pxeQueue';
 export { toTitleCase } from './string';
 export {
   waitForBrowserWalletReceipt,

@@ -8,12 +8,25 @@ import {
   isBrowserWalletConnector,
 } from '../../aztec-wallet';
 import { SimulateViewsOp } from '../../types';
+import { queuePxeCall, yieldToEventLoop } from '../../utils';
 import { getContractMethod } from './utils';
 import type {
   MethodsOf,
   ArgsOf,
   ReadContractResult,
 } from '../../types/contractTypes';
+
+const decodeSimulationValue = <TResult,>(value: unknown): TResult => {
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    'result' in value
+  ) {
+    return (value as { result: TResult }).result;
+  }
+
+  return value as TResult;
+};
 
 /**
  * Type helper to extract contract type from a contract class.
@@ -129,7 +142,12 @@ export const useReadContract = () => {
           }
 
           const contractAddress = AztecAddress.fromString(address);
-          const contract = await Contract.at(contractAddress, artifact, wallet);
+          const contract = await queuePxeCall(() =>
+            Contract.at(contractAddress, artifact, wallet)
+          );
+
+          // Let PXE's IndexedDB-backed transaction settle before the next read.
+          await yieldToEventLoop();
 
           const method = getContractMethod(contract, String(functionName));
           if (!method) {
@@ -138,14 +156,18 @@ export const useReadContract = () => {
             return { success: false, error: errorMsg };
           }
 
+          const from = account.getAddress();
+
           // Cast safe: args validated by ArgsOf<TContract, TMethod> at call site
-          const result = await method(...(args as unknown[])).simulate({
-            from: account.getAddress(),
-          });
+          const simulation = await queuePxeCall(() =>
+            method(...(args as unknown[])).simulate({
+              from,
+            })
+          );
 
           return {
             success: true,
-            data: result as TResult,
+            data: decodeSimulationValue<TResult>(simulation),
           };
         }
 
