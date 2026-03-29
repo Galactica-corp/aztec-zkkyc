@@ -1,6 +1,9 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
-import { Contract } from '@aztec/aztec.js/contracts';
+import {
+  Contract,
+  type SimulationResult,
+} from '@aztec/aztec.js/contracts';
 import { Fr } from '@aztec/aztec.js/fields';
 import { CertificateRegistryContract } from '../../../../../artifacts/CertificateRegistry';
 import { useAztecWallet, hasAppManagedPXE } from '../../aztec-wallet';
@@ -32,6 +35,11 @@ interface UserCertificatesPageResult {
 
 function fieldToString(value: bigint): string {
   return value.toString();
+}
+
+/** Aztec.js `simulate()` returns `{ result, offchainEffects, ... }`, not the decoded value alone. */
+function decodedSimulationResult<T>(sim: SimulationResult): T {
+  return sim.result as T;
 }
 
 /** True if the page contains a real certificate (count > 0 and non-zero ids). */
@@ -167,11 +175,14 @@ export const useCertificates = (
         // Keep PXE sender sync in step with the on-chain guardian whitelist so
         // incoming guardian-emitted notes can be discovered by this wallet.
         try {
-          const guardianWhitelist = (await queuePxeCall(() =>
+          const guardianWhitelistSim = await queuePxeCall(() =>
             contract.methods
               .get_whitelisted_guardians()
               .simulate({ from: owner })
-          )) as bigint[];
+          );
+          const guardianWhitelist = decodedSimulationResult<bigint[]>(
+            guardianWhitelistSim
+          );
 
           const sharedPxeInstance = SharedPXEService.getExistingInstance(
             currentConfig.nodeUrl,
@@ -197,11 +208,13 @@ export const useCertificates = (
         let pageIndex = 0;
 
         while (true) {
-          const page = (await queuePxeCall(() =>
+          const pageSim = await queuePxeCall(() =>
             contract.methods
               .get_user_certificates_and_content(owner, pageIndex)
               .simulate({ from: owner })
-          )) as UserCertificatesPageResult;
+          );
+          const page =
+            decodedSimulationResult<UserCertificatesPageResult>(pageSim);
 
           if (page.count === 0) break;
           if (!isNotEmptyPage(page)) break;
