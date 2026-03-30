@@ -4,7 +4,7 @@ import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { Contract, type ContractBase } from '@aztec/aztec.js/contracts';
 import {
   useAztecWallet,
-  isEmbeddedConnector,
+  hasAppManagedPXE,
   isBrowserWalletConnector,
 } from '../../aztec-wallet';
 import { SimulateViewsOp } from '../../types';
@@ -54,7 +54,7 @@ interface ReadContractParams<
 
 /**
  * Hook for executing read/simulate operations on Aztec contracts.
- * Handles both embedded and browser wallet flows automatically.
+ * Handles browser wallet, embedded, and external-signer (e.g. MetaMask) flows.
  *
  * @example
  * ```tsx
@@ -132,8 +132,8 @@ export const useReadContract = () => {
           };
         }
 
-        // ========== EMBEDDED WALLET FLOW ==========
-        if (isEmbeddedConnector(connector)) {
+        // ========== APP-MANAGED PXE (embedded + external signer e.g. MetaMask) ==========
+        if (hasAppManagedPXE(connector)) {
           const wallet = connector.getWallet();
           if (!wallet) {
             const errorMsg = 'Wallet instance not available';

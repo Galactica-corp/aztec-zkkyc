@@ -97,7 +97,6 @@ export const StablecoinCard: React.FC = () => {
   const { readContract } = useReadContract();
   const { writeContract, isPending: writePending } = useWriteContract();
 
-  const [bridgeClaimRecipient, setBridgeClaimRecipient] = useState('');
   const [bridgeClaimAmount, setBridgeClaimAmount] = useState('');
   const [bridgeClaimSecret, setBridgeClaimSecret] = useState('');
   const [bridgeClaimLeafIndex, setBridgeClaimLeafIndex] = useState('');
@@ -249,7 +248,8 @@ export const StablecoinCard: React.FC = () => {
   }, [failedContracts, isStablecoinConfigured]);
 
   const handleBridgeClaim = useCallback(async () => {
-    if (!isBridgeReady || !isBridgeConfigured || !bridgeClaimRecipient.trim()) {
+    const recipient = connectedAddress?.trim() ?? '';
+    if (!isBridgeReady || !isBridgeConfigured || !recipient) {
       return;
     }
 
@@ -270,7 +270,7 @@ export const StablecoinCard: React.FC = () => {
         contract: TokenBridgeContract,
         address: bridgeAddress,
         functionName: 'claim_private',
-        args: [bridgeClaimRecipient.trim(), amount, secret, leafIndex],
+        args: [recipient, amount, secret, leafIndex],
         feePaymentMethod,
       });
 
@@ -279,8 +279,7 @@ export const StablecoinCard: React.FC = () => {
         return;
       }
 
-      success('Deposit claimed', bridgeClaimRecipient.trim());
-      setBridgeClaimRecipient('');
+      success('Deposit claimed', recipient);
       setBridgeClaimAmount('');
       setBridgeClaimSecret('');
       setBridgeClaimLeafIndex('');
@@ -295,8 +294,8 @@ export const StablecoinCard: React.FC = () => {
     bridgeAddress,
     bridgeClaimAmount,
     bridgeClaimLeafIndex,
-    bridgeClaimRecipient,
     bridgeClaimSecret,
+    connectedAddress,
     feePaymentMethod,
     isBridgeReady,
     isBridgeConfigured,
@@ -523,17 +522,6 @@ export const StablecoinCard: React.FC = () => {
                   Failed to register the token bridge with PXE.
                 </div>
               )}
-              <div className={styles.formGroup}>
-                <Input
-                  label="Claim recipient"
-                  value={bridgeClaimRecipient}
-                  onChange={(event) =>
-                    setBridgeClaimRecipient(event.target.value)
-                  }
-                  placeholder="0x..."
-                  disabled={writePending || isWalletBusy}
-                />
-              </div>
               <div className={styles.row}>
                 <Input
                   label="Amount"
@@ -566,7 +554,7 @@ export const StablecoinCard: React.FC = () => {
                 variant="primary"
                 onClick={handleBridgeClaim}
                 disabled={
-                  !bridgeClaimRecipient.trim() ||
+                  !connectedAddress?.trim() ||
                   !bridgeClaimAmount.trim() ||
                   !bridgeClaimSecret.trim() ||
                   !bridgeClaimLeafIndex.trim() ||
