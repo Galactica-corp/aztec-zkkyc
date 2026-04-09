@@ -1,5 +1,6 @@
 import { jest } from "@jest/globals";
 import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
+import { ContractInitializationStatus } from "@aztec/aztec.js/wallet";
 import { createAddressStub } from "../support/fixtures.js";
 
 const jestWithEsmMocks = jest as typeof jest & {
@@ -46,7 +47,11 @@ describe("deployGuardianAccountIfNeeded", () => {
                 },
                 async getContractMetadata() {
                     metadataCalls += 1;
-                    return { isContractInitialized: metadataCalls > 1 };
+                    return {
+                        initializationStatus: metadataCalls > 1
+                            ? ContractInitializationStatus.INITIALIZED
+                            : ContractInitializationStatus.UNINITIALIZED,
+                    };
                 },
                 async registerSender() {
                     return undefined;

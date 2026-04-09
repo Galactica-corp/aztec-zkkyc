@@ -11,6 +11,7 @@ import { getSponsoredFPCInstance } from "../../../../zk_certificate/src/utils/sp
 import { setupWallet } from "../../../../zk_certificate/src/utils/setup_wallet.js";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { NO_FROM } from "@aztec/aztec.js/account";
 import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
 import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
@@ -126,7 +127,7 @@ describe("ZK Certificate and UseCaseExample", () => {
     adminAccount = await wallet.createSchnorrAccount(secret1, salt1, signingKey1);
     await (await adminAccount.getDeployMethod())
       .send({
-        from: AztecAddress.ZERO,
+        from: NO_FROM,
         fee: { paymentMethod: sponsoredPaymentMethod },
       });
 
@@ -136,7 +137,7 @@ describe("ZK Certificate and UseCaseExample", () => {
     guardianAccount = await wallet.createSchnorrAccount(secret2, salt2, signingKey2);
     await (await guardianAccount.getDeployMethod())
       .send({
-        from: AztecAddress.ZERO,
+        from: NO_FROM,
         fee: { paymentMethod: sponsoredPaymentMethod },
       });
 
@@ -146,7 +147,7 @@ describe("ZK Certificate and UseCaseExample", () => {
     userAccount = await wallet.createSchnorrAccount(secret3, salt3, signingKey3);
     await (await userAccount.getDeployMethod())
       .send({
-        from: AztecAddress.ZERO,
+        from: NO_FROM,
         fee: { paymentMethod: sponsoredPaymentMethod },
       });
     await wallet.registerSender(adminAccount.address, "admin");

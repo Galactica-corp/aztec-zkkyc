@@ -1,11 +1,11 @@
 export * from './types';
 
-import devnetDeployment from './devnet.json';
 import sandboxDeployment from './sandbox.json';
+import testnetDeployment from './testnet.json';
 import {
   DeploymentConfig,
   DEFAULT_SANDBOX_DEPLOYMENT,
-  DEFAULT_DEVNET_DEPLOYMENT,
+  DEFAULT_TESTNET_DEPLOYMENT,
 } from './types';
 
 export const getSandboxDeployment = (): DeploymentConfig => {
@@ -16,10 +16,10 @@ export const getSandboxDeployment = (): DeploymentConfig => {
   }
 };
 
-export const getDevnetDeployment = (): DeploymentConfig => {
+export const getTestnetDeployment = (): DeploymentConfig => {
   try {
-    return devnetDeployment as DeploymentConfig;
+    return testnetDeployment as DeploymentConfig;
   } catch {
-    return DEFAULT_DEVNET_DEPLOYMENT;
+    return DEFAULT_TESTNET_DEPLOYMENT;
   }
 };

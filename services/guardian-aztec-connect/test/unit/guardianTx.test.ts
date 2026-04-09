@@ -9,7 +9,7 @@ describe("guardian tx helpers", () => {
         expect(buildSponsoredSendOptions(AztecAddress.ZERO, { kind: "sponsored" }, network)).toEqual({
             from: AztecAddress.ZERO,
             fee: { paymentMethod: { kind: "sponsored" } },
-            wait: { timeout: network.txTimeoutMs, returnReceipt: true },
+            wait: { timeout: network.txTimeoutMs },
         });
     });
 

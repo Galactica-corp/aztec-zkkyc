@@ -10,7 +10,7 @@ import type { ContractArtifact } from '@aztec/aztec.js/abi';
  */
 export type NetworkArtifactOverrides = Record<string, ContractArtifact>;
 
-export const DEVNET_ARTIFACTS: NetworkArtifactOverrides = {
+export const TESTNET_ARTIFACTS: NetworkArtifactOverrides = {
 };
 
 export const SANDBOX_ARTIFACTS: NetworkArtifactOverrides = {
@@ -20,8 +20,8 @@ export const getNetworkArtifacts = (
   networkName: string
 ): NetworkArtifactOverrides | undefined => {
   switch (networkName) {
-    case 'devnet':
-      return DEVNET_ARTIFACTS;
+    case 'testnet':
+      return TESTNET_ARTIFACTS;
     case 'sandbox':
       return SANDBOX_ARTIFACTS;
     default:

@@ -14,7 +14,7 @@ export async function setupWallet(options: SetupWalletOptions = {}): Promise<Emb
   const node = createAztecNodeClient(nodeUrl);
   const wallet = await EmbeddedWallet.create(node, {
     ephemeral: options.ephemeral ?? false,
-    pxeConfig: { proverEnabled: configManager.isDevnet() },
+    pxeConfig: { proverEnabled: configManager.isAztecPublicTestnet() },
   });
   if (getEnv() === 'local-network' && options.registerInitialAccounts !== false) {
     await registerInitialLocalNetworkAccountsInWallet(wallet);

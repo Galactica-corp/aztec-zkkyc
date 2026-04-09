@@ -31,12 +31,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const DEPLOYMENT_JSON_PATHS = {
   sandbox: path.join(__dirname, '../src/config/deployments/sandbox.json'),
-  devnet: path.join(__dirname, '../src/config/deployments/devnet.json'),
+  testnet: path.join(__dirname, '../src/config/deployments/testnet.json'),
 } as const;
 
 export const NETWORK_NODE_URLS = {
   sandbox: 'http://localhost:8080',
-  devnet: 'https://v4-devnet-2.aztec-labs.com/',
+  testnet: 'https://rpc.testnet.aztec-labs.com/',
 } as const;
 
 export type DeploymentNetwork = keyof typeof DEPLOYMENT_JSON_PATHS;
@@ -64,7 +64,7 @@ function main(): void {
   const inputPath = process.argv[2];
   const networkArg = process.argv[3];
   const argNetwork =
-    networkArg === 'devnet' || networkArg === 'sandbox'
+    networkArg === 'testnet' || networkArg === 'sandbox'
       ? networkArg
       : undefined;
   if (!inputPath) {
@@ -178,7 +178,7 @@ function main(): void {
       dripperContract: { address: '0x00', salt: '0x00' },
       tokenContract: { address: '0x00', salt: '0x00' },
       deployer,
-      proverEnabled: network === 'devnet',
+      proverEnabled: network === 'testnet',
       deployedAt: new Date().toISOString(),
     };
   }

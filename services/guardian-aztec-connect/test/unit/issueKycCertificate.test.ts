@@ -48,7 +48,7 @@ describe("issueKycCertificateFromDependencies", () => {
         expect(sendOptions).toEqual([{
             from: guardianAddress,
             fee: { paymentMethod: { kind: "sponsored" } },
-            wait: { timeout: network.txTimeoutMs, returnReceipt: true },
+            wait: { timeout: network.txTimeoutMs },
         }]);
         expect(result.guardianAddress).toBe(guardianAddress);
         expect(result.userAddress).toBe(userAddress);

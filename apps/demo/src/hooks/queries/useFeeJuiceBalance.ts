@@ -49,7 +49,7 @@ export const useFeeJuiceBalance = ({
 
   const query = useQuery({
     queryKey: queryKeys.feeJuice.balance(
-      networkName ?? 'devnet',
+      networkName ?? 'testnet',
       feePayerAddressStr
     ),
     queryFn: async (): Promise<bigint> => {

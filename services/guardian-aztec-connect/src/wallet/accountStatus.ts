@@ -1,4 +1,5 @@
 import type { AccountManager } from "@aztec/aztec.js/wallet";
+import { ContractInitializationStatus } from "@aztec/aztec.js/wallet";
 import {
     createCertificateRegistryClientFromRuntime,
     getGuardianWhitelistStatus,
@@ -14,7 +15,7 @@ import type {
 import { loadGuardianRuntime } from "../runtime/guardianRuntime.js";
 
 interface ContractMetadata {
-    isContractInitialized: boolean;
+    initializationStatus: ContractInitializationStatus;
 }
 
 interface RegisteredAccount {
@@ -73,7 +74,7 @@ export async function getGuardianAccountStatusFromDependencies(
         address: dependencies.account.address,
         network: dependencies.network,
         isRegisteredInWallet,
-        isContractInitialized: metadata.isContractInitialized,
+        isContractInitialized: metadata.initializationStatus === ContractInitializationStatus.INITIALIZED,
         ...whitelistStatus,
     };
 }

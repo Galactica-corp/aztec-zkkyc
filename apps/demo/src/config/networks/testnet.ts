@@ -1,6 +1,6 @@
 import { AztecAddress } from '@aztec/stdlib/aztec-address';
 import {
-  getDevnetDeployment,
+  getTestnetDeployment,
   PLACEHOLDER_ADDRESS,
   PLACEHOLDER_ETH_ADDRESS,
   PLACEHOLDER_SALT,
@@ -8,7 +8,7 @@ import {
 import { NetworkConfig } from './types';
 
 const ZERO_ADDRESS = AztecAddress.ZERO.toString();
-const deployment = getDevnetDeployment();
+const deployment = getTestnetDeployment();
 const certRegistry = deployment.certificateRegistryContract;
 const ageCheckRequirement = deployment.ageCheckRequirementContract;
 const sanctionListRequirement = deployment.sanctionListRequirementContract;
@@ -19,15 +19,14 @@ const tokenBridge = deployment.tokenBridgeContract;
 const privateStablecoin = deployment.privateStablecoinContract;
 
 /**
- * Devnet configuration for public development network.
+ * Aztec public testnet (Sepolia-backed) — see https://docs.aztec.network/networks
  *
- * Contract addresses are hardcoded for the public devnet.
- * Certificate Registry and Use Case Example use placeholders unless deployed to devnet.
+ * Contract addresses come from `deployments/testnet.json` (updated by root deploy scripts).
  */
-export const DEVNET_CONFIG: NetworkConfig = {
-  name: 'devnet',
-  displayName: 'Devnet',
-  description: 'Public development network for testing with real tokens',
+export const TESTNET_CONFIG: NetworkConfig = {
+  name: 'testnet',
+  displayName: 'Testnet',
+  description: 'Public Aztec testnet for production-like testing',
   nodeUrl: deployment.nodeUrl,
   dripperContractAddress: deployment.dripperContract.address,
   tokenContractAddress: deployment.tokenContract.address,

@@ -50,7 +50,7 @@ This package currently implements the wallet setup slice:
 - list revokable certificate copies and their revocation IDs for the guardian account
 - revoke a certificate by revocation ID
 
-`AZTEC_ENV` follows the repository-wide `config/<env>.json` convention. Use `local-network` by default or set `AZTEC_ENV=devnet`.
+`AZTEC_ENV` follows the repository-wide `config/<env>.json` convention. Use `local-network` by default or set `AZTEC_ENV=testnet`.
 
 Create a local `.env` file from `.env.example` before running the SDK or CLI. Set `CERTIFICATE_REGISTRY_ADDRESS` to enable whitelist checks against the certificate registry. For contracts deployed outside the current PXE, also provide `CERTIFICATE_REGISTRY_DEPLOYMENT_SALT`, `CERTIFICATE_REGISTRY_ADMIN_ADDRESS`, and optionally `CERTIFICATE_REGISTRY_DEPLOYER_ADDRESS` so the client can reconstruct and register the contract instance before reading the whitelist. If the registry still cannot be reached, the account status call succeeds and reports the whitelist status as unavailable.
 
@@ -62,7 +62,7 @@ yarn cli -- account status
 yarn cli -- account deploy
 
 # Select a network explicitly
-yarn cli -- account status --network devnet
+yarn cli -- account status --network testnet
 
 # Issue a ZK-KYC certificate from a normalized JSON file
 yarn cli -- kyc issue --input ./examples/kyc.json

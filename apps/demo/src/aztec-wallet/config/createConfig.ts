@@ -152,7 +152,7 @@ function createConnectorsFromWalletGroups(walletGroups: {
  * @example Simple config (recommended)
  * ```ts
  * const config = createAztecWalletConfig({
- *   networks: [{ name: 'devnet', nodeUrl: '...' }],
+ *   networks: [{ name: 'testnet', nodeUrl: '...' }],
  *   walletGroups: {
  *     embedded: true,
  *     evmWallets: ['metamask', 'rabby'],
@@ -164,7 +164,7 @@ function createConnectorsFromWalletGroups(walletGroups: {
  * @example Advanced config (custom wallets)
  * ```ts
  * const config = createAztecWalletConfig({
- *   networks: [{ name: 'devnet', nodeUrl: '...' }],
+ *   networks: [{ name: 'testnet', nodeUrl: '...' }],
  *   walletGroups: {
  *     embedded: { label: 'Create Account' },
  *     evmWallets: {

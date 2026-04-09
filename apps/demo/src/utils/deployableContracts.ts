@@ -125,7 +125,7 @@ export const buildDeploymentLabel = (
     ? formValues[contract.labelField]?.trim()
     : null;
 
-  // Extract base contract name (e.g., "Token Contract (Devnet)" -> "Token")
+  // Extract base contract name (e.g., "Token Contract (Testnet)" -> "Token")
   const baseLabel = contract.label.split(' ')[0] ?? contract.label;
 
   if (customValue) {

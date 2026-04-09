@@ -1,4 +1,5 @@
 import type { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { ContractInitializationStatus } from "@aztec/aztec.js/wallet";
 import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
 import { getGuardianAccountStatusFromDependencies } from "../../src/wallet/accountStatus.js";
 import { createAddressStub, createRegisteredAddress } from "../support/fixtures.js";
@@ -16,7 +17,7 @@ describe("getGuardianAccountStatusFromDependencies", () => {
                     return [createRegisteredAddress(address)];
                 },
                 async getContractMetadata() {
-                    return { isContractInitialized: true };
+                    return { initializationStatus: ContractInitializationStatus.INITIALIZED };
                 },
             },
             async getWhitelistStatus() {
@@ -43,7 +44,7 @@ describe("getGuardianAccountStatusFromDependencies", () => {
                     return [createRegisteredAddress(address)];
                 },
                 async getContractMetadata() {
-                    return { isContractInitialized: false };
+                    return { initializationStatus: ContractInitializationStatus.UNINITIALIZED };
                 },
             },
             async getWhitelistStatus() {
@@ -66,7 +67,7 @@ describe("getGuardianAccountStatusFromDependencies", () => {
                     return [];
                 },
                 async getContractMetadata() {
-                    return { isContractInitialized: false };
+                    return { initializationStatus: ContractInitializationStatus.UNINITIALIZED };
                 },
             },
             async getWhitelistStatus() {

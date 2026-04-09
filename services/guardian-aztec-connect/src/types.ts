@@ -2,7 +2,7 @@ import type { AztecAddress } from "@aztec/stdlib/aztec-address";
 import type { AccountManager } from "@aztec/aztec.js/wallet";
 import type { EmbeddedWallet } from "@aztec/wallets/embedded";
 
-export type GuardianEnvironment = "local" | "testnet" | "devnet" | "mainnet";
+export type GuardianEnvironment = "local" | "testnet" | "mainnet";
 
 export interface GuardianNetworkConfig {
     name: string;

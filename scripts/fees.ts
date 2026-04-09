@@ -22,6 +22,7 @@ import { SponsoredFPCContract } from '@aztec/noir-contracts.js/SponsoredFPC';
 import { getCanonicalFeeJuice } from '@aztec/protocol-contracts/fee-juice';
 import { createAztecNodeClient } from '@aztec/aztec.js/node';
 import { AztecAddress } from '@aztec/stdlib/aztec-address';
+import { NO_FROM } from "@aztec/aztec.js/account";
 import { getAztecNodeUrl } from '../config/config.js';
 import { GasSettings } from '@aztec/stdlib/gas';
 
@@ -82,7 +83,7 @@ async function main() {
     // Claim Fee Juice & Pay Fees yourself
 
     const claimAndPay = new FeeJuicePaymentMethodWithClaim(account2.address, claim)
-    await (await account2.getDeployMethod()).send({ from: AztecAddress.ZERO, fee: { paymentMethod: claimAndPay } }).wait()
+    await (await account2.getDeployMethod()).send({ from: NO_FROM, fee: { paymentMethod: claimAndPay } }).wait()
     logger.info(`New account at ${account2.address} deployed using claimed funds for fees.`)
 
     // Pay fees yourself

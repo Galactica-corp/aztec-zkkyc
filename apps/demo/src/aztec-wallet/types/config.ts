@@ -14,7 +14,7 @@ export type IconType =
  * Network preset for AztecWallet configuration
  */
 export interface NetworkPreset {
-  /** Network identifier (e.g., 'devnet', 'sandbox') */
+  /** Network identifier (e.g., 'testnet', 'sandbox') */
   name: AztecNetwork;
   /** Display name for UI */
   displayName?: string;
@@ -170,7 +170,7 @@ export interface WalletGroupsConfig {
  * @example Simple config (recommended)
  * ```ts
  * const config = createAztecWalletConfig({
- *   networks: [{ name: 'devnet', nodeUrl: 'https://v4-devnet-2.aztec-labs.com/' }],
+ *   networks: [{ name: 'testnet', nodeUrl: 'https://rpc.testnet.aztec-labs.com/' }],
  *   walletGroups: {
  *     embedded: true,
  *     evmWallets: ['metamask', 'rabby'],

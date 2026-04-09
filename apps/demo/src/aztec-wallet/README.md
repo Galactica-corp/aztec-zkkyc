@@ -12,7 +12,7 @@ import {
 } from './aztec-wallet';
 
 const config = createAztecWalletConfig({
-  networks: [{ name: 'devnet', nodeUrl: 'https://v4-devnet-2.aztec-labs.com/' }],
+  networks: [{ name: 'testnet', nodeUrl: 'https://rpc.testnet.aztec-labs.com/' }],
   walletGroups: {
     embedded: true,
     evmWallets: ['metamask', 'rabby'],
@@ -36,7 +36,7 @@ function App() {
 createAztecWalletConfig({
   // Required: Available networks
   networks: [
-    { name: 'devnet', nodeUrl: 'https://v4-devnet-2.aztec-labs.com/' },
+    { name: 'testnet', nodeUrl: 'https://rpc.testnet.aztec-labs.com/' },
     { name: 'sandbox', nodeUrl: 'http://localhost:8080' },
   ],
 
@@ -48,7 +48,7 @@ createAztecWalletConfig({
   },
 
   // Optional
-  defaultNetwork: 'devnet', // First network if not specified
+  defaultNetwork: 'testnet', // First network if not specified
   showNetworkPicker: 'full' | 'compact', // Show network picker in ConnectButton
   modal: { title: '...', subtitle: '...' },
   onConnect: (account) => {},

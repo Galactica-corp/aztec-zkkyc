@@ -1,14 +1,14 @@
+import { NO_FROM } from "@aztec/aztec.js/account";
 import type { AztecAddress } from "@aztec/stdlib/aztec-address";
 import type { GuardianNetworkConfig } from "../types.js";
 
 export interface GuardianSendOptions {
-    from: AztecAddress;
+    from: AztecAddress | typeof NO_FROM;
     fee: {
         paymentMethod: unknown;
     };
     wait: {
         timeout: number;
-        returnReceipt: true;
     };
 }
 
@@ -24,7 +24,7 @@ interface ReceiptLike {
  * Builds the common sponsored send options used by guardian write operations.
  */
 export function buildSponsoredSendOptions(
-    from: AztecAddress,
+    from: AztecAddress | typeof NO_FROM,
     paymentMethod: unknown,
     network: GuardianNetworkConfig
 ): GuardianSendOptions {
@@ -33,7 +33,6 @@ export function buildSponsoredSendOptions(
         fee: { paymentMethod },
         wait: {
             timeout: network.txTimeoutMs,
-            returnReceipt: true,
         },
     };
 }

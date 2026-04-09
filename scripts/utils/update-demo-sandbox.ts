@@ -9,7 +9,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { spawnSync } from "child_process";
 import { updateGuardianAztecConnectEnv } from "./update-guardian-aztec-connect-env.js";
-type DeploymentNetwork = "sandbox" | "devnet";
+type DeploymentNetwork = "sandbox" | "testnet";
 
 export interface DeploymentPayload {
     network?: DeploymentNetwork;
@@ -92,7 +92,7 @@ export function updateDemoSandboxDeployment(
 
 /**
  * General helper that updates both guardian-aztec-connect env variables and
- * the demo app sandbox/devnet deployment configuration in a single call.
+ * the demo app sandbox/testnet deployment configuration in a single call.
  */
 export async function updateDeploymentTargets(
     params: UpdateDeploymentTargetsParams

@@ -15,7 +15,7 @@
  * } from './aztec-wallet';
  *
  * const config = createAztecWalletConfig({
- *   networks: [{ name: 'devnet', nodeUrl: 'https://v4-devnet-2.aztec-labs.com/' }],
+ *   networks: [{ name: 'testnet', nodeUrl: 'https://rpc.testnet.aztec-labs.com/' }],
  *   showNetworkPicker: 'full',
  *   walletGroups: {
  *     embedded: true,
@@ -83,7 +83,7 @@ export {
  * @example
  * ```ts
  * const config = createAztecWalletConfig({
- *   networks: [{ name: 'devnet', nodeUrl: 'https://v4-devnet-2.aztec-labs.com/' }],
+ *   networks: [{ name: 'testnet', nodeUrl: 'https://rpc.testnet.aztec-labs.com/' }],
  *   walletGroups: {
  *     embedded: true,
  *     evmWallets: ['metamask'],

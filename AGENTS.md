@@ -14,7 +14,7 @@ This is an Aztec smart contract project. Always use the `aztec` CLI wrapper inst
 - **Other nargo commands** like `nargo fmt` and `nargo doc` are fine to use directly.
 
 ## Setup
-- Use **Node.js v24** with Yarn.
+- Use **Node.js v24** with Yarn. Do not use `npm` or `npx` directly.
 - Install dependencies with `yarn install`.
 - Start the Aztec local network using `aztec start --local-network` before running tests or scripts.
 

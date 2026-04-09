@@ -19,7 +19,7 @@ export interface TimeoutConfig {
 
 export interface EnvironmentConfig {
   name: string;
-  environment: 'local' | 'testnet' | 'devnet' | 'mainnet';
+  environment: 'local' | 'testnet' | 'mainnet';
   network: NetworkConfig;
   settings: {
     skipLocalNetwork: boolean;
@@ -65,8 +65,9 @@ export class ConfigManager {
     return this.config.network;
   }
 
-  public isDevnet(): boolean {
-    return this.config.environment === 'devnet';
+  /** True when using the public Aztec testnet (`config/testnet.json`, `AZTEC_ENV=testnet`). */
+  public isAztecPublicTestnet(): boolean {
+    return this.config.environment === 'testnet';
   }
 
   public isLocalNetwork(): boolean {
@@ -91,7 +92,7 @@ export class ConfigManager {
     }
 
     // Otherwise, use defaults based on environment
-    if (this.isDevnet()) {
+    if (this.isAztecPublicTestnet()) {
       return {
         deployTimeout: 1200000, // 20 minutes
         txTimeout: 180000,     // 3 minutes

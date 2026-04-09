@@ -24,10 +24,6 @@ export interface NetworkPresetDefaults {
 // =============================================================================
 
 export const NETWORK_PRESETS: Record<string, NetworkPresetDefaults> = {
-  devnet: {
-    displayName: 'Devnet',
-    icon: Globe,
-  },
   sandbox: {
     displayName: 'Sandbox',
     icon: FlaskConical,

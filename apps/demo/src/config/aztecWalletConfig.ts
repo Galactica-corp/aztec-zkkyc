@@ -21,10 +21,10 @@ import { NETWORK_URLS } from './networks';
 export const aztecWalletConfig = createAztecWalletConfig({
   // Networks
   networks: [
-    { name: 'devnet', displayName: 'Devnet', nodeUrl: NETWORK_URLS.devnet },
+    { name: 'testnet', displayName: 'Testnet', nodeUrl: NETWORK_URLS.testnet },
     { name: 'sandbox', displayName: 'Sandbox', nodeUrl: NETWORK_URLS.sandbox },
   ],
-  defaultNetwork: 'devnet',
+  defaultNetwork: 'testnet',
 
   // Wallet groups - the single source of truth for which wallets to enable
   walletGroups: {

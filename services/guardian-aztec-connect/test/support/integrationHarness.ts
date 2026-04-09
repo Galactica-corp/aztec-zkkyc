@@ -1,6 +1,7 @@
 import { beforeEach, afterEach } from "@jest/globals";
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
+import { NO_FROM } from "@aztec/aztec.js/account";
 import type { AccountManager } from "@aztec/aztec.js/wallet";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
@@ -71,9 +72,9 @@ export async function deploySchnorrAccount(
     paymentMethod: SponsoredFeePaymentMethod
 ): Promise<void> {
     await (await account.getDeployMethod()).send({
-        from: AztecAddress.ZERO,
+        from: NO_FROM,
         fee: { paymentMethod },
-        wait: { timeout: 60000, returnReceipt: true },
+        wait: { timeout: 60000 },
     });
 }
 
@@ -101,7 +102,7 @@ export async function createCertificateRegistryIntegrationHarness(): Promise<Cer
     await certificateDeployMethod.send({
         from: adminAccount.address,
         fee: { paymentMethod },
-        wait: { timeout: 120000, returnReceipt: true },
+        wait: { timeout: 120000 },
     });
     const certificateRegistryInstance = await certificateDeployMethod.getInstance();
     if (!certificateRegistryInstance) {
@@ -112,7 +113,7 @@ export async function createCertificateRegistryIntegrationHarness(): Promise<Cer
     await certificateRegistry.methods.whitelist_guardian(guardianAccount.address).send({
         from: adminAccount.address,
         fee: { paymentMethod },
-        wait: { timeout: 60000, returnReceipt: true },
+        wait: { timeout: 60000 },
     });
 
     return {

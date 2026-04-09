@@ -178,7 +178,7 @@ class SharedPXEServiceClass {
 
     const config = getPXEConfig();
     config.l1Contracts = l1Contracts;
-    // Use network-specific prover mode. Devnet requires real proofs, sandbox doesn't.
+    // Use network-specific prover mode. Public testnet requires real proofs, sandbox doesn't.
     const networkConfig = this.getNetworkConfig(networkName);
     config.proverEnabled = networkConfig?.proverEnabled ?? false;
 

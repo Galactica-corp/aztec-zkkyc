@@ -39,10 +39,10 @@ describe("resolveNetworkConfig", () => {
     it("uses the explicit aztecEnv override", () => {
         process.env.AZTEC_ENV = "local-network";
 
-        const config = resolveNetworkConfig({ aztecEnv: "devnet" });
+        const config = resolveNetworkConfig({ aztecEnv: "testnet" });
 
-        expect(config.name).toBe("devnet");
-        expect(config.environment).toBe("devnet");
+        expect(config.name).toBe("testnet");
+        expect(config.environment).toBe("testnet");
         expectHttpUrl(config.nodeUrl);
         expectHttpUrl(config.l1RpcUrl);
         expect(Number.isInteger(config.l1ChainId)).toBe(true);
@@ -51,7 +51,7 @@ describe("resolveNetworkConfig", () => {
         expect(config.deployTimeoutMs).toBeGreaterThan(0);
         expect(config.waitTimeoutMs).toBeGreaterThan(0);
         expect(config.deployTimeoutMs).toBeGreaterThanOrEqual(config.txTimeoutMs);
-        expect(config.configPath.endsWith("config/devnet.json")).toBe(true);
+        expect(config.configPath.endsWith("config/testnet.json")).toBe(true);
     });
 
     it("throws a helpful error for an unknown config", () => {

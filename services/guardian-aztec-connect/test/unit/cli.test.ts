@@ -12,13 +12,13 @@ describe("guardian CLI parsing", () => {
             "--input",
             "./kyc.json",
             "--network",
-            "devnet",
+            "testnet",
             "--json",
         ])).toEqual({
             commandKey: "kyc issue",
             json: true,
             options: {
-                aztecEnv: "devnet",
+                aztecEnv: "testnet",
                 inputPath: "./kyc.json",
             },
         });
@@ -29,13 +29,13 @@ describe("guardian CLI parsing", () => {
             "kyc",
             "list-revokable",
             "--network",
-            "devnet",
+            "testnet",
             "--json",
         ])).toEqual({
             commandKey: "kyc list-revokable",
             json: true,
             options: {
-                aztecEnv: "devnet",
+                aztecEnv: "testnet",
             },
         });
     });
@@ -47,13 +47,13 @@ describe("guardian CLI parsing", () => {
             "--revocation-id",
             "222",
             "--network",
-            "devnet",
+            "testnet",
             "--json",
         ])).toEqual({
             commandKey: "kyc revoke",
             json: true,
             options: {
-                aztecEnv: "devnet",
+                aztecEnv: "testnet",
                 revocationId: "222",
             },
         });

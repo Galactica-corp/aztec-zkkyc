@@ -263,7 +263,7 @@ This boilerplate uses **aztec-wallet** (`src/aztec-wallet/`) - a modular wallet 
 import { AztecWalletProvider, createAztecWalletConfig, ConnectButton } from './aztec-wallet';
 
 const config = createAztecWalletConfig({
-  networks: [{ name: 'devnet', nodeUrl: 'https://v4-devnet-2.aztec-labs.com/' }],
+  networks: [{ name: 'testnet', nodeUrl: 'https://rpc.testnet.aztec-labs.com/' }],
   walletGroups: {
     embedded: true,
     evmWallets: ['metamask', 'rabby'],
@@ -414,13 +414,13 @@ const balance = await token.methods.balance_of_public(address).simulate();
 **Available Networks** (`src/config/networks/`):
 
 - **Sandbox** (`http://localhost:8080`): Local development with Aztec node
-- **Devnet** (`https://v4-devnet-2.aztec-labs.com/`): Public testnet (default)
+- **Testnet** (`https://rpc.testnet.aztec-labs.com/`): Public Aztec testnet (default)
 
 **Network Config Structure**:
 
 ```typescript
 {
-  name: 'sandbox' | 'devnet',
+  name: 'sandbox' | 'testnet',
   displayName: string,
   nodeUrl: string,
   proverEnabled: boolean,
@@ -575,7 +575,7 @@ src/
 │   ├── types/           # Configuration types (public)
 │   └── index.ts         # Public exports only
 ├── artifacts/           # Generated contract TypeScript bindings
-│   ├── devnet/          # Devnet-specific artifacts
+│   ├── devnet/          # Optional per-network artifact pins
 │   └── sandbox/         # Sandbox-specific artifacts
 ├── components/
 │   ├── ui/              # Primitive UI components (Button, Input, etc.)

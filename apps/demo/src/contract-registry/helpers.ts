@@ -49,7 +49,7 @@ export const getDeployerAddress = (config: NetworkConfig): AztecAddress => {
  */
 export const getTokenConstructorArgs = (config: NetworkConfig) => {
   const minterAddress = AztecAddress.fromString(config.dripperContractAddress);
-  if (config.name === 'devnet') {
+  if (config.name === 'testnet') {
     return ['WETH', 'WETH', 18, minterAddress, AztecAddress.ZERO] as const;
   }
   return ['Yield Token', 'YT', 18, minterAddress, AztecAddress.ZERO] as const;
@@ -73,8 +73,8 @@ export type ArtifactOverrides = Record<string, ContractArtifact>;
  * @example
  * ```typescript
  * const contracts = getContractsForConfig(contractsConfig, {
- *   dripper: DRIPPER_DEVNET_ARTIFACT,
- *   token: TOKEN_DEVNET_ARTIFACT,
+ *   dripper: DRIPPER_TESTNET_ARTIFACT,
+ *   token: TOKEN_TESTNET_ARTIFACT,
  * });
  * ```
  */

@@ -4,6 +4,8 @@ import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/Sponsored
 import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { NO_FROM } from "@aztec/aztec.js/account";
+import { ContractInitializationStatus } from "@aztec/aztec.js/wallet";
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { createAccountFromEnv } from "../crates/zk_certificate/src/utils/create_account_from_env.js";
@@ -38,7 +40,7 @@ export async function deploySchnorrAccountFromEnv(wallet?: EmbeddedWallet): Prom
   logger.info(`📍 Account address will be: ${account.address}`);
 
   const metadata = await activeWallet.getContractMetadata(account.address);
-  if (metadata.isContractInitialized) {
+  if (metadata.initializationStatus === ContractInitializationStatus.INITIALIZED) {
     logger.info('✅ Account contract is already deployed on chain; skipping deployment.');
     return account;
   }
@@ -56,11 +58,11 @@ export async function deploySchnorrAccountFromEnv(wallet?: EmbeddedWallet): Prom
   logger.info('✅ Sponsored fee payment method configured for account deployment');
 
   try {
-    // Deploy account (use config timeouts; devnet first tx can take longer for proving keys)
+    // Deploy account (use config timeouts; public testnet first tx can take longer for proving keys)
     const deployTx = await deployMethod.send({
-      from: AztecAddress.ZERO,
+      from: NO_FROM,
       fee: { paymentMethod: sponsoredPaymentMethod },
-      wait: { timeout: getTimeouts().txTimeout, returnReceipt: true },
+      wait: { timeout: getTimeouts().txTimeout },
     });
 
     logger.info(`✅ Account deployment transaction successful!`);
@@ -77,7 +79,7 @@ export async function deploySchnorrAccountFromEnv(wallet?: EmbeddedWallet): Prom
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes("Timeout awaiting isMined")) {
       logger.info(
-        "Transaction sent but still being mined (normal on devnet). Check status on https://devnet.aztecscan.xyz/"
+        "Transaction sent but still being mined (normal on testnet). Check status on https://testnet.aztecscan.xyz/"
       );
       logger.info(`📋 Account address: ${account.address}`);
     } else {

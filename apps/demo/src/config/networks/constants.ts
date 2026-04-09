@@ -8,7 +8,7 @@
  */
 export const NETWORK_URLS = {
   sandbox: 'http://localhost:8080',
-  devnet: 'https://v4-devnet-2.aztec-labs.com/',
+  testnet: 'https://rpc.testnet.aztec-labs.com/',
 } as const;
 
 /**
@@ -19,7 +19,7 @@ export type NetworkType = keyof typeof NETWORK_URLS;
 /**
  * Supported Aztec network identifiers
  */
-export type AztecNetwork = 'sandbox' | 'devnet';
+export type AztecNetwork = 'sandbox' | 'testnet';
 
 /**
  * Aztec chain ID type - follows CAIP-2 format
@@ -28,11 +28,12 @@ export type AztecChainId = `aztec:${number}`;
 
 /**
  * Chain IDs for each network (CAIP-2 format)
- * Note: devnet chain ID must match browser wallet configuration
+ * Note: testnet rollup version / chain ID must match browser wallet configuration
+ * (see https://docs.aztec.network/networks — Rollup Version for Testnet).
  */
 export const CHAIN_IDS: Record<AztecNetwork, AztecChainId> = {
   sandbox: 'aztec:0',
-  devnet: 'aztec:1654394782',
+  testnet: 'aztec:4127419662',
 };
 
 /**
@@ -40,7 +41,7 @@ export const CHAIN_IDS: Record<AztecNetwork, AztecChainId> = {
  */
 export const NETWORK_NAMES: Record<AztecNetwork, string> = {
   sandbox: 'Sandbox',
-  devnet: 'Devnet',
+  testnet: 'Testnet',
 };
 
 /**
@@ -48,7 +49,7 @@ export const NETWORK_NAMES: Record<AztecNetwork, string> = {
  */
 export const CHAIN_ID_TO_NETWORK: Record<string, AztecNetwork> = {
   '0': 'sandbox',
-  '1654394782': 'devnet',
+  '4127419662': 'testnet',
 };
 
 /**
@@ -67,5 +68,5 @@ export const getNetworkUrl = (network: NetworkType): string => {
  * Get the chain ID for a network name
  */
 export const getChainId = (network: string): AztecChainId => {
-  return CHAIN_IDS[network as AztecNetwork] ?? CHAIN_IDS.devnet;
+  return CHAIN_IDS[network as AztecNetwork] ?? CHAIN_IDS.testnet;
 };

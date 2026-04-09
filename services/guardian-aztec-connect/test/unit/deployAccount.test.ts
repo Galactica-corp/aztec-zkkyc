@@ -1,6 +1,7 @@
 import type { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
 import { AztecAddress as AztecAddressValue, deployGuardianAccountIfNeededFromDependencies, type DeployMethodLike } from "../../src/wallet/deployAccount.js";
+import { ContractInitializationStatus } from "@aztec/aztec.js/wallet";
 import { createAddressStub, createRegisteredAddress } from "../support/fixtures.js";
 
 describe("deployGuardianAccountIfNeededFromDependencies", () => {
@@ -27,7 +28,11 @@ describe("deployGuardianAccountIfNeededFromDependencies", () => {
             wallet: {
                 async getContractMetadata() {
                     metadataCalls += 1;
-                    return { isContractInitialized: metadataCalls > 1 };
+                    return {
+                        initializationStatus: metadataCalls > 1
+                            ? ContractInitializationStatus.INITIALIZED
+                            : ContractInitializationStatus.UNINITIALIZED,
+                    };
                 },
                 async registerSender(registeredAddress: unknown, alias: string) {
                     senderRegistrations.push({ address: registeredAddress, alias });
@@ -42,7 +47,7 @@ describe("deployGuardianAccountIfNeededFromDependencies", () => {
         expect(sentOptions).toEqual([{
             from: AztecAddressValue.ZERO,
             fee: { paymentMethod: { kind: "sponsored" } },
-            wait: { timeout: 60000, returnReceipt: true },
+            wait: { timeout: 60000 },
         }]);
         expect(senderRegistrations).toEqual([{ address, alias: "guardian" }]);
         expect(result.deployed).toBe(true);
@@ -69,7 +74,7 @@ describe("deployGuardianAccountIfNeededFromDependencies", () => {
             },
             wallet: {
                 async getContractMetadata() {
-                    return { isContractInitialized: true };
+                    return { initializationStatus: ContractInitializationStatus.INITIALIZED };
                 },
                 async getAccounts() {
                     return [createRegisteredAddress(address)];
@@ -111,7 +116,11 @@ describe("deployGuardianAccountIfNeededFromDependencies", () => {
             },
             wallet: {
                 async getContractMetadata() {
-                    return { isContractInitialized: !firstCall };
+                    return {
+                        initializationStatus: !firstCall
+                            ? ContractInitializationStatus.INITIALIZED
+                            : ContractInitializationStatus.UNINITIALIZED,
+                    };
                 },
                 async registerSender() {
                     return undefined;
@@ -126,12 +135,12 @@ describe("deployGuardianAccountIfNeededFromDependencies", () => {
             {
                 from: AztecAddressValue.ZERO,
                 fee: { paymentMethod: { kind: "sponsored" } },
-                wait: { timeout: 60000, returnReceipt: true },
+                wait: { timeout: 60000 },
             },
             {
                 from: address,
                 fee: { paymentMethod: { kind: "sponsored" } },
-                wait: { timeout: 60000, returnReceipt: true },
+                wait: { timeout: 60000 },
             },
         ]);
         expect(result.deployed).toBe(true);

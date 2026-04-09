@@ -4,6 +4,7 @@ import {
   type AccountWithSecretKey,
   type Account,
   SignerlessAccount,
+  NO_FROM,
 } from '@aztec/aztec.js/account';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import {
@@ -17,6 +18,7 @@ import { Fr } from '@aztec/aztec.js/fields';
 import { PublicKeys } from '@aztec/aztec.js/keys';
 import { createAztecNodeClient, type AztecNode } from '@aztec/aztec.js/node';
 import { AccountManager, type Wallet } from '@aztec/aztec.js/wallet';
+import { ContractInitializationStatus } from '@aztec/aztec.js/wallet';
 import { SPONSORED_FPC_SALT } from '@aztec/constants';
 import { poseidon2Hash } from '@aztec/foundation/crypto/poseidon';
 import { createStore } from '@aztec/kv-store/lmdb';
@@ -80,9 +82,9 @@ const parseArgs = (): { network: NetworkType } => {
 
   if (networkIndex !== -1 && args[networkIndex + 1]) {
     const network = args[networkIndex + 1] as NetworkType;
-    if (network !== 'sandbox' && network !== 'devnet') {
+    if (network !== 'sandbox' && network !== 'testnet') {
       console.error(
-        `Invalid network: ${network}. Must be 'sandbox' or 'devnet'`
+        `Invalid network: ${network}. Must be 'sandbox' or 'testnet'`
       );
       process.exit(1);
     }
@@ -219,11 +221,11 @@ async function createAccount(pxe: PXE, node: AztecNode) {
   console.log(`   ✅ Account created: ${account.getAddress().toString()}`);
 
   const metadata = await wallet.getContractMetadata(account.getAddress());
-  if (!metadata.isContractInitialized) {
+  if (metadata.initializationStatus !== ContractInitializationStatus.INITIALIZED) {
     console.log('   📦 Deploying account contract...');
     const sponsoredFeePaymentMethod = await getSponsoredFeePaymentMethod();
     const deployOpts = {
-      from: AztecAddress.ZERO,
+      from: NO_FROM,
       contractAddressSalt: salt,
       fee: {
         paymentMethod: sponsoredFeePaymentMethod,
@@ -267,7 +269,7 @@ async function deployDripperContract(
 
   // Check if contract is already deployed
   const metadata = await deployer.getContractMetadata(expectedInstance.address);
-  if (metadata.isContractInitialized) {
+  if (metadata.initializationStatus === ContractInitializationStatus.INITIALIZED) {
     // Register the contract with PXE so it's available for the app
     await pxe.registerContract({
       instance: expectedInstance,
@@ -375,7 +377,7 @@ async function deployTokenContract(
 
   // Check if contract is already deployed
   const metadata = await deployer.getContractMetadata(expectedInstance.address);
-  if (metadata.isContractInitialized) {
+  if (metadata.initializationStatus === ContractInitializationStatus.INITIALIZED) {
     // Register the contract with PXE so it's available for the app
     await pxe.registerContract({
       instance: expectedInstance,

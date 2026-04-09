@@ -7,14 +7,14 @@ A starter template for building privacy-preserving web applications on Aztec Net
 - 🔐 **Privacy-preserving token operations** using Aztec's private state
 - 💼 **Multi-wallet support** for embedded wallets or browser extension wallets (Azguard)
 - ⛽ **Sponsored fee payments** through SponsoredFPC
-- 🔄 **Network switching** between Devnet and local Sandbox
+- 🔄 **Network switching** between public Testnet and local Sandbox
 - 📦 **Lazy contract loading** for optimized performance
 
 ---
 
-## Quick Start (Devnet)
+## Quick Start (Testnet)
 
-The boilerplate is configured to work with **Devnet** by default. No local node setup required!
+The boilerplate is configured to work with **Aztec Testnet** by default. No local node setup required!
 
 ### Prerequisites
 
@@ -51,7 +51,7 @@ import { createAztecWalletConfig } from '../aztec-wallet';
 export const aztecWalletConfig = createAztecWalletConfig({
   // Networks to support
   networks: [
-    { name: 'devnet', nodeUrl: 'https://v4-devnet-2.aztec-labs.com/' },
+    { name: 'testnet', nodeUrl: 'https://rpc.testnet.aztec-labs.com/' },
     { name: 'sandbox', nodeUrl: 'http://localhost:8080' },
   ],
 
@@ -135,7 +135,7 @@ This FPC address points to the public Sponsored FPC contract that enables gasles
 
 ## Local Development (Sandbox)
 
-If you want to develop locally instead of using Devnet, you'll need to run the Aztec Sandbox.
+If you want to develop locally instead of using Testnet, you'll need to run the Aztec Sandbox.
 
 ### Prerequisites
 
@@ -149,8 +149,8 @@ bash -i <(curl -s https://install.aztec.network)
 ```
 
 ```bash
-# Currently we use 4.0.0-devnet.2-patch.0 version, make sure you have the right one
-aztec-up use 4.0.0-devnet.2-patch.0
+# Align the Aztec CLI with the SDK version used in this repo (see root package.json)
+aztec-up use 4.2.0-aztecnr-rc.2
 ```
 
 ### Start Sandbox
@@ -205,7 +205,7 @@ aztec-web-boilerplate/
 │   └── deploy.ts              # Contract deployment script
 ├── src/
 │   ├── artifacts/             # Generated contract TypeScript bindings
-│   │   ├── devnet/            # Devnet-specific artifacts
+│   │   ├── devnet/            # Optional per-network artifact overrides
 │   │   └── sandbox/           # Sandbox-specific artifacts
 │   ├── aztec-wallet/          # Modular wallet library (wagmi-like for Aztec)
 │   │   ├── adapters/          # Browser wallet adapters (Azguard)
@@ -428,7 +428,7 @@ Make sure to properly export your adapter from:
 
 | Network | Node URL                         | Chain ID           |
 | ------- | -------------------------------- | ------------------ |
-| Devnet  | `https://v4-devnet-2.aztec-labs.com/` | `aztec:1654394782` |
+| Testnet | `https://rpc.testnet.aztec-labs.com/` | `aztec:4127419662` |
 | Sandbox | `http://localhost:8080`          | `aztec:0`          |
 
 ---

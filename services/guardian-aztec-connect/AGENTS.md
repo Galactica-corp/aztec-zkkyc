@@ -117,5 +117,5 @@ Prefer sources in this order:
 
 Useful references:
 
-- Aztec JS SDK docs: `https://docs.aztec.network/typescript-api/devnet/aztec.js.md`
-- Aztec PXE docs: `https://docs.aztec.network/typescript-api/devnet/pxe.md`
+- Aztec JS SDK docs: `https://docs.aztec.network/reference/aztec-js`
+- Aztec PXE docs: `https://docs.aztec.network/developers/apis/pxe`

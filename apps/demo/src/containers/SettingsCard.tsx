@@ -46,9 +46,9 @@ export const SettingsCard: React.FC = () => {
               <Home size={iconSize()} />
               Sandbox
             </TabsTrigger>
-            <TabsTrigger value="devnet">
+            <TabsTrigger value="testnet">
               <Globe size={iconSize()} />
-              Devnet
+              Testnet
             </TabsTrigger>
           </TabsList>
 
@@ -59,11 +59,11 @@ export const SettingsCard: React.FC = () => {
               <FeePaymentSelector networkName="sandbox" />
             </div>
           </TabsContent>
-          <TabsContent value="devnet">
+          <TabsContent value="testnet">
             <div className={styles.tabContent}>
-              <ConfigDisplay networkName="devnet" />
+              <ConfigDisplay networkName="testnet" />
               <div className={styles.divider} />
-              <FeePaymentSelector networkName="devnet" />
+              <FeePaymentSelector networkName="testnet" />
             </div>
           </TabsContent>
         </Tabs>

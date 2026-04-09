@@ -5,6 +5,7 @@ import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
 import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { NO_FROM } from "@aztec/aztec.js/account";
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { getTimeouts } from "../config/config.js";
@@ -42,9 +43,9 @@ export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<Acc
 
   // Deploy account
   const tx = await deployMethod.send({
-    from: AztecAddress.ZERO,
+    from: NO_FROM,
     fee: { paymentMethod: sponsoredPaymentMethod },
-    wait: { timeout: getTimeouts().txTimeout, returnReceipt: true },
+    wait: { timeout: getTimeouts().txTimeout },
   });
 
   logger.info(`✅ Account deployment transaction successful!`);

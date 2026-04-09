@@ -47,7 +47,7 @@ describe("revokeCertificateFromDependencies", () => {
         expect(sentOptions).toEqual([{
             from: guardianAddress,
             fee: { paymentMethod: { kind: "sponsored" } },
-            wait: { timeout: network.txTimeoutMs, returnReceipt: true },
+            wait: { timeout: network.txTimeoutMs },
         }]);
         expect(result).toEqual({
             guardianAddress,
@@ -97,7 +97,7 @@ describe("revokeCertificate", () => {
         ).toEqual([[certificateRegistryClient, "222", {
             from: guardianAddress,
             fee: { paymentMethod: { kind: "sponsored" } },
-            wait: { timeout: network.txTimeoutMs, returnReceipt: true },
+            wait: { timeout: network.txTimeoutMs },
         }]]);
     });
 });

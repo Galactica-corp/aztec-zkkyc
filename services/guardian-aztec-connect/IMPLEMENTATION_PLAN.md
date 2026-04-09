@@ -18,7 +18,7 @@ Suggested steps:
 1. Import the AztecJS dependency for interacting with wallets
 2. Read account secrets from ENV variables
 3. Load account in AztecJS wallet
-4. Connect to the network according to the config. The config should allow setting up multiple networks (local sandbox, devnet, mainnet) and support a command or flag to select the network to work with.
+4. Connect to the network according to the config. The config should allow setting up multiple networks (local sandbox, testnet, mainnet) and support a command or flag to select the network to work with.
 5. Query account status from the network including if the account smart contract has been deployed
 6. Expose the account status check from above as external function that can be called after importing this package.
 7. Expose the account status check from above as CLI command.

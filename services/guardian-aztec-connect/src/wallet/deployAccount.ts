@@ -1,4 +1,5 @@
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
+import { NO_FROM } from "@aztec/aztec.js/account";
 import type { AccountManager } from "@aztec/aztec.js/wallet";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import type {
@@ -47,7 +48,7 @@ export async function deployGuardianAccountIfNeededFromDependencies(
 
     try {
         await deployMethod.send(buildSponsoredSendOptions(
-            AztecAddress.ZERO,
+            NO_FROM,
             dependencies.paymentMethod,
             dependencies.network
         ));

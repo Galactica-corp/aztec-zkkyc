@@ -251,7 +251,7 @@ async function main() {
   logger.info(`   - Sponsored FPC: ${sponsoredFPC.address}`);
 
   // Update demo app deployment config and guardian-aztec-connect env so Settings show these contracts.
-  const targetNetwork = getEnv() === "devnet" ? "devnet" : "sandbox";
+  const targetNetwork = getEnv() === "testnet" ? "testnet" : "sandbox";
   const certInstance = certificateRegistryInstance;
   const ageCheckInstance = await ageCheckDeployMethod.getInstance();
   const sanctionListInstance = await sanctionListDeployMethod.getInstance();

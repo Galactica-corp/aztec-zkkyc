@@ -2,6 +2,7 @@ import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
 import { getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
 import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { NO_FROM } from "@aztec/aztec.js/account";
 import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { createAztecNodeClient } from "@aztec/aztec.js/node";
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
@@ -69,7 +70,7 @@ async function main() {
     let signingKey = GrumpkinScalar.random();
     let salt = Fr.random();
     let schnorrAccount = await wallet1.createSchnorrAccount(secretKey, salt, signingKey);
-    let tx = await (await schnorrAccount.getDeployMethod()).send({ from: AztecAddress.ZERO, fee: { paymentMethod } }).wait();
+    let tx = await (await schnorrAccount.getDeployMethod()).send({ from: NO_FROM, fee: { paymentMethod } }).wait();
     let ownerAddress = schnorrAccount.address;
     const token = await TokenContract.deploy(wallet1, ownerAddress, 'Clean USDC', 'USDC', 6).send({
         from: ownerAddress,
@@ -87,7 +88,7 @@ async function main() {
     let schnorrAccount2 = await wallet2.createSchnorrAccount(secretKey2, salt2, signingKey2);
 
     // deploy account on 2nd pxe
-    let tx2 = await (await schnorrAccount2.getDeployMethod()).send({ from: AztecAddress.ZERO, fee: { paymentMethod } }).wait();
+    let tx2 = await (await schnorrAccount2.getDeployMethod()).send({ from: NO_FROM, fee: { paymentMethod } }).wait();
     let wallet2Address = schnorrAccount2.address;
     await wallet2.registerSender(ownerAddress)
 

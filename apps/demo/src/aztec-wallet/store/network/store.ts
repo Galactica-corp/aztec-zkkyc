@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import {
   SANDBOX_CONFIG,
-  DEVNET_CONFIG,
+  TESTNET_CONFIG,
   type NetworkConfig,
 } from '../../../config/networks';
 import { getContractRegistryStore } from '../../../store/contractRegistry';
@@ -14,8 +14,19 @@ const STORAGE_KEY = 'aztec-wallet-network';
 
 const BASE_CONFIGS: Record<AztecNetwork, NetworkConfig> = {
   sandbox: SANDBOX_CONFIG,
-  devnet: DEVNET_CONFIG,
+  testnet: TESTNET_CONFIG,
 };
+
+/** Maps legacy persisted network id from the old `devnet` name. */
+function migrateStoredNetworkName(name: string | null): AztecNetwork | null {
+  if (!name) {
+    return null;
+  }
+  if (name === 'devnet') {
+    return 'testnet';
+  }
+  return name as AztecNetwork;
+}
 
 type State = {
   currentConfig: NetworkConfig;
@@ -34,9 +45,9 @@ type Actions = {
 export type NetworkStore = State & Actions;
 
 const INITIAL_STATE: State = {
-  currentConfig: DEVNET_CONFIG,
+  currentConfig: TESTNET_CONFIG,
   configuredNetworks: {} as Record<AztecNetwork, NetworkConfig>,
-  defaultNetwork: 'devnet',
+  defaultNetwork: 'testnet',
   isInitialized: false,
 };
 
@@ -59,9 +70,11 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
     const defaultNetwork = presets[0]?.aztecNetwork ?? 'sandbox';
     const defaultConfig = configuredNetworks[defaultNetwork] ?? SANDBOX_CONFIG;
 
-    const savedNetwork = localStorage.getItem(
-      STORAGE_KEY
-    ) as AztecNetwork | null;
+    const rawSaved = localStorage.getItem(STORAGE_KEY);
+    const savedNetwork = migrateStoredNetworkName(rawSaved);
+    if (rawSaved === 'devnet' && savedNetwork === 'testnet') {
+      localStorage.setItem(STORAGE_KEY, 'testnet');
+    }
     const initialConfig =
       savedNetwork && configuredNetworks[savedNetwork]
         ? configuredNetworks[savedNetwork]
@@ -103,9 +116,11 @@ export const useNetworkStore = create<NetworkStore>((set, get) => ({
 
   syncFromStorage: () => {
     const { configuredNetworks, currentConfig } = get();
-    const savedNetwork = localStorage.getItem(
-      STORAGE_KEY
-    ) as AztecNetwork | null;
+    const rawSaved = localStorage.getItem(STORAGE_KEY);
+    const savedNetwork = migrateStoredNetworkName(rawSaved);
+    if (rawSaved === 'devnet' && savedNetwork === 'testnet') {
+      localStorage.setItem(STORAGE_KEY, 'testnet');
+    }
     if (savedNetwork && configuredNetworks[savedNetwork]) {
       const newConfig = configuredNetworks[savedNetwork];
       if (newConfig.name !== currentConfig.name) {

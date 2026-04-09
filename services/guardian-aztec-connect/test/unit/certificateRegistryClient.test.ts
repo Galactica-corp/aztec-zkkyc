@@ -1,6 +1,7 @@
 import { Fr } from "@aztec/aztec.js/fields";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import type { ContractArtifact } from "@aztec/aztec.js/abi";
+import { ContractInitializationStatus } from "@aztec/aztec.js/wallet";
 import {
     createCertificateRegistryClientFromRuntime,
     ensureCertificateRegistryContractRegistered,
@@ -350,7 +351,7 @@ describe("certificateRegistryClient", () => {
                 async getContractMetadata() {
                     return {
                         instance,
-                        isContractInitialized: true,
+                        initializationStatus: ContractInitializationStatus.INITIALIZED,
                     };
                 },
                 async registerContract(passedInstance: unknown, artifact: ContractArtifact) {

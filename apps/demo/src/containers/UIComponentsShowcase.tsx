@@ -413,7 +413,7 @@ export const UIComponentsShowcase: React.FC = () => {
                   <div className={styles.networkIconContainer}>
                     <Globe size={iconSize()} className={styles.networkIcon} />
                   </div>
-                  <span className={styles.networkName}>Devnet</span>
+                  <span className={styles.networkName}>Testnet</span>
                   <ChevronDown
                     size={iconSize()}
                     className={styles.walletChevron}
@@ -442,7 +442,7 @@ export const UIComponentsShowcase: React.FC = () => {
                 <button
                   type="button"
                   className={styles.networkPickerCompact}
-                  title="Devnet"
+                  title="Testnet"
                 >
                   <div className={styles.networkIconContainer}>
                     <Globe
@@ -494,7 +494,7 @@ export const UIComponentsShowcase: React.FC = () => {
                 <div className={styles.networkIconContainer}>
                   <Globe size={iconSize()} className={styles.networkIcon} />
                 </div>
-                <span className={styles.networkName}>Devnet</span>
+                <span className={styles.networkName}>Testnet</span>
                 <ChevronDown
                   size={iconSize()}
                   className={styles.walletChevron}
@@ -534,7 +534,7 @@ export const UIComponentsShowcase: React.FC = () => {
               <button
                 type="button"
                 className={styles.networkPickerCompact}
-                title="Devnet"
+                  title="Testnet"
               >
                 <div className={styles.networkIconContainer}>
                   <Globe size={iconSize('md')} className={styles.networkIcon} />
@@ -726,7 +726,7 @@ export const UIComponentsShowcase: React.FC = () => {
                           <Globe size={iconSize()} />
                         </div>
                         <span className={styles.accountNetworkName}>
-                          Devnet
+                          Testnet
                         </span>
                       </div>
                       <span className={styles.accountNetworkBadge}>Active</span>
@@ -770,7 +770,7 @@ export const UIComponentsShowcase: React.FC = () => {
                       className={styles.networkModalIconText}
                     />
                   </div>
-                  <span className={styles.networkModalName}>Devnet</span>
+                  <span className={styles.networkModalName}>Testnet</span>
                   <span className={styles.networkModalSpacer} />
                   <Check
                     size={iconSize()}
@@ -855,7 +855,7 @@ const { open: openNetwork } = useNetworkModal();
           <pre className={styles.codeBlock}>
             {`const config = createAztecWalletConfig({
   networks: [
-    { name: 'devnet', nodeUrl: 'https://v4-devnet-2.aztec-labs.com/' },
+    { name: 'testnet', nodeUrl: 'https://rpc.testnet.aztec-labs.com/' },
     { name: 'sandbox', nodeUrl: 'http://localhost:8080' },
   ],
   walletGroups: {

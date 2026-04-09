@@ -224,7 +224,7 @@ export const AztecWalletProvider: React.FC<AztecWalletProviderProps> = ({
   /**
    * Hydrate the network store from localStorage during render (not in useEffect).
    * If we only initialized in useEffect, the first render still had the zustand
-   * default (devnet). The connector effect depends on nodeUrl, so when the store
+   * default (testnet). The connector effect depends on nodeUrl, so when the store
    * later switched to the saved network its cleanup ran disconnect() while
    * AutoReconnect had already fired once — leaving the wallet on the wrong network
    * or disconnected after refresh.

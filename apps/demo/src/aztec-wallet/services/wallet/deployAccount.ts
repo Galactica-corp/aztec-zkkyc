@@ -1,5 +1,7 @@
 import { AztecAddress } from '@aztec/aztec.js/addresses';
+import { NO_FROM } from '@aztec/aztec.js/account';
 import type { AccountManager } from '@aztec/aztec.js/wallet';
+import { ContractInitializationStatus } from '@aztec/aztec.js/wallet';
 import { AccountDeploymentError } from './errors';
 import type { SharedPXEInstance } from '../aztec/pxe';
 
@@ -48,7 +50,7 @@ export async function deployAccountIfNotExists(
   try {
     const metadata = await pxeInstance.wallet.getContractMetadata(accountAddress);
 
-    if (metadata.isContractInitialized) {
+    if (metadata.initializationStatus === ContractInitializationStatus.INITIALIZED) {
       return { deployed: false, address: accountAddress };
     }
 
@@ -62,9 +64,9 @@ export async function deployAccountIfNotExists(
     };
 
     try {
-      // Keep ZERO as primary sender for gas-sponsored account bootstrap.
+      // Self-deploy should bypass account entrypoint mediation.
       await deployMethod.send({
-        from: AztecAddress.ZERO,
+        from: NO_FROM,
         ...sendOptions,
       });
     } catch (zeroSenderError) {
@@ -81,7 +83,7 @@ export async function deployAccountIfNotExists(
 
     const postDeployMetadata =
       await pxeInstance.wallet.getContractMetadata(accountAddress);
-    if (!postDeployMetadata.isContractInitialized) {
+    if (postDeployMetadata.initializationStatus !== ContractInitializationStatus.INITIALIZED) {
       throw new Error(
         `Deployment sent but account ${accountAddress.toString()} is still not initialized`
       );

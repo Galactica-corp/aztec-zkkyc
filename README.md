@@ -20,11 +20,11 @@ This repo is based on the [Aztec starter](https://github.com/AztecProtocol/aztec
 
 
 
-## Devnet
+## Testnet (public Aztec network)
 
-This repo connects to a locally running Aztec local network by default, but can be configured to connect to the devnet by specifying `AZTEC_ENV=devnet` in a `.env` file or by prefixing a command e.g. `AZTEC_ENV=devnet yarn deploy`.
+This repo connects to a locally running Aztec local network by default, but can be configured to use the public Aztec testnet by specifying `AZTEC_ENV=testnet` in a `.env` file or by prefixing a command (for example `AZTEC_ENV=testnet yarn deploy`).
 
-The demo app and scripts use the current Aztec v4 devnet node at `https://v4-devnet-2.aztec-labs.com/`. See [Setting up for Devnet](https://docs.aztec.network/developers/getting_started_on_devnet) for details.
+The demo app and scripts use the Aztec testnet RPC at `https://rpc.testnet.aztec-labs.com` (see [Networks](https://docs.aztec.network/networks)).
 
 
 ## 🚀 **Getting Started**
@@ -42,8 +42,8 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-VERSION=4.1.0-rc.4 bash -i <(curl -sL https://install.aztec.network/4.1.0-rc.4)
-aztec-up use 4.1.0-rc.4
+VERSION=4.1.0-rc.2 bash -i <(curl -sL https://install.aztec.network/4.1.0-rc.2)
+aztec-up use 4.1.0-rc.2
 ```
 
 ### Environment Configuration
@@ -51,9 +51,9 @@ aztec-up use 4.1.0-rc.4
 This project uses JSON configuration files to manage environment-specific settings:
 
 - `config/local-network.json` - Configuration for local network development
-- `config/devnet.json` - Configuration for devnet deployment
+- `config/testnet.json` - Configuration for public testnet deployment
 
-The system automatically loads the appropriate configuration file based on the `ENV` environment variable. If `ENV` is not set, it defaults to `local-network`.
+The system automatically loads the appropriate configuration file based on the `AZTEC_ENV` environment variable. If `AZTEC_ENV` is not set, it defaults to `local-network`.
 
 The configuration files contain network URLs, timeouts, and environment-specific settings. You can modify these files to customize your development environment.
 
@@ -79,18 +79,18 @@ cd apps/demo
 yarn dev
 ```
 
-### Running on Devnet
+### Running on Testnet
 
-All scripts support a `::devnet` suffix to automatically use devnet configuration:
+All scripts support a `::testnet` suffix to automatically use testnet configuration:
 
 ```bash
-yarn deploy::devnet              # Deploy to devnet
-yarn test::devnet                # Run tests on devnet
-yarn deploy-account::devnet      # Deploy account to devnet
-yarn interaction-existing-contract::devnet  # Interact with devnet contracts
+yarn deploy::testnet              # Deploy to testnet
+yarn test::testnet                # Run tests on testnet
+yarn deploy-account::testnet      # Deploy account to testnet
+yarn interaction-existing-contract::testnet  # Interact with testnet contracts
 ```
 
-The `::devnet` suffix automatically sets `ENV=devnet`, loading configuration from `config/devnet.json`.
+The `::testnet` suffix sets `AZTEC_ENV=testnet`, loading configuration from `config/testnet.json`.
 
 ---
 

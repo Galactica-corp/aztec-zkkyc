@@ -1,5 +1,6 @@
 import { jest } from "@jest/globals";
 import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
+import { ContractInitializationStatus } from "@aztec/aztec.js/wallet";
 import { createAddressStub, createRegisteredAddress } from "../support/fixtures.js";
 
 const jestWithEsmMocks = jest as typeof jest & {
@@ -33,7 +34,7 @@ describe("getGuardianAccountStatus", () => {
                     return [createRegisteredAddress(guardianAddress)];
                 },
                 async getContractMetadata() {
-                    return { isContractInitialized: true };
+                    return { initializationStatus: ContractInitializationStatus.INITIALIZED };
                 },
             },
         };

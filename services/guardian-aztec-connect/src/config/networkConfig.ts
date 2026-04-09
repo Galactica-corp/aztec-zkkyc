@@ -28,7 +28,7 @@ const DEFAULT_AZTEC_ENV = "local-network";
 dotenv.config({ path: path.resolve(process.cwd(), ".env"), quiet: true });
 
 function getDefaultTimeouts(environment: GuardianEnvironment) {
-    if (environment === "devnet") {
+    if (environment === "testnet") {
         return {
             deployTimeout: 1200000,
             txTimeout: 180000,

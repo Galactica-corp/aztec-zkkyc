@@ -28,11 +28,11 @@
     "account:deploy": "yarn cli -- account deploy"
   },
   "dependencies": {
-    "@aztec/aztec.js": "4.1.0-rc.4",
-    "@aztec/constants": "4.1.0-rc.4",
-    "@aztec/noir-contracts.js": "4.1.0-rc.4",
-    "@aztec/stdlib": "4.1.0-rc.4",
-    "@aztec/wallets": "4.1.0-rc.4",
+    "@aztec/aztec.js": "4.2.0-aztecnr-rc.2",
+    "@aztec/constants": "4.2.0-aztecnr-rc.2",
+    "@aztec/noir-contracts.js": "4.2.0-aztecnr-rc.2",
+    "@aztec/stdlib": "4.2.0-aztecnr-rc.2",
+    "@aztec/wallets": "4.2.0-aztecnr-rc.2",
     "dotenv": "^17.2.2"
   },
   "devDependencies": {

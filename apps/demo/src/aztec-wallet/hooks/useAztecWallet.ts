@@ -108,7 +108,7 @@ import type { Hex } from 'viem';
  *
  * return (
  *   <select value={networkName} onChange={(e) => switchNetwork(e.target.value)}>
- *     <option value="devnet">Devnet</option>
+ *     <option value="testnet">Testnet</option>
  *     <option value="sandbox">Sandbox</option>
  *   </select>
  * );
