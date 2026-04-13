@@ -6,14 +6,12 @@ import { foundry } from 'viem/chains'
 import { mnemonicToAccount } from 'viem/accounts';
 import { FeeJuiceContract } from "@aztec/noir-contracts.js/FeeJuice";
 import { FPCContract } from "@aztec/noir-contracts.js/FPC";
-import { PodRacingContract } from "../src/artifacts/PodRacing.js"
+import { PodRacingContract } from "../artifacts/PodRacing.js"
 import { TokenContract } from "@aztec/noir-contracts.js/Token";
-import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing'
-import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
 import { createEthereumChain } from '@aztec/ethereum/chain';
 import { createExtendedL1Client } from '@aztec/ethereum/client';
-import { deploySchnorrAccount } from "../src/utils/deploy_account.js";
-import { setupWallet } from "../src/utils/setup_wallet.js";
+import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
+import { createAccountFromEnv } from "../crates/zk_certificate/src/utils/create_account_from_env.js";
 import { Logger, createLogger } from '@aztec/aztec.js/log';
 import { FeeJuicePaymentMethodWithClaim, PrivateFeePaymentMethod, PublicFeePaymentMethod } from '@aztec/aztec.js/fee';
 import { Fr, GrumpkinScalar } from '@aztec/aztec.js/fields';
@@ -25,6 +23,7 @@ import { AztecAddress } from '@aztec/stdlib/aztec-address';
 import { NO_FROM } from "@aztec/aztec.js/account";
 import { getAztecNodeUrl } from '../config/config.js';
 import { GasSettings } from '@aztec/stdlib/gas';
+import { getFeePaymentMethodForTxFees } from "../crates/zk_certificate/src/utils/fpc.js";
 
 const MNEMONIC = 'test test test test test test test test test test test junk';
 const FEE_FUNDING_FOR_TESTER_ACCOUNT = 1000000000000000000000n;
@@ -45,7 +44,7 @@ async function main() {
 
     // Setup Schnorr AccountManager
 
-    const account1 = await deploySchnorrAccount(wallet);
+    const account1 = await createAccountFromEnv(wallet);
 
     let secretKey = Fr.random();
     let signingKey = GrumpkinScalar.random();
@@ -66,9 +65,7 @@ async function main() {
     logger.info(`Fee Juice minted to ${feeJuiceRecipient} on L2.`)
 
     // set up sponsored fee payments
-    const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
-    const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
+    const { paymentMethod } = await getFeePaymentMethodForTxFees(wallet);
 
     // Two arbitrary txs to make the L1 message available on L2
     const podRacingContract = await PodRacingContract.deploy(wallet, account1.address).send({
@@ -156,12 +153,13 @@ async function main() {
     // Sponsored Fee Payment
 
     // This method will only work in environments where there is a sponsored fee contract deployed
-    const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
-    await bananaCoin.methods.transfer_in_private(account2.address, account1.address, 10, 0).send({
-        from: account2.address,
-        fee: { paymentMethod: sponsoredPaymentMethod }
-    }).wait()
-    logger.info(`Transfer paid with fees from Sponsored FPC.`)
+    if (process.env.AZTEC_ENV !== 'mainnet') {
+        await bananaCoin.methods.transfer_in_private(account2.address, account1.address, 10, 0).send({
+            from: account2.address,
+            fee: { paymentMethod }
+        }).wait()
+        logger.info(`Transfer paid with fees from Sponsored FPC.`)
+    }
 }
 
 main();

@@ -1,10 +1,8 @@
 import { Logger, createLogger } from "@aztec/aztec.js/log";
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
-import { getSponsoredFPCInstance } from "../crates/zk_certificate/src/utils/sponsored_fpc.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { getAztecNodeUrl, getEnv, getTimeouts } from "../config/config.js";
 import { createAccountFromEnv } from "../crates/zk_certificate/src/utils/create_account_from_env.js";
+import { getFeePaymentMethodForTxFees } from "../crates/zk_certificate/src/utils/fpc.js";
 import {
   getBasicDisclosureRecipientAddress,
   getCertificateRegistryAdminAddress,
@@ -58,15 +56,10 @@ async function main() {
   const wallet = await setupWallet();
   logger.info(`📊 Wallet set up successfully`);
 
-  // Setup sponsored FPC
-  logger.info('💰 Setting up sponsored fee payment contract...');
-  const sponsoredFPC = await getSponsoredFPCInstance();
-  logger.info(`💰 Sponsored FPC instance obtained at: ${sponsoredFPC.address}`);
-
-  logger.info('📝 Registering sponsored FPC contract with wallet...');
-  await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
-  const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
-  logger.info('✅ Sponsored fee payment method configured');
+  // Setup fee payment method (SponsoredFPC on local/testnet; PrivateFPC on mainnet)
+  logger.info('💰 Setting up fee payment contract...');
+  const { fpcAddress, paymentMethod } = await getFeePaymentMethodForTxFees(wallet);
+  logger.info(`💰 Fee payer FPC address: ${fpcAddress}`);
 
   // Deploy account
   logger.info('👤 Deploying Schnorr account...');
@@ -99,7 +92,7 @@ async function main() {
   logger.info('⏳ Waiting for deployment transaction to be mined...');
   const { contract: certificateRegistryContract } = await certificateDeployMethod.send({
     from: address,
-    fee: { paymentMethod: sponsoredPaymentMethod },
+    fee: { paymentMethod },
     wait: { timeout: timeouts.deployTimeout },
   });
   logger.info(`🎉 Certificate Registry Contract deployed successfully!`);
@@ -125,7 +118,7 @@ async function main() {
   logger.info('⏳ Waiting for deployment transaction to be mined...');
   const { contract: ageCheckRequirementContract } = await ageCheckDeployMethod.send({
     from: address,
-    fee: { paymentMethod: sponsoredPaymentMethod },
+    fee: { paymentMethod },
     wait: { timeout: timeouts.deployTimeout },
   });
   logger.info(`🎉 Age Check Requirement Contract deployed successfully!`);
@@ -139,7 +132,7 @@ async function main() {
   logger.info('⏳ Waiting for deployment transaction to be mined...');
   const { contract: sanctionListRequirementContract } = await sanctionListDeployMethod.send({
     from: address,
-    fee: { paymentMethod: sponsoredPaymentMethod },
+    fee: { paymentMethod },
     wait: { timeout: timeouts.deployTimeout },
   });
   logger.info(`🎉 Sanction List Requirement Contract deployed successfully!`);
@@ -159,7 +152,7 @@ async function main() {
   logger.info("⏳ Waiting for deployment transaction to be mined...");
   const { contract: basicDisclosureContract } = await basicDisclosureDeployMethod.send({
     from: address,
-    fee: { paymentMethod: sponsoredPaymentMethod },
+    fee: { paymentMethod },
     wait: { timeout: timeouts.deployTimeout },
   });
   logger.info("🎉 Basic Disclosure Contract deployed successfully!");
@@ -192,7 +185,7 @@ async function main() {
   logger.info("⏳ Waiting for deployment transaction to be mined...");
   const { contract: shamirDisclosureContract } = await shamirDisclosureDeployMethod.send({
     from: address,
-    fee: { paymentMethod: sponsoredPaymentMethod },
+    fee: { paymentMethod },
     wait: { timeout: timeouts.deployTimeout },
   });
   logger.info("🎉 Shamir Disclosure Contract deployed successfully!");
@@ -223,7 +216,7 @@ async function main() {
   logger.info('⏳ Waiting for deployment transaction to be mined...');
   const { contract: useCaseExampleContract } = await useCaseExampleDeployMethod.send({
     from: address,
-    fee: { paymentMethod: sponsoredPaymentMethod },
+    fee: { paymentMethod },
     wait: { timeout: timeouts.deployTimeout },
   });
   logger.info(`🎉 Use Case Example Contract deployed successfully!`);
@@ -248,7 +241,7 @@ async function main() {
   logger.info(`   - Shamir Disclosure Contract Address: ${shamirDisclosureContract.address}`);
   logger.info(`   - Use Case Example Contract Address: ${useCaseExampleContract.address}`);
   logger.info(`   - Admin Address: ${adminAddress}`);
-  logger.info(`   - Sponsored FPC: ${sponsoredFPC.address}`);
+  logger.info(`   - Fee payer FPC: ${fpcAddress}`);
 
   // Update demo app deployment config and guardian-aztec-connect env so Settings show these contracts.
   const targetNetwork = getEnv() === "testnet" ? "testnet" : "sandbox";

@@ -1,6 +1,3 @@
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
-import { getSponsoredFPCInstance } from "../crates/zk_certificate/src/utils/sponsored_fpc.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
 import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
@@ -9,6 +6,7 @@ import { NO_FROM } from "@aztec/aztec.js/account";
 import { AccountManager } from "@aztec/aztec.js/wallet";
 import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { getTimeouts } from "../config/config.js";
+import { getFeePaymentMethodForTxFees } from "../crates/zk_certificate/src/utils/fpc.js";
 
 export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<AccountManager> {
   let logger: Logger;
@@ -31,20 +29,15 @@ export async function deploySchnorrAccount(wallet?: EmbeddedWallet): Promise<Acc
 
   const deployMethod = await account.getDeployMethod();
 
-  // Setup sponsored FPC
-  logger.info('💰 Setting up sponsored fee payment for account deployment...');
-  const sponsoredFPC = await getSponsoredFPCInstance();
-  logger.info(`💰 Sponsored FPC instance obtained at: ${sponsoredFPC.address}`);
-
-  logger.info('📝 Registering sponsored FPC contract with PXE...');
-  await activeWallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
-  const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
-  logger.info('✅ Sponsored fee payment method configured for account deployment');
+  // Setup fee payment method (SponsoredFPC on local/testnet; PrivateFPC on mainnet)
+  logger.info('💰 Setting up fee payment for account deployment...');
+  const { fpcAddress, paymentMethod } = await getFeePaymentMethodForTxFees(activeWallet);
+  logger.info(`💰 Fee payer FPC address: ${fpcAddress}`);
 
   // Deploy account
   const tx = await deployMethod.send({
     from: NO_FROM,
-    fee: { paymentMethod: sponsoredPaymentMethod },
+    fee: { paymentMethod },
     wait: { timeout: getTimeouts().txTimeout },
   });
 

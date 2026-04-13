@@ -3,15 +3,13 @@ import { getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/cont
 import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { NO_FROM } from "@aztec/aztec.js/account";
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { createAztecNodeClient } from "@aztec/aztec.js/node";
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
-import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { getPXEConfig } from "@aztec/pxe/config";
 import { createStore } from "@aztec/kv-store/lmdb"
 import { getEnv, getAztecNodeUrl } from "../config/config.js";
 import { TestWallet } from "@aztec/test-wallet/server";
+import { getFeePaymentMethodForTxFees } from "../crates/zk_certificate/src/utils/fpc.js";
 
 const nodeUrl = getAztecNodeUrl();
 const node = createAztecNodeClient(nodeUrl)
@@ -60,10 +58,8 @@ async function main() {
 
     const wallet1 = await setupWallet1();
     const wallet2 = await setupWallet2();
-    const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet1.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
-    await wallet2.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
-    const paymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
+    const { paymentMethod } = await getFeePaymentMethodForTxFees(wallet1);
+    await getFeePaymentMethodForTxFees(wallet2);
     // deploy token contract
 
     let secretKey = Fr.random();

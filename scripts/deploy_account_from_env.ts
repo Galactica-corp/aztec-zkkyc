@@ -1,6 +1,4 @@
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
-import { getSponsoredFPCInstance } from "../crates/zk_certificate/src/utils/sponsored_fpc.js";
-import { SponsoredFPCContractArtifact } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { getFeePaymentMethodForTxFees } from "../crates/zk_certificate/src/utils/fpc.js";
 import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
@@ -47,21 +45,16 @@ export async function deploySchnorrAccountFromEnv(wallet?: EmbeddedWallet): Prom
 
   const deployMethod = await account.getDeployMethod();
 
-  // Setup sponsored FPC
-  logger.info('💰 Setting up sponsored fee payment for account deployment...');
-  const sponsoredFPC = await getSponsoredFPCInstance();
-  logger.info(`💰 Sponsored FPC instance obtained at: ${sponsoredFPC.address}`);
-
-  logger.info('📝 Registering sponsored FPC contract with PXE...');
-  await activeWallet.registerContract(sponsoredFPC, SponsoredFPCContractArtifact);
-  const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
-  logger.info('✅ Sponsored fee payment method configured for account deployment');
+  // Setup fee payment method (SponsoredFPC on local/testnet; PrivateFPC on mainnet)
+  logger.info('💰 Setting up fee payment for account deployment...');
+  const { fpcAddress, paymentMethod } = await getFeePaymentMethodForTxFees(activeWallet);
+  logger.info(`💰 Fee payer FPC address: ${fpcAddress}`);
 
   try {
     // Deploy account (use config timeouts; public testnet first tx can take longer for proving keys)
     const deployTx = await deployMethod.send({
       from: NO_FROM,
-      fee: { paymentMethod: sponsoredPaymentMethod },
+      fee: { paymentMethod },
       wait: { timeout: getTimeouts().txTimeout },
     });
 

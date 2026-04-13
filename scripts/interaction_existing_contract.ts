@@ -1,14 +1,12 @@
 import { Logger, createLogger } from "@aztec/aztec.js/log";
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
 import { Fr } from "@aztec/aztec.js/fields";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
-import { PodRacingContract } from "../src/artifacts/PodRacing.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { setupWallet } from "../src/utils/setup_wallet.js";
-import { getSponsoredFPCInstance } from "../src/utils/sponsored_fpc.js";
-import { getAccountFromEnv } from "../src/utils/create_account_from_env.js";
+import { PodRacingContract } from "../artifacts/PodRacing.js";
+import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
+import { getAccountFromEnv } from "../crates/zk_certificate/src/utils/create_account_from_env.js";
 import { getTimeouts } from "../config/config.js";
 import { getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
+import { getFeePaymentMethodForTxFees } from "../crates/zk_certificate/src/utils/fpc.js";
 
 async function main() {
     let logger: Logger;
@@ -19,10 +17,8 @@ async function main() {
     // Setup wallet
     const wallet = await setupWallet();
 
-    // Setup sponsored fee payment
-    const sponsoredFPC = await getSponsoredFPCInstance();
-    await wallet.registerContract(sponsoredFPC, SponsoredFPCContract.artifact);
-    const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(sponsoredFPC.address);
+    // Setup fee payment method (SponsoredFPC on local/testnet; PrivateFPC on mainnet)
+    const { paymentMethod } = await getFeePaymentMethodForTxFees(wallet);
 
     // Get account from environment variables
     const accountManager = await getAccountFromEnv(wallet);
@@ -91,7 +87,7 @@ async function main() {
     await podRacingContract.methods.create_game(gameId)
         .send({
             from: address,
-            fee: { paymentMethod: sponsoredPaymentMethod }
+            fee: { paymentMethod }
         })
         .wait({ timeout: timeouts.txTimeout });
     logger.info("Game created successfully!");
