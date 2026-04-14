@@ -12,4 +12,6 @@ export function unsetRequiredEnv(): void {
     delete process.env.SUMSUB_APP_TOKEN;
     delete process.env.SUMSUB_SECRET_KEY;
     delete process.env.SUMSUB_WEBHOOK_SECRET_KEY;
+    delete process.env.PORT;
+    delete process.env.CORS_ALLOW_ORIGINS;
 }
