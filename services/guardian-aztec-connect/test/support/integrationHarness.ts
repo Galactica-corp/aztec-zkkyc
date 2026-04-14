@@ -5,6 +5,7 @@ import { NO_FROM } from "@aztec/aztec.js/account";
 import type { AccountManager } from "@aztec/aztec.js/wallet";
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { CertificateRegistryContract } from "../../../../artifacts/CertificateRegistry.js";
 import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
 import type { GuardianStatusOptions } from "../../src/types.js";
 import { createGuardianAccount } from "../../src/wallet/guardianAccount.js";
@@ -18,7 +19,7 @@ interface CertificateRegistryContractLike {
       send(options: unknown): Promise<unknown>;
     };
     get_certificate_count(owner: AztecAddress): {
-      simulate(options: { from: AztecAddress }): Promise<bigint>;
+      simulate(options: { from: AztecAddress }): Promise<unknown>;
     };
   };
 }
@@ -56,7 +57,6 @@ export function useGuardianEnvLifecycle(): void {
 
 export async function assertLocalAztecNodeAvailable(aztecEnv = "local-network"): Promise<void> {
   const network = resolveNetworkConfig({ aztecEnv });
-
   try {
     await fetch(network.nodeUrl, { method: "GET" });
   } catch (error: unknown) {
@@ -79,8 +79,6 @@ export async function deploySchnorrAccount(
 }
 
 export async function createCertificateRegistryIntegrationHarness(): Promise<CertificateRegistryIntegrationHarness> {
-  const artifactModulePath = new URL("../../../../artifacts/CertificateRegistry.js", import.meta.url).href;
-  const { CertificateRegistryContract } = await import(artifactModulePath);
   const wallet = await createGuardianWallet({
     aztecEnv: "local-network",
     ephemeral: true,

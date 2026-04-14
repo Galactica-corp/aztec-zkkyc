@@ -1,7 +1,7 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "rootDir": ".",
+        "rootDir": "../..",
         "outDir": "dist",
         "tsBuildInfoFile": ".tsbuildinfo",
         "composite": false,
@@ -11,6 +11,8 @@
     },
     "include": [
         "src/**/*.ts",
-        "test/**/*.ts"
+        "test/**/*.ts",
+        "../../artifacts/**/*.ts",
+        "../../target/**/*.json"
     ]
 }
