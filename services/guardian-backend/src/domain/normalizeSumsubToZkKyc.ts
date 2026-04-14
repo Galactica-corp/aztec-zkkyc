@@ -5,6 +5,15 @@ import type { NormalizedZkKyc } from "./normalizedZkKyc.js";
 const ISO_ALPHA3 = /^[A-Za-z]{3}$/;
 const BIRTHDAY = /^\d{4}-\d{2}-\d{2}$/;
 
+const TESTNET_TEMPLATE_ADDRESS: ApplicantAddressBlock = {
+    country: "DEU",
+    stateCode: "DE-BE",
+    townEn: "BERLIN",
+    postCode: "10115",
+    streetEn: "MUSTERSTRASSE",
+    buildingNumber: "10",
+};
+
 /**
  * Map Sumsub verification result to SDK verification level. Approved KYC => 2.
  */
@@ -111,7 +120,9 @@ export function normalizeSumsubToZkKyc(
     userAddress: string
 ): NormalizedZkKyc {
     const info = applicant.info ?? {};
-    const addr = resolveApplicantAddress(applicant);
+    const addr =
+        resolveApplicantAddress(applicant) ??
+        (process.env.AZTEC_ENV === "testnet" ? TESTNET_TEMPLATE_ADDRESS : undefined);
     if (!addr) throw new Error("Applicant has no address");
 
     const birthday = normalizeBirthday(info.dob, "personal.birthday");

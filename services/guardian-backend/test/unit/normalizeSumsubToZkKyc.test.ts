@@ -23,6 +23,41 @@ const minimalApplicant: GetApplicantDataResponse = {
 };
 
 describe("normalizeSumsubToZkKyc", () => {
+    it("fills template address on testnet when applicant has no address", () => {
+        const prev = process.env.AZTEC_ENV;
+        process.env.AZTEC_ENV = "testnet";
+        try {
+            const applicant: GetApplicantDataResponse = {
+                info: {
+                    firstNameEn: "Jane",
+                    lastNameEn: "Doe",
+                    dob: "1990-06-01",
+                    country: "DEU",
+                    addresses: [],
+                    address: undefined,
+                },
+                fixedInfo: {
+                    addresses: [],
+                    address: undefined,
+                },
+                metadata: [],
+            };
+
+            const result = normalizeSumsubToZkKyc(applicant, "0xabc");
+            expect(result.address.streetAndNumber).toBe("MUSTERSTRASSE 10");
+            expect(result.address.postcode).toBe("10115");
+            expect(result.address.town).toBe("BERLIN");
+            expect(result.address.region).toBe("DE-BE");
+            expect(result.address.country).toBe("DEU");
+        } finally {
+            if (prev === undefined) {
+                delete process.env.AZTEC_ENV;
+            } else {
+                process.env.AZTEC_ENV = prev;
+            }
+        }
+    });
+
     it("maps full applicant to normalized KYC", () => {
         const result = normalizeSumsubToZkKyc(minimalApplicant, "0x1234");
         expect(result.userAddress).toBe("0x1234");
