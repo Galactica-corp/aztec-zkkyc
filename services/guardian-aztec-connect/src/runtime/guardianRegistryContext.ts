@@ -2,10 +2,10 @@ import {
     createCertificateRegistryClientFromRuntime,
     type CertificateRegistryClient,
 } from "../contracts/certificateRegistryClient.js";
-import { loadSponsoredGuardianRuntime, type SponsoredGuardianRuntime } from "./guardianRuntime.js";
+import { loadSponsoredGuardianRuntime, type GuardianRuntimeWithFees } from "./guardianRuntime.js";
 import type { GuardianStatusOptions } from "../types.js";
 
-export interface GuardianRegistryContext extends SponsoredGuardianRuntime {
+export interface GuardianRegistryContext extends GuardianRuntimeWithFees {
     certificateRegistryClient: CertificateRegistryClient;
 }
 

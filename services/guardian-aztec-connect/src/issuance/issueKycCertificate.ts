@@ -7,7 +7,7 @@ import {
     type PreparedKycCertificateIssuance,
 } from "../kyc/zkKyc.js";
 import { loadGuardianRegistryContext } from "../runtime/guardianRegistryContext.js";
-import { buildSponsoredSendOptions, type GuardianSendOptions } from "../tx/guardianTx.js";
+import { buildGuardianSendOptions, type GuardianSendOptions } from "../tx/guardianTx.js";
 import type {
     GuardianNetworkConfig,
     IssueKycCertificateOptions,
@@ -19,7 +19,7 @@ interface IssueKycCertificateDependencies {
     account: {
         address: IssueKycCertificateResult["guardianAddress"];
     };
-    paymentMethod: unknown;
+    paymentMethod?: unknown;
     kyc: IssueKycCertificateOptions["kyc"];
     uniqueId?: IssueKycCertificateOptions["uniqueId"];
     revocationId?: IssueKycCertificateOptions["revocationId"];
@@ -43,7 +43,7 @@ export async function issueKycCertificateFromDependencies(
         uniqueId: dependencies.uniqueId,
         revocationId: dependencies.revocationId,
     });
-    const sendOptions = buildSponsoredSendOptions(
+    const sendOptions = buildGuardianSendOptions(
         dependencies.account.address,
         dependencies.paymentMethod,
         dependencies.network

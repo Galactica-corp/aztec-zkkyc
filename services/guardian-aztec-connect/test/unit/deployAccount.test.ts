@@ -1,7 +1,8 @@
 import type { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
-import { AztecAddress as AztecAddressValue, deployGuardianAccountIfNeededFromDependencies, type DeployMethodLike } from "../../src/wallet/deployAccount.js";
+import { deployGuardianAccountIfNeededFromDependencies, type DeployMethodLike } from "../../src/wallet/deployAccount.js";
 import { ContractInitializationStatus } from "@aztec/aztec.js/wallet";
+import { NO_FROM } from "@aztec/aztec.js/account";
 import { createAddressStub, createRegisteredAddress } from "../support/fixtures.js";
 
 describe("deployGuardianAccountIfNeededFromDependencies", () => {
@@ -45,7 +46,7 @@ describe("deployGuardianAccountIfNeededFromDependencies", () => {
         });
 
         expect(sentOptions).toEqual([{
-            from: AztecAddressValue.ZERO,
+            from: NO_FROM,
             fee: { paymentMethod: { kind: "sponsored" } },
             wait: { timeout: 60000 },
         }]);
@@ -133,7 +134,7 @@ describe("deployGuardianAccountIfNeededFromDependencies", () => {
 
         expect(sentOptions).toEqual([
             {
-                from: AztecAddressValue.ZERO,
+                from: NO_FROM,
                 fee: { paymentMethod: { kind: "sponsored" } },
                 wait: { timeout: 60000 },
             },

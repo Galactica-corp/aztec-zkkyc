@@ -4,7 +4,7 @@ import type { GuardianNetworkConfig } from "../types.js";
 
 export interface GuardianSendOptions {
     from: AztecAddress | typeof NO_FROM;
-    fee: {
+    fee?: {
         paymentMethod: unknown;
     };
     wait: {
@@ -21,21 +21,31 @@ interface ReceiptLike {
 }
 
 /**
- * Builds the common sponsored send options used by guardian write operations.
+ * Builds the common send options used by guardian write operations.
+ *
+ * - For environments with a Sponsored FPC, pass a `paymentMethod` (e.g. `SponsoredFeePaymentMethod`).
+ * - For testnet / mainnet, omit `paymentMethod` to use the wallet's default fee mechanism.
  */
-export function buildSponsoredSendOptions(
+export function buildGuardianSendOptions(
     from: AztecAddress | typeof NO_FROM,
-    paymentMethod: unknown,
+    paymentMethod: unknown | undefined,
     network: GuardianNetworkConfig
 ): GuardianSendOptions {
-    return {
+    const base: GuardianSendOptions = {
         from,
-        fee: { paymentMethod },
         wait: {
             timeout: network.txTimeoutMs,
         },
     };
+
+    return paymentMethod ? { ...base, fee: { paymentMethod } } : base;
 }
+
+/**
+ * Backwards-compatible alias (internal tests import this symbol).
+ * Prefer `buildGuardianSendOptions`.
+ */
+export const buildSponsoredSendOptions = buildGuardianSendOptions;
 
 /**
  * Extracts a transaction hash from an Aztec receipt and fails loudly when it is missing.

@@ -1,4 +1,3 @@
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee";
 import { NO_FROM } from "@aztec/aztec.js/account";
 import type { AccountManager } from "@aztec/aztec.js/wallet";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
@@ -8,8 +7,9 @@ import type {
     GuardianStatusOptions,
 } from "../types.js";
 import { loadSponsoredGuardianRuntime } from "../runtime/guardianRuntime.js";
-import { buildSponsoredSendOptions } from "../tx/guardianTx.js";
+import { buildGuardianSendOptions } from "../tx/guardianTx.js";
 import {
+    type GuardianStatusDependencies,
     getGuardianAccountStatusFromDependencies,
     getGuardianWhitelistStatusFromRuntime,
 } from "./accountStatus.js";
@@ -19,16 +19,13 @@ interface DeployMethodLike {
 }
 
 export interface DeployGuardianDependencies {
-    wallet: {
-        getAccounts(): Promise<Array<{ item: { equals(other: unknown): boolean } }>>;
-        getContractMetadata(address: unknown): Promise<{ isContractInitialized: boolean }>;
+    wallet: GuardianStatusDependencies["wallet"] & {
         registerSender(address: unknown, alias: string): Promise<unknown>;
     };
-    account: {
-        address: AccountManager["address"];
+    account: GuardianStatusDependencies["account"] & {
         getDeployMethod(): Promise<DeployMethodLike>;
     };
-    paymentMethod: unknown;
+    paymentMethod?: unknown;
     network: GuardianNetworkConfig;
     getWhitelistStatus?(): Promise<{ isWhitelisted: boolean }>;
 }
@@ -47,13 +44,13 @@ export async function deployGuardianAccountIfNeededFromDependencies(
     const deployMethod = await dependencies.account.getDeployMethod();
 
     try {
-        await deployMethod.send(buildSponsoredSendOptions(
+        await deployMethod.send(buildGuardianSendOptions(
             NO_FROM,
             dependencies.paymentMethod,
             dependencies.network
         ));
     } catch {
-        await deployMethod.send(buildSponsoredSendOptions(
+        await deployMethod.send(buildGuardianSendOptions(
             dependencies.account.address,
             dependencies.paymentMethod,
             dependencies.network

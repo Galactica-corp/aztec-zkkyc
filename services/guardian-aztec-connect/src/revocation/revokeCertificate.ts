@@ -1,6 +1,6 @@
 import { revokeCertificateByRevocationId } from "../contracts/certificateRegistryClient.js";
 import { loadGuardianRegistryContext } from "../runtime/guardianRegistryContext.js";
-import { buildSponsoredSendOptions, type GuardianSendOptions } from "../tx/guardianTx.js";
+import { buildGuardianSendOptions, type GuardianSendOptions } from "../tx/guardianTx.js";
 import type {
     GuardianNetworkConfig,
     RevokeCertificateOptions,
@@ -12,7 +12,7 @@ interface RevokeCertificateDependencies {
     account: {
         address: RevokeCertificateResult["guardianAddress"];
     };
-    paymentMethod: unknown;
+    paymentMethod?: unknown;
     revocationId: RevokeCertificateOptions["revocationId"];
     submitRevocation(
         revocationId: RevokeCertificateOptions["revocationId"],
@@ -30,7 +30,7 @@ function normalizeRevocationId(revocationId: RevokeCertificateOptions["revocatio
 export async function revokeCertificateFromDependencies(
     dependencies: RevokeCertificateDependencies
 ): Promise<RevokeCertificateResult> {
-    const sendOptions = buildSponsoredSendOptions(
+    const sendOptions = buildGuardianSendOptions(
         dependencies.account.address,
         dependencies.paymentMethod,
         dependencies.network
