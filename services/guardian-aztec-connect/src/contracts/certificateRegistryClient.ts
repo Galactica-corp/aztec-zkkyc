@@ -1,9 +1,10 @@
 import type { ContractArtifact } from "@aztec/aztec.js/abi";
-import { Contract, getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
+import { getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
 import { Fr } from "@aztec/aztec.js/fields";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import * as dotenv from "dotenv";
 import path from "path";
+import { CertificateRegistryContract } from "../../../../artifacts/CertificateRegistry.js";
 import type { PreparedKycCertificateIssuance } from "../kyc/zkKyc.js";
 import { requireTransactionHash } from "../tx/guardianTx.js";
 import { loadGuardianRuntime } from "../runtime/guardianRuntime.js";
@@ -16,7 +17,7 @@ import type {
 
 dotenv.config({ path: path.resolve(process.cwd(), ".env"), quiet: true });
 
-export type CertificateRegistryContractInstance = Awaited<ReturnType<typeof Contract.at>>;
+export type CertificateRegistryContractInstance = CertificateRegistryContract;
 
 export interface CertificateRegistryClient {
   address: AztecAddress;
@@ -33,30 +34,6 @@ export interface CertificateRegistryClientDependencies {
   ): Promise<CertificateRegistryContractInstance>;
 }
 
-interface GuardianWhitelistMethod {
-  simulate(options?: { from?: AztecAddress }): Promise<bigint[]>;
-}
-
-interface IssueCertificateMethod {
-  send(options: unknown): Promise<{
-    txHash?: {
-      toString(): string;
-    };
-  } | undefined>;
-}
-
-interface RevokeCertificateMethod {
-  send(options: unknown): Promise<{
-    txHash?: {
-      toString(): string;
-    };
-  } | undefined>;
-}
-
-interface GuardianCertificateCopiesCountMethod {
-  simulate(options?: { from?: AztecAddress }): Promise<number | bigint>;
-}
-
 interface GuardianCertificatesPage {
   count: number | bigint;
   guardian: bigint;
@@ -66,35 +43,13 @@ interface GuardianCertificatesPage {
   has_more: boolean;
 }
 
-interface GuardianCertificateCopiesMethod {
-  simulate(options?: { from?: AztecAddress }): Promise<GuardianCertificatesPage>;
-}
-
-interface GuardianWhitelistContract {
-  methods: {
-    get_whitelisted_guardians(): GuardianWhitelistMethod;
-    get_guardian_certificate_copies(guardian: AztecAddress, pageIndex: number): GuardianCertificateCopiesMethod;
-    get_guardian_certificate_copies_count(guardian: AztecAddress): GuardianCertificateCopiesCountMethod;
-    revoke_certificate(revocationId: Fr): RevokeCertificateMethod;
-    issue_certificate(
-      user: AztecAddress,
-      uniqueId: Fr,
-      revocationId: Fr,
-      contentType: Fr,
-      personalData: PreparedKycCertificateIssuance["personalData"],
-      addressData: PreparedKycCertificateIssuance["addressData"]
-    ): IssueCertificateMethod;
-  };
-}
-
 const defaultDependencies: CertificateRegistryClientDependencies = {
   async loadArtifact() {
-    const artifactModulePath = new URL("../../../../artifacts/CertificateRegistry.js", import.meta.url).href;
-    const { CertificateRegistryContract } = await import(artifactModulePath);
     return CertificateRegistryContract.artifact;
   },
   async loadContract(address, runtime, artifact) {
-    return await Contract.at(address, artifact, runtime.wallet);
+    void artifact;
+    return CertificateRegistryContract.at(address, runtime.wallet);
   },
 };
 
@@ -218,15 +173,23 @@ export async function loadCertificateRegistryClient(
   return await createCertificateRegistryClientFromRuntime(runtime, options, dependencies);
 }
 
-export function isGuardianInWhitelist(guardianAddress: AztecAddress, guardianWhitelist: bigint[]): boolean {
+function toBigInt(value: bigint | Fr): bigint {
+  return typeof value === "bigint" ? value : value.toBigInt();
+}
+
+export function isGuardianInWhitelist(
+  guardianAddress: AztecAddress,
+  guardianWhitelist: Array<bigint | Fr>
+): boolean {
   const guardianAddressString = guardianAddress.toString();
 
   return guardianWhitelist.some((guardianField) => {
-    if (guardianField === 0n) {
+    const guardianFieldBigInt = toBigInt(guardianField);
+    if (guardianFieldBigInt === 0n) {
       return false;
     }
 
-    return AztecAddress.fromField(new Fr(guardianField)).toString() === guardianAddressString;
+    return AztecAddress.fromField(new Fr(guardianFieldBigInt)).toString() === guardianAddressString;
   });
 }
 
@@ -234,16 +197,51 @@ export async function getGuardianWhitelistStatus(
   client: Pick<CertificateRegistryClient, "contract">,
   guardianAddress: AztecAddress
 ): Promise<boolean> {
-  const contract = client.contract as unknown as GuardianWhitelistContract;
-  const guardianWhitelist = await contract.methods.get_whitelisted_guardians().simulate({
+  const guardianWhitelist = await client.contract.methods.get_whitelisted_guardians().simulate({
     from: guardianAddress,
   });
 
-  return isGuardianInWhitelist(guardianAddress, guardianWhitelist);
+  return isGuardianInWhitelist(
+    guardianAddress,
+    guardianWhitelist as unknown as Array<bigint | Fr>
+  );
 }
 
 function normalizePageCount(value: number | bigint): number {
   return typeof value === "bigint" ? Number(value) : value;
+}
+
+function unwrapSimulationResult<T>(value: T): unknown {
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+
+  const candidate = value as Record<string, unknown>;
+  if ("result" in candidate) {
+    return candidate.result;
+  }
+
+  if ("value" in candidate) {
+    return candidate.value;
+  }
+
+  if ("returnValue" in candidate) {
+    return candidate.returnValue;
+  }
+
+  return value;
+}
+
+function normalizeSimulatedCount(value: unknown): number {
+  const unwrapped = unwrapSimulationResult(value);
+  if (typeof unwrapped === "bigint") {
+    return Number(unwrapped);
+  }
+  if (typeof unwrapped === "number") {
+    return unwrapped;
+  }
+
+  throw new Error("Unexpected certificate registry count simulation result");
 }
 
 function mapGuardianCertificateCopy(
@@ -263,9 +261,8 @@ export async function listGuardianCertificateCopies(
   client: Pick<CertificateRegistryClient, "contract">,
   guardianAddress: AztecAddress
 ): Promise<{ count: number; certificates: RevokableCertificateSummary[] }> {
-  const contract = client.contract as unknown as GuardianWhitelistContract;
-  const totalCount = normalizePageCount(
-    await contract.methods.get_guardian_certificate_copies_count(guardianAddress).simulate({
+  const totalCount = normalizeSimulatedCount(
+    await client.contract.methods.get_guardian_certificate_copies_count(guardianAddress).simulate({
       from: guardianAddress,
     })
   );
@@ -280,9 +277,13 @@ export async function listGuardianCertificateCopies(
   let pageIndex = 0;
 
   while (pageIndex < totalCount) {
-    const page = await contract.methods.get_guardian_certificate_copies(guardianAddress, pageIndex).simulate({
-      from: guardianAddress,
-    });
+    const page = unwrapSimulationResult(
+      await client.contract.methods
+        .get_guardian_certificate_copies(guardianAddress, pageIndex)
+        .simulate({
+          from: guardianAddress,
+        })
+    ) as GuardianCertificatesPage;
     if (normalizePageCount(page.count) === 0) {
       break;
     }
@@ -310,11 +311,12 @@ export async function revokeCertificateByRevocationId(
   revocationId: bigint | number | string,
   sendOptions: unknown
 ): Promise<{ txHash: string }> {
-  const contract = client.contract as unknown as GuardianWhitelistContract;
-  const receipt = await contract.methods.revoke_certificate(Fr.fromString(revocationId.toString())).send(sendOptions);
+  const receipt = await client.contract.methods
+    .revoke_certificate(Fr.fromString(revocationId.toString()))
+    .send(sendOptions as never);
 
   return {
-    txHash: requireTransactionHash(receipt, "Certificate revocation"),
+    txHash: requireTransactionHash(receipt as never, "Certificate revocation"),
   };
 }
 
@@ -326,8 +328,7 @@ export async function issueCertificate(
   issuance: PreparedKycCertificateIssuance,
   sendOptions: unknown
 ): Promise<{ txHash: string }> {
-  const contract = client.contract as unknown as GuardianWhitelistContract;
-  const receipt = await contract.methods
+  const receipt = await client.contract.methods
     .issue_certificate(
       issuance.userAddress,
       issuance.uniqueId,
@@ -336,9 +337,9 @@ export async function issueCertificate(
       issuance.personalData,
       issuance.addressData
     )
-    .send(sendOptions);
+    .send(sendOptions as never);
 
   return {
-    txHash: requireTransactionHash(receipt, "Certificate issuance"),
+    txHash: requireTransactionHash(receipt as never, "Certificate issuance"),
   };
 }

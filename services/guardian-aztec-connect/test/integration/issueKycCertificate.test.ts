@@ -32,6 +32,6 @@ describe("issueKycCertificate integration", () => {
             harness.certificateRegistry.methods.get_certificate_count(harness.userAccount.address).simulate({
                 from: harness.userAccount.address,
             })
-        ).resolves.toBe(1n);
+        ).resolves.toEqual(expect.objectContaining({ result: 1n }));
     });
 });
