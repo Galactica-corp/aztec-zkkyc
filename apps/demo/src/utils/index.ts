@@ -1,7 +1,10 @@
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { Fr } from '@aztec/aztec.js/fields';
 import { hasHexPrefix } from '@aztec/foundation/string';
-import { PLACEHOLDER_ADDRESS } from '../config/deployments';
+import {
+  PLACEHOLDER_ADDRESS,
+  PLACEHOLDER_SALT,
+} from '../config/deployments';
 import {
   CHAIN_ID_TO_NETWORK,
   NETWORK_NAMES,
@@ -145,57 +148,80 @@ export const shouldUseOperationsFlow = (
 };
 
 /**
- * Validates that a network configuration has valid contract addresses.
- * Returns false if addresses are placeholders or invalid.
+ * Validates that a network configuration is structurally valid.
+ *
+ * Notes:
+ * - Placeholder (all-zero) contract addresses/salts are considered valid. They indicate
+ *   "not deployed / not configured" rather than a malformed config.
+ * - This is used to guard network selection and connection flows, so we validate URL
+ *   format and ensure any non-placeholder addresses/salts parse correctly.
  */
 export const isValidConfig = (config: {
   nodeUrl?: string;
   tokenContractAddress?: string;
   dripperContractAddress?: string;
+  certificateRegistryContractAddress?: string;
+  useCaseExampleContractAddress?: string;
   deployerAddress?: string;
   dripperDeploymentSalt?: string;
   tokenDeploymentSalt?: string;
+  certificateRegistryDeploymentSalt?: string;
+  useCaseExampleDeploymentSalt?: string;
 }): boolean => {
   // Check required fields exist
   if (
     !config.nodeUrl ||
     !config.tokenContractAddress ||
     !config.dripperContractAddress ||
+    !config.certificateRegistryContractAddress ||
+    !config.useCaseExampleContractAddress ||
     !config.deployerAddress ||
     !config.dripperDeploymentSalt ||
-    !config.tokenDeploymentSalt
+    !config.tokenDeploymentSalt ||
+    !config.certificateRegistryDeploymentSalt ||
+    !config.useCaseExampleDeploymentSalt
   ) {
-    return false;
-  }
-
-  // Check for placeholder contract addresses (not deployed yet)
-  // Note: deployerAddress can be zero for public networks where deployer is unknown
-  if (
-    config.tokenContractAddress === PLACEHOLDER_ADDRESS ||
-    config.dripperContractAddress === PLACEHOLDER_ADDRESS
-  ) {
-    return false;
-  }
-
-  // Validate Aztec addresses
-  try {
-    AztecAddress.fromString(config.tokenContractAddress);
-    AztecAddress.fromString(config.dripperContractAddress);
-  } catch {
-    return false;
-  }
-
-  // Validate deployment salts
-  try {
-    Fr.fromString(config.dripperDeploymentSalt);
-    Fr.fromString(config.tokenDeploymentSalt);
-  } catch {
     return false;
   }
 
   // Validate node URL format
   const urlPattern = /^(https?:\/\/)[^\s/$.?#].[^\s]*$/i;
   if (!urlPattern.test(config.nodeUrl)) {
+    return false;
+  }
+
+  const isPlaceholderAddress = (value: string) => value === PLACEHOLDER_ADDRESS;
+  const isPlaceholderSalt = (value: string) => value === PLACEHOLDER_SALT;
+
+  // Validate Aztec addresses (placeholders allowed)
+  try {
+    const addresses = [
+      config.tokenContractAddress,
+      config.dripperContractAddress,
+      config.certificateRegistryContractAddress,
+      config.useCaseExampleContractAddress,
+    ];
+    for (const addr of addresses) {
+      if (isPlaceholderAddress(addr)) continue;
+      AztecAddress.fromString(addr);
+    }
+  } catch {
+    return false;
+  }
+
+  // Validate deployment salts (placeholders allowed)
+  try {
+    const salts = [
+      config.dripperDeploymentSalt,
+      config.tokenDeploymentSalt,
+      config.certificateRegistryDeploymentSalt,
+      config.useCaseExampleDeploymentSalt,
+    ];
+    for (const salt of salts) {
+      if (isPlaceholderSalt(salt)) continue;
+      Fr.fromString(salt);
+    }
+  } catch {
     return false;
   }
 

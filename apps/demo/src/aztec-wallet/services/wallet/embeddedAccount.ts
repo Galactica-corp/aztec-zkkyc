@@ -108,6 +108,9 @@ export async function createEmbeddedAccount(
       networkConfig.name
     );
   } catch (cause) {
+    if (cause instanceof PXEInitError) {
+      throw cause;
+    }
     throw new PXEInitError(
       `Failed to initialize PXE for network ${networkConfig.name}`,
       cause
@@ -197,6 +200,9 @@ export async function loadExistingEmbeddedAccount(
       networkConfig.name
     );
   } catch (cause) {
+    if (cause instanceof PXEInitError) {
+      throw cause;
+    }
     throw new PXEInitError(
       `Failed to initialize PXE for network ${networkConfig.name}`,
       cause

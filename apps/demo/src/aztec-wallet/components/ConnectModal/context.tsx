@@ -112,7 +112,7 @@ export const ConnectModalProvider: React.FC<ConnectModalProviderProps> = ({
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : 'Connection failed';
-        console.error('Modal: Connection error:', errorMessage);
+        console.error('Modal: Connection error:', err);
         setError(errorMessage);
         setView('main');
         setConnectingState(null);

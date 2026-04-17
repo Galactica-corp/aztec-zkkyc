@@ -8,7 +8,7 @@
  */
 export const NETWORK_URLS = {
   sandbox: 'http://localhost:8080',
-  testnet: 'https://rpc.testnet.aztec-labs.com/',
+  testnet: 'https://rpc.testnet.aztec-labs.com',
 } as const;
 
 /**
@@ -33,6 +33,8 @@ export type AztecChainId = `aztec:${number}`;
  */
 export const CHAIN_IDS: Record<AztecNetwork, AztecChainId> = {
   sandbox: 'aztec:0',
+  // Rollup version / chain id must match the testnet network you connect to.
+  // Keep in sync with Aztec's published network parameters.
   testnet: 'aztec:4127419662',
 };
 

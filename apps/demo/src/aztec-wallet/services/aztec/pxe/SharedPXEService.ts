@@ -15,6 +15,7 @@ import { MinimalWallet } from '../../../../utils/MinimalWallet';
 import { NetworkService } from '../network';
 import { AztecStorageService } from '../storage';
 import type { AztecNetwork } from '../../../../config/networks/constants';
+import { PXEInitError } from '../../wallet/errors';
 
 const logger = createLogger('shared-pxe-service');
 const pxeLogger = createLogger('pxe');
@@ -169,12 +170,29 @@ class SharedPXEServiceClass {
 
     const aztecNode = NetworkService.getNodeClient(nodeUrl);
 
-    // Get L1 contracts for network-specific database
-    const l1Contracts = await aztecNode.getL1ContractAddresses();
+    let l1Contracts: Awaited<ReturnType<typeof aztecNode.getL1ContractAddresses>>;
+    try {
+      // Get L1 contracts for network-specific database
+      l1Contracts = await aztecNode.getL1ContractAddresses();
+    } catch (cause) {
+      throw new PXEInitError(
+        `Failed to fetch L1 contract addresses from nodeUrl=${nodeUrl} for network ${networkName}`,
+        cause
+      );
+    }
+
     const storeName = `aztec-pxe-${networkName}`;
 
-    // Reuse a single store per network
-    const pxeStore = await this.getOrCreateStore(networkName, storeName);
+    let pxeStore: Awaited<ReturnType<typeof createStore>>;
+    try {
+      // Reuse a single store per network
+      pxeStore = await this.getOrCreateStore(networkName, storeName);
+    } catch (cause) {
+      throw new PXEInitError(
+        `Failed to initialize local PXE store "${storeName}" for network ${networkName}`,
+        cause
+      );
+    }
 
     const config = getPXEConfig();
     config.l1Contracts = l1Contracts;
@@ -182,26 +200,55 @@ class SharedPXEServiceClass {
     const networkConfig = this.getNetworkConfig(networkName);
     config.proverEnabled = networkConfig?.proverEnabled ?? false;
 
-    const pxe = await createPXE(aztecNode, config, {
-      store: pxeStore,
-      useLogSuffix: false,
-    });
+    let pxe: PXE;
+    try {
+      pxe = await createPXE(aztecNode, config, {
+        store: pxeStore,
+        useLogSuffix: false,
+      });
+    } catch (cause) {
+      throw new PXEInitError(
+        `Failed to create PXE instance for network ${networkName} (nodeUrl=${nodeUrl})`,
+        cause
+      );
+    }
 
     const wallet = new MinimalWallet(pxe, aztecNode);
 
     // Register fee payment contracts (look up config by network name)
-    const feePaymentConfig = this.getFeePaymentConfig(networkName);
-    const feePaymentRegister = new FeePaymentRegister();
-    await feePaymentRegister.registerAll(pxe, feePaymentConfig);
+    try {
+      const feePaymentConfig = this.getFeePaymentConfig(networkName);
+      const feePaymentRegister = new FeePaymentRegister();
+      await feePaymentRegister.registerAll(pxe, feePaymentConfig);
+    } catch (cause) {
+      throw new PXEInitError(
+        `Failed to register fee payment contracts for network ${networkName}`,
+        cause
+      );
+    }
 
     // Initialize storage service
     const storageService = new AztecStorageService();
 
     // Register saved senders
-    await this.registerSavedSenders(pxe, storageService);
+    try {
+      await this.registerSavedSenders(pxe, storageService);
+    } catch (cause) {
+      throw new PXEInitError(
+        `Failed to register saved senders for network ${networkName}`,
+        cause
+      );
+    }
 
-    const nodeInfo = await aztecNode.getNodeInfo();
-    logger.info(`PXE connected to ${networkName}`, nodeInfo);
+    try {
+      const nodeInfo = await aztecNode.getNodeInfo();
+      logger.info(`PXE connected to ${networkName}`, nodeInfo);
+    } catch (cause) {
+      throw new PXEInitError(
+        `PXE initialized, but failed to fetch node info for network ${networkName}`,
+        cause
+      );
+    }
 
     const instance: SharedPXEInstance = {
       pxe,
