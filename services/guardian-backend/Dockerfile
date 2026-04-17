@@ -61,6 +61,7 @@ COPY apps ./apps
 COPY services ./services
 COPY config ./config
 COPY scripts ./scripts
+COPY target ./target
 
 RUN yarn install && yarn compile && yarn codegen
 
