@@ -2,11 +2,6 @@
  * Fee Payment Service
  */
 
-import {
-  MeteredFeePaymentMethod,
-  MeteredExactFeePaymentMethod,
-} from '@wonderland/aztec-fee-payment/fee-payment-methods';
-import { AztecAddress } from '@aztec/aztec.js/addresses';
 import type { FeePaymentMethod } from '@aztec/aztec.js/fee';
 import type { FeePaymentMethodType } from '../../../config/feePaymentContracts';
 import type { FeePaymentContractsConfig } from '../../../config/networks/types';
@@ -33,17 +28,13 @@ export async function createFeePaymentMethod(
       if (!config.metered?.address) {
         throw new Error('Metered FPC not configured for this network');
       }
-      return new MeteredFeePaymentMethod(
-        AztecAddress.fromString(config.metered.address)
-      );
+      throw new Error('Metered FPC not implemented');
 
     case 'meteredExact':
       if (!config.metered?.address) {
         throw new Error('Metered FPC not configured for this network');
       }
-      return new MeteredExactFeePaymentMethod(
-        AztecAddress.fromString(config.metered.address)
-      );
+      throw new Error('Metered FPC not implemented');
 
     default:
       throw new Error(`Unknown fee payment method type: ${type}`);

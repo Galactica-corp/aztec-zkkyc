@@ -1,7 +1,6 @@
 import {
   type AccountWithSecretKey,
   type Account,
-  SignerlessAccount,
 } from '@aztec/aztec.js/account';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import type { AztecNode } from '@aztec/aztec.js/node';
@@ -32,8 +31,7 @@ export class MinimalWallet extends BaseWallet {
     let account: Account | undefined;
 
     if (address.equals(AztecAddress.ZERO)) {
-      const chainInfo = await this.getChainInfo();
-      account = new SignerlessAccount(chainInfo);
+      throw new Error('Can not get account for Zero address. For deployments you can use the NO_FROM address.');
     } else {
       account = this.addressToAccount.get(address.toString());
     }
