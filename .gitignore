@@ -1,6 +1,9 @@
 node_modules
 target/
 artifacts/
+!/artifacts/
+/artifacts/*
+!/artifacts/tsconfig.json
 log/
 .vscode
 .DS_Store
