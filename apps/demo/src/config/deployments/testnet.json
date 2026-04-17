@@ -11,33 +11,33 @@
   },
   "deployer": "0x2b66338898e8c1520896ce1170027a4b764852ddab73ae50c6657ead9b396365",
   "proverEnabled": true,
-  "deployedAt": "2026-04-10T10:47:02.810Z",
+  "deployedAt": "2026-04-17T09:44:38.107Z",
   "certificateRegistryContract": {
-    "address": "0x1fce4e150d3864438c902a8b87234be02f72e15f66e63904da3520d4749d169a",
-    "salt": "0x1deef3c604db0209546ad4e8b87571ae5df462584e1f4ab8b9ebe282db3e3443"
+    "address": "0x2c8a17125910eb7b72ae50bf429bfb1605e565f32c41b69355920d720360e70c",
+    "salt": "0x05ba4d184355167fd33d0f58f10631dccd710691d2ba1247ba3e8d8d5bc13479"
   },
   "ageCheckRequirementContract": {
-    "address": "0x0e10111bea457f77ebeeed259d7a11e5c819870cebc4a215ece413fffac5b2e9",
-    "salt": "0x06c5cc4e10ed1be67749fc62df47ec9907023177570d8dcfdddc44f2d859ea7e"
+    "address": "0x209bc5cf44f999c7206aa0931644f8bd949295a362a10052ad95634125a9f611",
+    "salt": "0x16366f243975dffa07643c614ed099a51c2f56f3ec760d00f6fd5f1048248bad"
   },
   "sanctionListRequirementContract": {
-    "address": "0x099ed0434937ad72bce86e8e6ec1eece6895a22a7fe2d3faa251db8fa8b1fbca",
-    "salt": "0x07aa290cce143d9d8b72088d2ed08b8713144ac42bde843a61eb9b63751ada77"
+    "address": "0x0361cfbb9bf7d85046882c95a56d7b152ffef05d8711fc00f78babb506bf6666",
+    "salt": "0x1530aca730bb559ae602f2892e1f85dc31448b4d95a7058fa1928cb95d70db55"
   },
   "basicDisclosureContract": {
-    "address": "0x25d56cef37c5d4e6ae54fa1eee823aa0fb5af30142a202e9fffd497d2eac60c7",
-    "salt": "0x2560173faa5eb7708528a4f0eaf687e33dd95e12d1762f9f599fa63dfbed17fe"
+    "address": "0x0e3375ff7de91875729191f031e89a14524d53bed940e36014b41b8e5a1e119e",
+    "salt": "0x276582bebf0eea1e4bd1271a4c93e12aafcdb8b74940844af510f2bf50f2cf79"
   },
   "shamirDisclosureContract": {
-    "address": "0x0c666ed3dacc44e65f39b2871c6efd1d5e7fc7ff6f87a4a1530af5da3b1482eb",
-    "salt": "0x0bf299d178fee7931d1c7b8502669e7b580208c67c2dd5a749b41920352e87ba"
+    "address": "0x19564bc2e7956384c7c58b02fa76deb66ed2eddddf07faca2225399fac5f142f",
+    "salt": "0x1d356e755c506b1518149ff8af0f094c3d67b40d1fa07118f49db7252771a6d0"
   },
   "shamirDisclosureConstructorArgs": {
     "recipientCount": 3,
     "threshold": 2,
     "recipients": [
-      "0x283975b880124118d6f881d79677e7df1a80a3f5726404c44167b4589c44721c",
-      "0x294f0407ab7b5e9613104083ad900b8f42d7575f139a2e17a2b6940cde90b912",
+      "0x08b52fd345055283a85ec972f1127395b6b6434cb36f9a5d82df9c1a5f9eab7f",
+      "0x2d70a453da649cec990372656731299817558f223fd6495231555ec3dda33377",
       "0x2320c9938b3e87feb4e475413456d028572f3367e18d61e7d198d342b557f297"
     ],
     "participantAddresses": [
@@ -49,8 +49,8 @@
     ]
   },
   "useCaseExampleContract": {
-    "address": "0x05b4ca3c00637f7be4395302eba9a8d8dfa9fd1c0207549b867e41c73fdc362e",
-    "salt": "0x274c89c47e5ac5cb72e8db59b269aaae1112bb475c0994acb5c7e9392a46e299"
+    "address": "0x24fad97b213c1b9e70b3985c480c8b87c7970b00899bed9434f4cc2fe779bdfe",
+    "salt": "0x26882572a2b46f8980fbc894fec7f117faf733bb4e47085f925ce826832ac86a"
   },
   "tokenBridgeContract": {
     "address": "0x0000000000000000000000000000000000000000000000000000000000000000",
@@ -70,5 +70,5 @@
     "decimals": 18,
     "adminAddress": "0x0000000000000000000000000000000000000000000000000000000000000000"
   },
-  "certificateRegistryAdminAddress": "0x283975b880124118d6f881d79677e7df1a80a3f5726404c44167b4589c44721c"
+  "certificateRegistryAdminAddress": "0x08b52fd345055283a85ec972f1127395b6b6434cb36f9a5d82df9c1a5f9eab7f"
 }
