@@ -197,13 +197,17 @@ export async function getGuardianWhitelistStatus(
   client: Pick<CertificateRegistryClient, "contract">,
   guardianAddress: AztecAddress
 ): Promise<boolean> {
-  const guardianWhitelist = await client.contract.methods.get_whitelisted_guardians().simulate({
-    from: guardianAddress,
-  });
+  // Aztec `simulate()` returns a `SimulationResult` wrapper (`{ result, offchainEffects, ... }`),
+  // so the raw whitelist array must be unwrapped before iterating.
+  const guardianWhitelist = unwrapSimulationResult(
+    await client.contract.methods.get_whitelisted_guardians().simulate({
+      from: guardianAddress,
+    })
+  );
 
   return isGuardianInWhitelist(
     guardianAddress,
-    guardianWhitelist as unknown as Array<bigint | Fr>
+    guardianWhitelist as Array<bigint | Fr>
   );
 }
 

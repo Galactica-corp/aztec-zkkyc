@@ -73,6 +73,30 @@ describe("certificateRegistryClient", () => {
 
     it("reads the whitelist getter from the certificate registry client", async () => {
         const guardianAddress = AztecAddress.fromField(new Fr(11n));
+        // Current Aztec SDK wraps the decoded return value in a `SimulationResult`
+        // (`{ result, offchainEffects, ... }`), so the client must unwrap it.
+        const client = {
+            contract: {
+                methods: {
+                    get_whitelisted_guardians() {
+                        return {
+                            async simulate() {
+                                return { result: [0n, 11n, 13n], offchainEffects: [] };
+                            },
+                        };
+                    },
+                },
+            },
+        } as unknown as Awaited<ReturnType<typeof createCertificateRegistryClientFromRuntime>>;
+
+        await expect(getGuardianWhitelistStatus(client, guardianAddress)).resolves.toBe(true);
+        await expect(
+            getGuardianWhitelistStatus(client, AztecAddress.fromField(new Fr(15n)))
+        ).resolves.toBe(false);
+    });
+
+    it("falls back to raw array simulation results for backwards compatibility", async () => {
+        const guardianAddress = AztecAddress.fromField(new Fr(11n));
         const client = {
             contract: {
                 methods: {
@@ -88,9 +112,6 @@ describe("certificateRegistryClient", () => {
         } as unknown as Awaited<ReturnType<typeof createCertificateRegistryClientFromRuntime>>;
 
         await expect(getGuardianWhitelistStatus(client, guardianAddress)).resolves.toBe(true);
-        await expect(
-            getGuardianWhitelistStatus(client, AztecAddress.fromField(new Fr(15n)))
-        ).resolves.toBe(false);
     });
 
     it("submits the issue_certificate call through the registry client", async () => {
