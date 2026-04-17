@@ -4,7 +4,7 @@
  * Handles registration of fee payment contracts with PXE.
  */
 
-import { MeteredContractArtifact } from '@wonderland/aztec-fee-payment/artifacts';
+// import { MeteredContractArtifact } from '@wonderland/aztec-fee-payment/artifacts';
 import type { ContractArtifact } from '@aztec/aztec.js/abi';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { Fr } from '@aztec/aztec.js/fields';
@@ -51,15 +51,16 @@ export class FeePaymentRegister {
     ];
 
     if (feePaymentConfig?.metered?.address) {
-      fpcsToRegister.push({
-        name: 'metered',
-        artifact: MeteredContractArtifact,
-        salt: Fr.fromString(feePaymentConfig.metered.salt ?? '1337'),
-        deployer: feePaymentConfig.metered.deployer
-          ? AztecAddress.fromString(feePaymentConfig.metered.deployer)
-          : AztecAddress.ZERO,
-        expectedAddress: feePaymentConfig.metered.address,
-      });
+      // fpcsToRegister.push({
+      //   name: 'metered',
+      //   artifact: MeteredContractArtifact,
+      //   salt: Fr.fromString(feePaymentConfig.metered.salt ?? '1337'),
+      //   deployer: feePaymentConfig.metered.deployer
+      //     ? AztecAddress.fromString(feePaymentConfig.metered.deployer)
+      //     : AztecAddress.ZERO,
+      //   expectedAddress: feePaymentConfig.metered.address,
+      // });
+      throw new Error('Metered FPC not implemented');
     }
 
     for (const fpc of fpcsToRegister) {
