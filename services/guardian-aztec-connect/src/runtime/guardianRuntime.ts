@@ -7,8 +7,10 @@ export interface GuardianRuntimeWithFees extends GuardianRuntime {
     /**
      * Optional fee payment method to include with tx send options.
      *
-     * On public networks (testnet/mainnet), the guardian should usually pay fees via its own funds,
-     * so this is intentionally left undefined.
+     * Mirrors the rules in `crates/zk_certificate/src/utils/fpc.ts`:
+     * - On local-network and testnet the guardian pays via the canonical Sponsored FPC.
+     * - On mainnet no sponsored payment method is attached, so the guardian must supply
+     *   its own fee payment (e.g. a private FPC) at the call site.
      */
     paymentMethod?: unknown;
 }
@@ -26,17 +28,18 @@ export async function loadGuardianRuntime(options: GuardianRuntimeOptions = {}):
 }
 
 /**
- * Loads the guardian runtime and optionally configures a Sponsored FPC payment method.
+ * Loads the guardian runtime and configures a Sponsored FPC payment method where available.
  *
- * The Aztec public testnet should not rely on sponsored fee payments.
+ * The canonical SponsoredFPC is deployed on both the local network and the public testnet,
+ * so we use it to cover transaction fees in those environments. On mainnet the guardian is
+ * expected to supply its own fee payment method (see `crates/zk_certificate/src/utils/fpc.ts`).
  */
 export async function loadGuardianRuntimeWithFees(
     options: GuardianRuntimeOptions = {}
 ): Promise<GuardianRuntimeWithFees> {
     const runtime = await loadGuardianRuntime(options);
 
-    // Use sponsored fees only on the local network by default.
-    if (runtime.network.name !== "local-network") {
+    if (runtime.network.environment === "mainnet") {
         return runtime;
     }
 
