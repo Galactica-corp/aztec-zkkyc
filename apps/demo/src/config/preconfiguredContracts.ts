@@ -1,5 +1,7 @@
-import { PrivateStablecoinContract } from '../../../../artifacts/PrivateStablecoin';
-import { TokenBridgeContract } from '../../../../artifacts/TokenBridge';
+import {
+  PrivateStablecoinContract,
+  TokenBridgeContract,
+} from './externalContracts';
 import ageCheckRequirementSandbox from '../../../../target/age_check_requirement-AgeCheckRequirement.json' with { type: 'json' };
 import useCaseExampleSandbox from '../../../../target/use_case_example-UseCaseExample.json' with { type: 'json' };
 import certificateRegistrySandbox from '../../../../target/zk_certificate-CertificateRegistry.json' with { type: 'json' };

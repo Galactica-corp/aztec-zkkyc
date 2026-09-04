@@ -3,11 +3,13 @@ import { Fr } from '@aztec/aztec.js/fields';
 import { AgeCheckRequirementContract } from '../../../../artifacts/AgeCheckRequirement';
 import { BasicDisclosureContract } from '../../../../artifacts/BasicDisclosure';
 import { CertificateRegistryContract } from '../../../../artifacts/CertificateRegistry';
-import { PrivateStablecoinContract } from '../../../../artifacts/PrivateStablecoin';
 import { SanctionListRequirementContract } from '../../../../artifacts/SanctionListRequirement';
-import { TokenBridgeContract } from '../../../../artifacts/TokenBridge';
 import { UseCaseExampleContract } from '../../../../artifacts/UseCaseExample';
 import { createContractConfig, getDeployerAddress } from '../contract-registry';
+import {
+  PrivateStablecoinContract,
+  TokenBridgeContract,
+} from './externalContracts';
 
 const DISCLOSURE_CONTEXT = 777;
 
@@ -145,6 +147,8 @@ export const contractsConfig = createContractConfig({
         config.privateStablecoinSymbol,
         config.privateStablecoinDecimals,
         AztecAddress.fromStringUnsafe(config.privateStablecoinAdminAddress),
+        // Zero disables the ARC-403 authorization hook on the 5.0 Token.
+        AztecAddress.ZERO,
       ],
       constructorArtifact: 'constructor_with_minter',
     }),

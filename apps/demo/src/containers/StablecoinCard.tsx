@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowRightLeft, Landmark, RefreshCw } from 'lucide-react';
-import { PrivateStablecoinContract } from '../../../../artifacts/PrivateStablecoin';
-import { TokenBridgeContract } from '../../../../artifacts/TokenBridge';
+import {
+  PrivateStablecoinContract,
+  TokenBridgeContract,
+} from '../config/externalContracts';
 import { hasAppManagedPXE, useAztecWallet } from '../aztec-wallet';
 import {
   SharedPXEService,
@@ -329,7 +331,7 @@ export const StablecoinCard: React.FC = () => {
         contract: TokenBridgeContract,
         address: bridgeAddress,
         functionName: 'exit_to_l1_private',
-        args: [recipient, amount, recipient, ZERO_FIELD],
+        args: [stablecoinAddress, recipient, amount, recipient, ZERO_FIELD],
         feePaymentMethod,
       });
 
@@ -359,6 +361,7 @@ export const StablecoinCard: React.FC = () => {
     isBridgeReady,
     isBridgeConfigured,
     loadStablecoinData,
+    stablecoinAddress,
     success,
     toastError,
     writeContract,
