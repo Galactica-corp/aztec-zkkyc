@@ -67,10 +67,10 @@ jobs:
         run: yarn
 
       - name: Compile contracts
-        run: script -e -c "aztec compile"
+        run: script -e -c "yarn compile"
 
       - name: Generate contract artifacts
-        run: script -e -c "aztec codegen target --outdir src/artifacts"
+        run: script -e -c "yarn codegen"
 
       - name: Change ownership for nargo files
         run: sudo chown -R $(whoami) ~/nargo && sudo chown -R $(whoami) ~/nargo/github.com
@@ -81,7 +81,7 @@ jobs:
           script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json"
 
       - name: Run Aztec tests
-        run: script -e -c "aztec test"
+        run: script -e -c "yarn test:nr"
 
       - name: Deploy account and capture credentials
         run: |
