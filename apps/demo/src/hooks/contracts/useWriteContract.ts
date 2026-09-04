@@ -178,7 +178,7 @@ export const useWriteContract = (options: UseWriteContractOptions = {}) => {
               connector.getSponsoredFeePaymentMethod(),
           });
 
-          const contractAddress = AztecAddress.fromString(address);
+          const contractAddress = AztecAddress.fromStringUnsafe(address);
 
           // Create contract instance
           const contract = await Contract.at(contractAddress, artifact, wallet);

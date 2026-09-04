@@ -1,4 +1,4 @@
-import type { AccountWithSecretKey } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec/aztec.js/account';
 import type { Fr } from '@aztec/aztec.js/fields';
 import type { CaipAccount } from '@azguardwallet/types';
 
@@ -31,7 +31,7 @@ export interface IAztecStorageService {
 
 export interface CreateAccountResult {
   account: unknown;
-  wallet: AccountWithSecretKey;
+  wallet: Account;
   salt: Fr;
   secretKey: Fr;
   signingKey: Buffer; // Node.js Buffer type

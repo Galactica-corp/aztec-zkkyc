@@ -150,7 +150,7 @@ bash -i <(curl -s https://install.aztec.network)
 
 ```bash
 # Align the Aztec CLI with the SDK version used in this repo (see root package.json)
-aztec-up use 4.2.0-aztecnr-rc.2
+aztec-up use 5.0.1
 ```
 
 ### Start Sandbox

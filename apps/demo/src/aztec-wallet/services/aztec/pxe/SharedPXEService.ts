@@ -4,7 +4,7 @@ import { Fr } from '@aztec/aztec.js/fields';
 import { createLogger } from '@aztec/aztec.js/log';
 import type { AztecNode } from '@aztec/aztec.js/node';
 import { SPONSORED_FPC_SALT } from '@aztec/constants';
-import { createStore } from '@aztec/kv-store/indexeddb';
+import { AztecSQLiteOPFSStore } from '@aztec/kv-store/sqlite-opfs';
 import { SponsoredFPCContractArtifact } from '@aztec/noir-contracts.js/SponsoredFPC';
 import { createPXE } from '@aztec/pxe/client/bundle';
 import { getPXEConfig } from '@aztec/pxe/config';
@@ -45,10 +45,8 @@ class SharedPXEServiceClass {
     new Map();
   private storePromises: Map<
     string,
-    Promise<Awaited<ReturnType<typeof createStore>>>
+    Promise<AztecSQLiteOPFSStore>
   > = new Map();
-  private static readonly PERSISTED_STORE_KB = 5e5; // 500MB
-  private static readonly FALLBACK_STORE_KB = 1e5; // 100MB
 
   /**
    * Get or create a PXE instance for a specific network.
@@ -170,20 +168,19 @@ class SharedPXEServiceClass {
 
     const aztecNode = NetworkService.getNodeClient(nodeUrl);
 
-    let l1Contracts: Awaited<ReturnType<typeof aztecNode.getL1ContractAddresses>>;
+    let nodeInfo: Awaited<ReturnType<typeof aztecNode.getNodeInfo>>;
     try {
-      // Get L1 contracts for network-specific database
-      l1Contracts = await aztecNode.getL1ContractAddresses();
+      nodeInfo = await aztecNode.getNodeInfo();
     } catch (cause) {
       throw new PXEInitError(
-        `Failed to fetch L1 contract addresses from nodeUrl=${nodeUrl} for network ${networkName}`,
+        `Failed to fetch node info from nodeUrl=${nodeUrl} for network ${networkName}`,
         cause
       );
     }
 
     const storeName = `aztec-pxe-${networkName}`;
 
-    let pxeStore: Awaited<ReturnType<typeof createStore>>;
+    let pxeStore: AztecSQLiteOPFSStore;
     try {
       // Reuse a single store per network
       pxeStore = await this.getOrCreateStore(networkName, storeName);
@@ -195,7 +192,9 @@ class SharedPXEServiceClass {
     }
 
     const config = getPXEConfig();
-    config.l1Contracts = l1Contracts;
+    config.l1ChainId = nodeInfo.l1ChainId;
+    config.rollupVersion = nodeInfo.rollupVersion;
+    config.rollupAddress = nodeInfo.l1ContractAddresses.rollupAddress;
     // Use network-specific prover mode. Public testnet requires real proofs, sandbox doesn't.
     const networkConfig = this.getNetworkConfig(networkName);
     config.proverEnabled = networkConfig?.proverEnabled ?? false;
@@ -204,7 +203,7 @@ class SharedPXEServiceClass {
     try {
       pxe = await createPXE(aztecNode, config, {
         store: pxeStore,
-        useLogSuffix: false,
+        loggerActorLabel: `pxe-${networkName}`,
       });
     } catch (cause) {
       throw new PXEInitError(
@@ -241,11 +240,10 @@ class SharedPXEServiceClass {
     }
 
     try {
-      const nodeInfo = await aztecNode.getNodeInfo();
       logger.info(`PXE connected to ${networkName}`, nodeInfo);
     } catch (cause) {
       throw new PXEInitError(
-        `PXE initialized, but failed to fetch node info for network ${networkName}`,
+        `PXE initialized, but failed to log node info for network ${networkName}`,
         cause
       );
     }
@@ -271,7 +269,7 @@ class SharedPXEServiceClass {
   private async getOrCreateStore(
     networkName: AztecNetwork,
     storeName: string
-  ): Promise<Awaited<ReturnType<typeof createStore>>> {
+  ): Promise<AztecSQLiteOPFSStore> {
     const existingPromise = this.storePromises.get(networkName);
     if (existingPromise) {
       return existingPromise;
@@ -282,33 +280,30 @@ class SharedPXEServiceClass {
     return createPromise;
   }
 
+  /**
+   * Open a persistent OPFS SQLite store. A second tab that already holds the
+   * exclusive OPFS lock will fail, so we fall back to an ephemeral in-memory store.
+   */
   private async createPXEStoreWithFallback(
     storeName: string
-  ): Promise<Awaited<ReturnType<typeof createStore>>> {
+  ): Promise<AztecSQLiteOPFSStore> {
     try {
-      return await createStore(
+      return await AztecSQLiteOPFSStore.open(
+        pxeLogger,
         storeName,
-        {
-          dataDirectory: 'pxe',
-          dataStoreMapSizeKb: SharedPXEServiceClass.PERSISTED_STORE_KB,
-        },
-        pxeLogger
+        false,
+        `aztec-wallet-data/${storeName}`
       );
     } catch (error) {
       logger.warn(
-        `Failed to create persistent PXE store (limit ${
-          SharedPXEServiceClass.PERSISTED_STORE_KB
-        } KB). Retrying with smaller ephemeral store.`,
+        `Failed to create persistent PXE store "${storeName}". Retrying with an ephemeral store (another tab may hold the OPFS lock).`,
         { error }
       );
 
-      return await createStore(
+      return await AztecSQLiteOPFSStore.open(
+        pxeLogger,
         `${storeName}-tmp`,
-        {
-          dataDirectory: 'pxe-tmp',
-          dataStoreMapSizeKb: SharedPXEServiceClass.FALLBACK_STORE_KB,
-        },
-        pxeLogger
+        true
       );
     }
   }
@@ -360,8 +355,11 @@ class SharedPXEServiceClass {
 
       for (const senderAddressString of savedSenders) {
         try {
-          const senderAddress = AztecAddress.fromString(senderAddressString);
-          await pxe.registerSender(senderAddress);
+          const senderAddress = AztecAddress.fromStringUnsafe(senderAddressString);
+          await pxe.registerTaggingSecretSource({
+            kind: 'address-derived',
+            sender: senderAddress,
+          });
         } catch {
           // Sender might already be registered
           logger.warn(`Failed to register sender ${senderAddressString}`);

@@ -42,7 +42,7 @@ fn evaluate_shard(
 pub contract ShamirDisclosure {
     use ::aztec::{
         macros::{events::event, functions::{external, initializer}, storage::storage},
-        messages::message_delivery::MessageDelivery,
+        messages::delivery::MessageDelivery,
         protocol::address::AztecAddress,
         state_vars::{Map, PublicImmutable},
     };
@@ -189,7 +189,7 @@ pub contract ShamirDisclosure {
                     .emit(ShamirDisclosureShardEvent { from, context, shard_x, shard_y })
                     .deliver_to(
                         self.storage.recipients.at(recipient_index).read(),
-                        MessageDelivery.ONCHAIN_CONSTRAINED,
+                        MessageDelivery::onchain_constrained(),
                     );
             }
         }

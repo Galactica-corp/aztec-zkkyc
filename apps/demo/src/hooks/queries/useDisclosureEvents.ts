@@ -62,7 +62,7 @@ export const useDisclosureEvents = (
         return [];
       }
       const filter = {
-        contractAddress: AztecAddress.fromString(contractAddress),
+        contractAddress: AztecAddress.fromStringUnsafe(contractAddress),
         scopes: [account.getAddress()],
       };
       try {

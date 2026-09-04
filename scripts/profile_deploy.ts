@@ -1,4 +1,4 @@
-import { PodRacingContract } from "../artifacts/PodRacing.js"
+import { CertificateRegistryContract } from "../artifacts/CertificateRegistry.js"
 import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
 import { getFeePaymentMethodForTxFees } from "../crates/zk_certificate/src/utils/fpc.js";
@@ -17,7 +17,11 @@ async function main() {
     const accountManager = await createAccountFromEnv(wallet);
     const address = accountManager.address;
 
-    const profileTx = await PodRacingContract.deploy(wallet, address).profile({ profileMode: "full", from: address });
+    const profileTx = await CertificateRegistryContract.deploy(wallet, address).profile({
+        profileMode: "full",
+        from: address,
+        fee: { paymentMethod },
+    });
     console.dir(profileTx, { depth: 2 });
 }
 

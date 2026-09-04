@@ -1,4 +1,4 @@
-import type { AccountWithSecretKey } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec/aztec.js/account';
 import type { AztecNetwork } from '../../../config/networks/constants';
 import type { IBrowserWalletAdapter } from '../../../types/browserWallet';
 import type {
@@ -38,7 +38,7 @@ export const isValidPXETransition = (
 
 export type WalletState = {
   // Core state (always relevant)
-  account: AccountWithSecretKey | null;
+  account: Account | null;
   walletType: WalletType | null;
   status: ConnectionStatus;
   error: string | null;
@@ -80,17 +80,17 @@ export type WalletActions = {
   // Embedded
   connectEmbedded: (
     connectorId?: WalletConnectorId
-  ) => Promise<AccountWithSecretKey>;
+  ) => Promise<Account>;
   connectExistingEmbedded: (
     connectorId?: WalletConnectorId
-  ) => Promise<AccountWithSecretKey | null>;
+  ) => Promise<Account | null>;
   hasSavedEmbeddedAccount: () => boolean;
 
   // External Signer
   connectExternalSigner: (
     signer: ExternalSigner,
     connectorId?: WalletConnectorId
-  ) => Promise<AccountWithSecretKey>;
+  ) => Promise<Account>;
 
   // Browser Wallet
   connectBrowserWallet: (

@@ -4,7 +4,7 @@
  * Handles registration of fee payment contracts with PXE.
  */
 
-// import { MeteredContractArtifact } from '@wonderland/aztec-fee-payment/artifacts';
+// import { MeteredContractArtifact } from '@alejoamiras/private-fee-juice/artifacts';
 import type { ContractArtifact } from '@aztec/aztec.js/abi';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { Fr } from '@aztec/aztec.js/fields';
@@ -56,7 +56,7 @@ export class FeePaymentRegister {
       //   artifact: MeteredContractArtifact,
       //   salt: Fr.fromString(feePaymentConfig.metered.salt ?? '1337'),
       //   deployer: feePaymentConfig.metered.deployer
-      //     ? AztecAddress.fromString(feePaymentConfig.metered.deployer)
+      //     ? AztecAddress.fromStringUnsafe(feePaymentConfig.metered.deployer)
       //     : AztecAddress.ZERO,
       //   expectedAddress: feePaymentConfig.metered.address,
       // });
@@ -93,7 +93,7 @@ export class FeePaymentRegister {
     );
 
     if (config.expectedAddress) {
-      const expected = AztecAddress.fromString(config.expectedAddress);
+      const expected = AztecAddress.fromStringUnsafe(config.expectedAddress);
       if (!instance.address.equals(expected)) {
         logger.warn(
           `${config.name} FPC address mismatch: expected ${config.expectedAddress}, got ${instance.address.toString()}`
@@ -101,10 +101,8 @@ export class FeePaymentRegister {
       }
     }
 
-    await pxe.registerContract({
-      instance,
-      artifact: config.artifact,
-    });
+    await pxe.registerContractClass(config.artifact);
+    await pxe.registerContract(instance);
 
     this.registeredFPCs.push({
       name: config.name,

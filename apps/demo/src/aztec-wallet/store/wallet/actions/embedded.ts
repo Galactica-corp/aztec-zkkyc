@@ -1,4 +1,4 @@
-import type { AccountWithSecretKey } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec/aztec.js/account';
 import { EMBEDDED_CONNECTOR_ID } from '../../../connectors';
 import {
   createEmbeddedAccount,
@@ -16,7 +16,7 @@ import type { SetState, GetState } from '../types';
 export const createEmbeddedActions = (set: SetState, get: GetState) => ({
   connectEmbedded: async (
     connectorId: WalletConnectorId = EMBEDDED_CONNECTOR_ID
-  ): Promise<AccountWithSecretKey> => {
+  ): Promise<Account> => {
     const connectWith = get()._connectWith;
     return connectWith(connectorId, async () => {
       set({
@@ -48,7 +48,7 @@ export const createEmbeddedActions = (set: SetState, get: GetState) => ({
 
   connectExistingEmbedded: async (
     connectorId: WalletConnectorId = EMBEDDED_CONNECTOR_ID
-  ): Promise<AccountWithSecretKey | null> => {
+  ): Promise<Account | null> => {
     const connectWith = get()._connectWith;
     return connectWith(connectorId, async () => {
       set({

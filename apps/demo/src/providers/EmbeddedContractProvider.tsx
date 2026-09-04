@@ -87,7 +87,7 @@ export function EmbeddedContractProvider<
           contractsList.map(async (name) => {
             const contractConfig = contracts[name];
             if (!contractConfig) return false;
-            const expectedAddress = AztecAddress.fromString(
+            const expectedAddress = AztecAddress.fromStringUnsafe(
               contractConfig.address(networkConfig)
             );
             const existing =

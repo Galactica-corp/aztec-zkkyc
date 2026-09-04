@@ -6,7 +6,7 @@
  * Self-contained: handles adapter initialization and event listeners internally.
  */
 
-import type { AccountWithSecretKey } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec/aztec.js/account';
 import { getNetworkStore } from '../store/network';
 import { getWalletStore } from '../store/wallet';
 import { WalletType } from '../types/aztec';
@@ -179,7 +179,7 @@ export class BrowserWalletConnector implements IBrowserWalletConnector {
     };
   }
 
-  getAccount(): AccountWithSecretKey | null {
+  getAccount(): Account | null {
     const state = getWalletStore();
     if (state.walletType === WalletType.BROWSER_WALLET) {
       return state.account;

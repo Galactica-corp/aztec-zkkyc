@@ -48,7 +48,7 @@ const ensureShamirContractRegistered = async (
   contractAddress: string,
   currentConfig: NonNullable<ReturnType<typeof useAztecWallet>['currentConfig']>
 ): Promise<void> => {
-  const expectedAddress = AztecAddress.fromString(contractAddress);
+  const expectedAddress = AztecAddress.fromStringUnsafe(contractAddress);
 
   try {
     const existing = await pxe.getContractInstance(expectedAddress);
@@ -78,7 +78,7 @@ const ensureShamirContractRegistered = async (
     '@aztec/aztec.js/contracts'
   );
 
-  const deployerAddress = AztecAddress.fromString(currentConfig.deployerAddress);
+  const deployerAddress = AztecAddress.fromStringUnsafe(currentConfig.deployerAddress);
   const instance = await getContractInstanceFromInstantiationParams(
     ShamirDisclosureContract.artifact,
     {
@@ -87,9 +87,9 @@ const ensureShamirContractRegistered = async (
       constructorArgs: [
         constructorArgs.recipientCount,
         constructorArgs.threshold,
-        ...constructorArgs.recipients.map((value) => AztecAddress.fromString(value)),
+        ...constructorArgs.recipients.map((value) => AztecAddress.fromStringUnsafe(value)),
         ...constructorArgs.participantAddresses.map((value) =>
-          AztecAddress.fromString(value)
+          AztecAddress.fromStringUnsafe(value)
         ),
       ],
       constructorArtifact: 'constructor',
@@ -102,10 +102,8 @@ const ensureShamirContractRegistered = async (
     );
   }
 
-  await pxe.registerContract({
-    instance,
-    artifact: ShamirDisclosureContract.artifact,
-  });
+  await pxe.registerContractClass(ShamirDisclosureContract.artifact);
+  await pxe.registerContract(instance);
 };
 
 /**
@@ -142,7 +140,7 @@ export const useShamirDisclosureEvents = (
       await ensureShamirContractRegistered(pxe, contractAddress, currentConfig);
 
       const filter = {
-        contractAddress: AztecAddress.fromString(contractAddress),
+        contractAddress: AztecAddress.fromStringUnsafe(contractAddress),
         scopes: [account.getAddress()],
       };
       try {

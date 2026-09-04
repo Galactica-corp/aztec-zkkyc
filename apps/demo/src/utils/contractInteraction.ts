@@ -244,7 +244,7 @@ const buildValue = (
         return { ok: false, error: `Missing address for ${path}` };
       }
       try {
-        return { ok: true, value: AztecAddress.fromString(value).toString() };
+        return { ok: true, value: AztecAddress.fromStringUnsafe(value).toString() };
       } catch {
         return { ok: false, error: `Invalid Aztec address for ${path}` };
       }
@@ -356,7 +356,7 @@ export const formatFunctionSignature = (fn: ParsedFunction): string => {
 export const isValidAztecAddress = (value: string): boolean => {
   if (!value) return false;
   try {
-    AztecAddress.fromString(value);
+    AztecAddress.fromStringUnsafe(value);
     return true;
   } catch {
     return false;

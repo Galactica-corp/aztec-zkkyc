@@ -3,7 +3,7 @@ import { AztecAddress } from '@aztec/stdlib/aztec-address';
 import { Fr } from '@aztec/aztec.js/fields';
 import type { Wallet } from '@aztec/aztec.js/wallet';
 import { SponsoredFPCContractArtifact } from '@aztec/noir-contracts.js/SponsoredFPC';
-import { FPCFeePaymentMethod, registerPrivateContract } from '@wonderland/aztec-fee-payment';
+import { FPCFeePaymentMethod, registerPrivateContract } from '@alejoamiras/private-fee-juice';
 import { getSponsoredFPCInstance } from './sponsored_fpc.js';
 
 function requiredEnv(name: string): string {

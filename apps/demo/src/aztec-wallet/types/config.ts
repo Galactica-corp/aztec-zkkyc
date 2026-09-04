@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import type { AccountWithSecretKey } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec/aztec.js/account';
 import type { AztecNetwork } from '../../config/networks/constants';
 import type { IBrowserWalletAdapter } from '../../types/browserWallet';
 
@@ -212,7 +212,7 @@ export interface AztecWalletConfig {
   };
 
   /** Callback when wallet connects */
-  onConnect?: (account: AccountWithSecretKey) => void;
+  onConnect?: (account: Account) => void;
 
   /** Callback when wallet disconnects */
   onDisconnect?: () => void;

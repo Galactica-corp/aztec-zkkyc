@@ -32,7 +32,7 @@ export const contractsConfig = createContractConfig({
     deployParams: (config) => ({
       salt: Fr.fromString(config.certificateRegistryDeploymentSalt),
       deployer: config.deployerAddress
-        ? AztecAddress.fromString(config.deployerAddress)
+        ? AztecAddress.fromStringUnsafe(config.deployerAddress)
         : getDeployerAddress(config),
       constructorArgs: [config.certificateRegistryAdminAddress],
       constructorArtifact: 'constructor',
@@ -46,10 +46,10 @@ export const contractsConfig = createContractConfig({
     deployParams: (config) => ({
       salt: Fr.fromString(config.basicDisclosureDeploymentSalt),
       deployer: config.deployerAddress
-        ? AztecAddress.fromString(config.deployerAddress)
+        ? AztecAddress.fromStringUnsafe(config.deployerAddress)
         : getDeployerAddress(config),
       constructorArgs: [
-        AztecAddress.fromString(config.certificateRegistryAdminAddress),
+        AztecAddress.fromStringUnsafe(config.certificateRegistryAdminAddress),
       ],
       constructorArtifact: 'constructor',
     }),
@@ -62,7 +62,7 @@ export const contractsConfig = createContractConfig({
     deployParams: (config) => ({
       salt: Fr.fromString(config.ageCheckRequirementDeploymentSalt),
       deployer: config.deployerAddress
-        ? AztecAddress.fromString(config.deployerAddress)
+        ? AztecAddress.fromStringUnsafe(config.deployerAddress)
         : getDeployerAddress(config),
       constructorArgs: [18],
       constructorArtifact: 'constructor',
@@ -77,10 +77,10 @@ export const contractsConfig = createContractConfig({
     deployParams: (config) => ({
       salt: Fr.fromString(config.sanctionListRequirementDeploymentSalt),
       deployer: config.deployerAddress
-        ? AztecAddress.fromString(config.deployerAddress)
+        ? AztecAddress.fromStringUnsafe(config.deployerAddress)
         : getDeployerAddress(config),
       constructorArgs: [
-        AztecAddress.fromString(config.certificateRegistryAdminAddress),
+        AztecAddress.fromStringUnsafe(config.certificateRegistryAdminAddress),
       ],
       constructorArtifact: 'constructor',
     }),
@@ -94,7 +94,7 @@ export const contractsConfig = createContractConfig({
     deployParams: (config) => ({
       salt: Fr.fromString(config.useCaseExampleDeploymentSalt),
       deployer: config.deployerAddress
-        ? AztecAddress.fromString(config.deployerAddress)
+        ? AztecAddress.fromStringUnsafe(config.deployerAddress)
         : getDeployerAddress(config),
       constructorArgs: [
         config.certificateRegistryContractAddress,
@@ -120,10 +120,10 @@ export const contractsConfig = createContractConfig({
     deployParams: (config) => ({
       salt: Fr.fromString(config.tokenBridgeDeploymentSalt),
       deployer: config.deployerAddress
-        ? AztecAddress.fromString(config.deployerAddress)
+        ? AztecAddress.fromStringUnsafe(config.deployerAddress)
         : getDeployerAddress(config),
       constructorArgs: [
-        AztecAddress.fromString(config.tokenBridgeTokenAddress),
+        AztecAddress.fromStringUnsafe(config.tokenBridgeTokenAddress),
         EthAddress.fromString(config.tokenBridgePortalAddress),
       ],
       constructorArtifact: 'constructor',
@@ -138,13 +138,13 @@ export const contractsConfig = createContractConfig({
     deployParams: (config) => ({
       salt: Fr.fromString(config.privateStablecoinDeploymentSalt),
       deployer: config.deployerAddress
-        ? AztecAddress.fromString(config.deployerAddress)
+        ? AztecAddress.fromStringUnsafe(config.deployerAddress)
         : getDeployerAddress(config),
       constructorArgs: [
         config.privateStablecoinName,
         config.privateStablecoinSymbol,
         config.privateStablecoinDecimals,
-        AztecAddress.fromString(config.privateStablecoinAdminAddress),
+        AztecAddress.fromStringUnsafe(config.privateStablecoinAdminAddress),
       ],
       constructorArtifact: 'constructor_with_minter',
     }),

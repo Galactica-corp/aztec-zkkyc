@@ -21,12 +21,10 @@ export async function getSponsoredFPCAddress() {
 
 export async function setupSponsoredFPC(deployer: Wallet, log: LogFn) {
   const [{ item: from }] = await deployer.getAccounts();
-  const deployed = await SponsoredFPCContract.deploy(deployer)
-    .send({
-      from,
-      contractAddressSalt: new Fr(SPONSORED_FPC_SALT),
-      universalDeploy: true,
-    });
+  const deployed = await SponsoredFPCContract.deploy(deployer, {
+    salt: new Fr(SPONSORED_FPC_SALT),
+    universalDeploy: true,
+  }).send({ from });
 
   log(`SponsoredFPC: ${deployed.contract.address}`);
 }

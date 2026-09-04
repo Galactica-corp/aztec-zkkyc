@@ -14,7 +14,7 @@ pub contract BasicDisclosure {
     use ::aztec::{
         macros::events::event,
         macros::{functions::{external, initializer}, storage::storage},
-        messages::message_delivery::MessageDelivery,
+        messages::delivery::MessageDelivery,
         protocol::address::AztecAddress,
         state_vars::PublicImmutable,
     };
@@ -58,7 +58,7 @@ pub contract BasicDisclosure {
 
         self.emit(BasicDisclosureEvent { from, context, guardian, unique_id }).deliver_to(
             recipient,
-            MessageDelivery.ONCHAIN_CONSTRAINED,
+            MessageDelivery::onchain_constrained(),
         );
     }
 }

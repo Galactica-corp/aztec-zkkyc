@@ -23,16 +23,16 @@
     "test": "yarn test:unit && yarn test:integration",
     "test:unit": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.config.json --testPathPattern=test/unit/",
     "test:integration": "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.config.json --testPathPattern=test/integration/",
-    "cli": "NODE_NO_WARNINGS=1 node --loader ts-node/esm src/cli.ts",
+    "cli": "NODE_NO_WARNINGS=1 tsx src/cli.ts",
     "account:status": "yarn cli -- account status",
     "account:deploy": "yarn cli -- account deploy"
   },
   "dependencies": {
-    "@aztec/aztec.js": "4.2.0-aztecnr-rc.2",
-    "@aztec/constants": "4.2.0-aztecnr-rc.2",
-    "@aztec/noir-contracts.js": "4.2.0-aztecnr-rc.2",
-    "@aztec/stdlib": "4.2.0-aztecnr-rc.2",
-    "@aztec/wallets": "4.2.0-aztecnr-rc.2",
+    "@aztec/aztec.js": "5.0.1",
+    "@aztec/constants": "5.0.1",
+    "@aztec/noir-contracts.js": "5.0.1",
+    "@aztec/stdlib": "5.0.1",
+    "@aztec/wallets": "5.0.1",
     "dotenv": "^17.2.2"
   },
   "devDependencies": {

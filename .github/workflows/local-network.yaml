@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AZTEC_ENV: local-network
-      AZTEC_VERSION: 4.2.0-aztecnr-rc.2
+      AZTEC_VERSION: 5.0.1
 
     steps:
       - name: Checkout repository
@@ -69,7 +69,7 @@ jobs:
 
       - name: Run JavaScript tests
         run: |
-          script -e -c "rm -rf store/pxe"
+          script -e -c "rm -rf store/pxe store aztec-wallet-data *-stores pxe_data_* wallet_data_*"
           script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json"
 
       - name: Run Aztec tests
@@ -131,10 +131,10 @@ jobs:
           CONTRACT_DEPLOYER=$(grep -o "Deployer: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Deployer: //' || echo "")
 
           # Extract public keys
-          PK_NULLIFIER=$(grep -o "Master Nullifier: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Nullifier: //' || echo "")
+          PK_NULLIFIER=$(grep -o "Master Nullifier Hash: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Nullifier Hash: //' || echo "")
           PK_INCOMING=$(grep -o "Master Incoming Viewing: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Incoming Viewing: //' || echo "")
-          PK_OUTGOING=$(grep -o "Master Outgoing Viewing: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Outgoing Viewing: //' || echo "")
-          PK_TAGGING=$(grep -o "Master Tagging: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Tagging: //' || echo "")
+          PK_OUTGOING=$(grep -o "Master Outgoing Viewing Hash: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Outgoing Viewing Hash: //' || echo "")
+          PK_TAGGING=$(grep -o "Master Tagging Hash: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Tagging Hash: //' || echo "")
 
           # Extract constructor args (JSON array), strip ANSI codes, and trim whitespace
           CONSTRUCTOR_ARGS=$(grep "Constructor args:" "$TEMP_OUTPUT" | sed 's/.*Constructor args: //' | sed 's/\x1b\[[0-9;]*m//g' | tr -d '\n\r' | sed 's/[[:space:]]*$//' || echo "")

@@ -6,7 +6,7 @@ type SenderAddressLike = AztecAddress | string;
 
 function toAztecAddress(address: SenderAddressLike): AztecAddress {
   if (typeof address === 'string') {
-    return AztecAddress.fromString(address);
+    return AztecAddress.fromStringUnsafe(address);
   }
   return address;
 }
@@ -24,7 +24,10 @@ export async function registerAddressAsSender(
   const senderAddressString = senderAddress.toString();
 
   try {
-    await pxeInstance.pxe.registerSender(senderAddress);
+    await pxeInstance.pxe.registerTaggingSecretSource({
+      kind: 'address-derived',
+      sender: senderAddress,
+    });
     pxeInstance.storageService.addSender(senderAddressString);
   } catch (error) {
     // Non-fatal: sender sync may be delayed, but wallet usage can continue.
@@ -55,7 +58,7 @@ export async function registerGuardianWhitelistAsSenders(
       continue;
     }
 
-    const guardianAddress = AztecAddress.fromField(new Fr(guardianField));
+    const guardianAddress = AztecAddress.fromFieldUnsafe(new Fr(guardianField));
     const guardianAddressString = guardianAddress.toString();
 
     if (knownSenders.has(guardianAddressString)) {

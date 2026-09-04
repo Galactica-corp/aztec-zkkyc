@@ -1,37 +1,32 @@
 import { Logger, createLogger } from "@aztec/aztec.js/log";
 import { Fr } from "@aztec/aztec.js/fields";
 import { AztecAddress } from "@aztec/stdlib/aztec-address";
-import { PodRacingContract } from "../artifacts/PodRacing.js";
+import { CertificateRegistryContract } from "../artifacts/CertificateRegistry.js";
 import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
 import { getAccountFromEnv } from "../crates/zk_certificate/src/utils/create_account_from_env.js";
-import { getTimeouts } from "../config/config.js";
 import { getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
-import { getFeePaymentMethodForTxFees } from "../crates/zk_certificate/src/utils/fpc.js";
 
 async function main() {
     let logger: Logger;
-    logger = createLogger('aztec:pod-racing-operations-existing');
-
-    const timeouts = getTimeouts();
+    logger = createLogger('aztec:certificate-registry-existing');
 
     // Setup wallet
     const wallet = await setupWallet();
-
-    // Setup fee payment method (SponsoredFPC on local/testnet; PrivateFPC on mainnet)
-    const { paymentMethod } = await getFeePaymentMethodForTxFees(wallet);
 
     // Get account from environment variables
     const accountManager = await getAccountFromEnv(wallet);
     const address = accountManager.address;
 
-    // Connect to existing pod racing contract (replace with your deployed contract address)
-    const contractAddress = process.env.POD_RACING_CONTRACT_ADDRESS;
+    // CI still writes POD_RACING_CONTRACT_ADDRESS from the first deployed contract (Certificate Registry).
+    const contractAddress =
+        process.env.CERTIFICATE_REGISTRY_CONTRACT_ADDRESS ??
+        process.env.POD_RACING_CONTRACT_ADDRESS;
     if (!contractAddress) {
-        logger.error("Please set POD_RACING_CONTRACT_ADDRESS environment variable with your deployed contract address");
+        logger.error("Please set CERTIFICATE_REGISTRY_CONTRACT_ADDRESS or POD_RACING_CONTRACT_ADDRESS with your deployed contract address");
         return;
     }
 
-    logger.info(`Connecting to pod racing contract at: ${contractAddress}`);
+    logger.info(`Connecting to certificate registry contract at: ${contractAddress}`);
     // Get instantiation parameters from environment variables
     const contractSalt = process.env.CONTRACT_SALT;
     const contractDeployer = process.env.CONTRACT_DEPLOYER;
@@ -53,47 +48,34 @@ async function main() {
             .trim()                           // Remove leading/trailing whitespace
             .replace(/^['"]|['"]$/g, '');     // Remove surrounding quotes from .env parsing
 
-        constructorArgs = JSON.parse(cleanedJson).map((arg: string) => AztecAddress.fromString(arg));
+        constructorArgs = JSON.parse(cleanedJson).map((arg: string) => AztecAddress.fromStringUnsafe(arg));
     } catch (error) {
         logger.error(`Failed to parse constructor args: ${constructorArgsJson}`);
         logger.error(`Error: ${error}`);
         throw error;
     }
 
-    // Reconstruct contract instance
-    const podRacingContractAddress = AztecAddress.fromString(contractAddress);
+    const registryAddress = AztecAddress.fromStringUnsafe(contractAddress);
 
-    const instance = await getContractInstanceFromInstantiationParams(PodRacingContract.artifact, {
+    const instance = await getContractInstanceFromInstantiationParams(CertificateRegistryContract.artifact, {
         constructorArgs,
         salt: Fr.fromString(contractSalt),
-        deployer: AztecAddress.fromString(contractDeployer)
+        deployer: AztecAddress.fromStringUnsafe(contractDeployer)
     });
 
     logger.info("✅ Contract instance reconstructed successfully");
 
-    // Register the contract with the wallet
-    await wallet.registerContract(instance, PodRacingContract.artifact);
+    await wallet.registerContract(instance, CertificateRegistryContract.artifact);
 
-    // Get the contract instance from the PXE
-    const podRacingContract = await PodRacingContract.at(
-        podRacingContractAddress,
+    const certificateRegistry = await CertificateRegistryContract.at(
+        registryAddress,
         wallet
     );
 
-    // Create a new game
-    const gameId = Fr.random();
-    logger.info(`Creating new game with ID: ${gameId}`);
-
-    await podRacingContract.methods.create_game(gameId)
-        .send({
-            from: address,
-            fee: { paymentMethod }
-        })
-        .wait({ timeout: timeouts.txTimeout });
-    logger.info("Game created successfully!");
-
-    logger.info(`Game ${gameId} is now waiting for a second player to join.`);
-    logger.info("To join this game, another player would call join_game with the same game ID.");
+    const count = await certificateRegistry.methods.get_certificate_count(address).simulate({
+        from: address,
+    });
+    logger.info(`Certificate count for ${address}: ${count.result}`);
 }
 
 main().catch((error) => {

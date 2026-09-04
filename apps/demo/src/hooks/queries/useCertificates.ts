@@ -54,7 +54,7 @@ function pageToCertificateData(
   page: UserCertificatesPageResult,
   owner: string
 ): CertificateData {
-  const guardianAddress = AztecAddress.fromField(
+  const guardianAddress = AztecAddress.fromFieldUnsafe(
     new Fr(page.guardian)
   ).toString();
   const contentNotes: ContentNoteData[] = [];
@@ -126,7 +126,7 @@ export const useCertificates = (
       if (!wallet || !pxe || !registryAddress || !account || !currentConfig) {
         return [];
       }
-      const contractAddress = AztecAddress.fromString(registryAddress);
+      const contractAddress = AztecAddress.fromStringUnsafe(registryAddress);
       const owner = account.getAddress();
 
       try {
@@ -160,10 +160,8 @@ export const useCertificates = (
             );
           }
 
-          await pxe.registerContract({
-            instance,
-            artifact: CertificateRegistryContract.artifact,
-          });
+          await pxe.registerContractClass(CertificateRegistryContract.artifact);
+          await pxe.registerContract(instance);
         }
 
         const contract = await Contract.at(

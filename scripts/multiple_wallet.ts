@@ -5,35 +5,19 @@ import { AztecAddress } from "@aztec/stdlib/aztec-address";
 import { NO_FROM } from "@aztec/aztec.js/account";
 import { createAztecNodeClient } from "@aztec/aztec.js/node";
 import { TokenContract } from "@aztec/noir-contracts.js/Token"
-import { getPXEConfig } from "@aztec/pxe/config";
-import { createStore } from "@aztec/kv-store/lmdb"
-import { getEnv, getAztecNodeUrl } from "../config/config.js";
-import { TestWallet } from "@aztec/test-wallet/server";
+import { getAztecNodeUrl } from "../config/config.js";
+import { EmbeddedWallet } from "@aztec/wallets/embedded";
 import { getFeePaymentMethodForTxFees } from "../crates/zk_certificate/src/utils/fpc.js";
 
 const nodeUrl = getAztecNodeUrl();
 const node = createAztecNodeClient(nodeUrl)
-const l1Contracts = await node.getL1ContractAddresses();
-const config = getPXEConfig()
-const fullConfig = { ...config, l1Contracts }
-fullConfig.proverEnabled = getEnv() !== 'local-network';
-
-const store1 = await createStore('pxe1', {
-    dataDirectory: 'store',
-    dataStoreMapSizeKb: 1e6,
-});
-
-const store2 = await createStore('pxe2', {
-    dataDirectory: 'store',
-    dataStoreMapSizeKb: 1e6,
-});
 
 const setupWallet1 = async () => {
-    return await TestWallet.create(node, fullConfig, { store: store1 });
+    return await EmbeddedWallet.create(node, { ephemeral: true });
 };
 
 const setupWallet2 = async () => {
-    return await TestWallet.create(node, fullConfig, { store: store2 });
+    return await EmbeddedWallet.create(node, { ephemeral: true });
 };
 
 const L2_TOKEN_CONTRACT_SALT = Fr.random();
@@ -66,17 +50,16 @@ async function main() {
     let signingKey = GrumpkinScalar.random();
     let salt = Fr.random();
     let schnorrAccount = await wallet1.createSchnorrAccount(secretKey, salt, signingKey);
-    let tx = await (await schnorrAccount.getDeployMethod()).send({ from: NO_FROM, fee: { paymentMethod } }).wait();
+    await (await schnorrAccount.getDeployMethod()).send({ from: NO_FROM, fee: { paymentMethod } });
     let ownerAddress = schnorrAccount.address;
-    const token = await TokenContract.deploy(wallet1, ownerAddress, 'Clean USDC', 'USDC', 6).send({
+    const { contract: token } = await TokenContract.deploy(wallet1, ownerAddress, 'Clean USDC', 'USDC', 6, { salt: L2_TOKEN_CONTRACT_SALT }).send({
         from: ownerAddress,
-        contractAddressSalt: L2_TOKEN_CONTRACT_SALT,
         fee: { paymentMethod }
-    }).wait()
+    });
 
     // setup account on 2nd pxe
 
-    await wallet2.registerSender(ownerAddress)
+    await wallet2.registerSender(ownerAddress, "owner")
 
     let secretKey2 = Fr.random();
     let signingKey2 = GrumpkinScalar.random();
@@ -84,21 +67,26 @@ async function main() {
     let schnorrAccount2 = await wallet2.createSchnorrAccount(secretKey2, salt2, signingKey2);
 
     // deploy account on 2nd pxe
-    let tx2 = await (await schnorrAccount2.getDeployMethod()).send({ from: NO_FROM, fee: { paymentMethod } }).wait();
+    await (await schnorrAccount2.getDeployMethod()).send({ from: NO_FROM, fee: { paymentMethod } });
     let wallet2Address = schnorrAccount2.address;
-    await wallet2.registerSender(ownerAddress)
+    await wallet2.registerSender(ownerAddress, "owner")
 
     // mint to account on 2nd pxe
 
-    const private_mint_tx = await token.contract.methods.mint_to_private(schnorrAccount2.address, 100).send({
+    const private_mint_tx = await token.methods.mint_to_private(schnorrAccount2.address, 100).send({
         from: ownerAddress,
         fee: { paymentMethod }
-    }).wait()
-    console.log(await node.getTxEffect(private_mint_tx.txHash))
-    await token.contract.methods.mint_to_public(schnorrAccount2.address, 100).send({
+    });
+    const receipt = await node.getTxReceipt(private_mint_tx.receipt.txHash, { includeTxEffect: true });
+    if (receipt.isMined() && receipt.txEffect) {
+        console.log(receipt.txEffect);
+    } else {
+        console.log(receipt);
+    }
+    await token.methods.mint_to_public(schnorrAccount2.address, 100).send({
         from: ownerAddress,
         fee: { paymentMethod }
-    }).wait()
+    });
 
 
     // setup token on 2nd pxe
@@ -110,13 +98,6 @@ async function main() {
         l2TokenContractInstance.address,
         wallet2
     )
-
-    await l2TokenContract.methods.sync_private_state().simulate({
-        from: wallet2Address
-    })
-
-    const notes = await wallet2.getNotes({ contractAddress: l2TokenContractInstance.address });
-    console.log(notes)
 
     // returns 0n
     const balance = await l2TokenContract.methods.balance_of_private(wallet2Address).simulate({

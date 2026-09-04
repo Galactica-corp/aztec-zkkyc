@@ -29,7 +29,7 @@ pub contract CertificateRegistry {
     use ::aztec::{
         authwit::auth::compute_authwit_nullifier,
         macros::{functions::{authorize_once, external, initializer, only_self}, storage::storage},
-        messages::message_delivery::MessageDelivery,
+        messages::delivery::MessageDelivery,
         note::{
             note_getter_options::NoteGetterOptions, note_interface::NoteProperties,
             note_viewer_options::NoteViewerOptions,
@@ -175,7 +175,7 @@ pub contract CertificateRegistry {
         self.enqueue_self._check_guardian_whitelisted(guardian);
 
         let certificate = CertificateNote::new(guardian, unique_id, revocation_id, content_type);
-        self.storage.certificates.at(user).insert(certificate).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+        self.storage.certificates.at(user).insert(certificate).deliver(MessageDelivery::onchain_constrained());
 
         // Test that the certificate has not been revoked already. This check might miss duplicates in the rare case due to the delay.
         assert_eq(
@@ -187,14 +187,14 @@ pub contract CertificateRegistry {
         // Create content notes for KYC
         if content_type.eq(CONTENT_TYPE_ZK_KYC) {
             let content_note_0 = ContentNote::new(unique_id + 0, content_note_data_0);
-            self.storage.content_notes.at(user).insert(content_note_0).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+            self.storage.content_notes.at(user).insert(content_note_0).deliver(MessageDelivery::onchain_constrained());
 
             let content_note_1 = ContentNote::new(unique_id + 1, content_note_data_1);
-            self.storage.content_notes.at(user).insert(content_note_1).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+            self.storage.content_notes.at(user).insert(content_note_1).deliver(MessageDelivery::onchain_constrained());
         }
 
         // Give the guardian a copy of the certificate note to remember the revocation-nullifier
-        self.storage.guardian_certificates_copies.at(guardian).insert(certificate).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+        self.storage.guardian_certificates_copies.at(guardian).insert(certificate).deliver(MessageDelivery::onchain_constrained());
     }
 
     /**
@@ -468,12 +468,12 @@ pub contract CertificateRegistry {
             }
 
             // Put content notes back.
-            self.storage.content_notes.at(from).insert(note_0).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
-            self.storage.content_notes.at(from).insert(note_1).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+            self.storage.content_notes.at(from).insert(note_0).deliver(MessageDelivery::onchain_constrained());
+            self.storage.content_notes.at(from).insert(note_1).deliver(MessageDelivery::onchain_constrained());
         }
 
         // Put the certificate back into the storage to be used again
-        self.storage.certificates.at(from).insert(certificate).deliver(MessageDelivery.ONCHAIN_CONSTRAINED);
+        self.storage.certificates.at(from).insert(certificate).deliver(MessageDelivery::onchain_constrained());
     }
 
     /**
@@ -485,6 +485,6 @@ pub contract CertificateRegistry {
     fn cancel_authwit(inner_hash: Field) {
         let on_behalf_of = self.msg_sender();
         let nullifier = compute_authwit_nullifier(on_behalf_of, inner_hash);
-        self.context.push_nullifier(nullifier);
+        self.context.push_nullifier_unsafe(nullifier);
     }
 }

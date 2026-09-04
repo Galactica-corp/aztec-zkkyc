@@ -64,15 +64,15 @@ describe("certificateRegistryClient", () => {
     });
 
     it("checks whether a guardian address is present in the whitelist entries", () => {
-        const guardianAddress = AztecAddress.fromField(new Fr(7n));
-        const otherAddress = AztecAddress.fromField(new Fr(9n));
+        const guardianAddress = AztecAddress.fromFieldUnsafe(new Fr(7n));
+        const otherAddress = AztecAddress.fromFieldUnsafe(new Fr(9n));
 
         expect(isGuardianInWhitelist(guardianAddress, [0n, 7n, 0n])).toBe(true);
         expect(isGuardianInWhitelist(otherAddress, [0n, 7n, 0n])).toBe(false);
     });
 
     it("reads the whitelist getter from the certificate registry client", async () => {
-        const guardianAddress = AztecAddress.fromField(new Fr(11n));
+        const guardianAddress = AztecAddress.fromFieldUnsafe(new Fr(11n));
         // Current Aztec SDK wraps the decoded return value in a `SimulationResult`
         // (`{ result, offchainEffects, ... }`), so the client must unwrap it.
         const client = {
@@ -91,12 +91,12 @@ describe("certificateRegistryClient", () => {
 
         await expect(getGuardianWhitelistStatus(client, guardianAddress)).resolves.toBe(true);
         await expect(
-            getGuardianWhitelistStatus(client, AztecAddress.fromField(new Fr(15n)))
+            getGuardianWhitelistStatus(client, AztecAddress.fromFieldUnsafe(new Fr(15n)))
         ).resolves.toBe(false);
     });
 
     it("falls back to raw array simulation results for backwards compatibility", async () => {
-        const guardianAddress = AztecAddress.fromField(new Fr(11n));
+        const guardianAddress = AztecAddress.fromFieldUnsafe(new Fr(11n));
         const client = {
             contract: {
                 methods: {
@@ -115,7 +115,7 @@ describe("certificateRegistryClient", () => {
     });
 
     it("submits the issue_certificate call through the registry client", async () => {
-        const userAddress = AztecAddress.fromField(new Fr(17n));
+        const userAddress = AztecAddress.fromFieldUnsafe(new Fr(17n));
         const client = {
             contract: {
                 methods: {
@@ -184,7 +184,7 @@ describe("certificateRegistryClient", () => {
     });
 
     it("lists guardian certificate copies across utility pages", async () => {
-        const guardianAddress = AztecAddress.fromField(new Fr(11n));
+        const guardianAddress = AztecAddress.fromFieldUnsafe(new Fr(11n));
         const pageCalls: number[] = [];
         const client = {
             contract: {
@@ -252,7 +252,7 @@ describe("certificateRegistryClient", () => {
     });
 
     it("returns an empty list when the guardian has no certificate copies", async () => {
-        const guardianAddress = AztecAddress.fromField(new Fr(12n));
+        const guardianAddress = AztecAddress.fromFieldUnsafe(new Fr(12n));
         let pageCalls = 0;
         const client = {
             contract: {
@@ -295,7 +295,7 @@ describe("certificateRegistryClient", () => {
             network: resolveNetworkConfig({ aztecEnv: "local-network" }),
             wallet: {} as GuardianRuntime["wallet"],
             account: {
-                address: AztecAddress.fromField(new Fr(31n)),
+                address: AztecAddress.fromFieldUnsafe(new Fr(31n)),
             } as GuardianRuntime["account"],
         } as GuardianRuntime;
 
@@ -303,18 +303,18 @@ describe("certificateRegistryClient", () => {
             {},
             runtime,
             {
-                CERTIFICATE_REGISTRY_ADMIN_ADDRESS: AztecAddress.fromField(new Fr(32n)).toString(),
+                CERTIFICATE_REGISTRY_ADMIN_ADDRESS: AztecAddress.fromFieldUnsafe(new Fr(32n)).toString(),
                 CERTIFICATE_REGISTRY_DEPLOYMENT_SALT: new Fr(33n).toString(),
             }
         );
 
-        expect(registration?.adminAddress.toString()).toBe(AztecAddress.fromField(new Fr(32n)).toString());
+        expect(registration?.adminAddress.toString()).toBe(AztecAddress.fromFieldUnsafe(new Fr(32n)).toString());
         expect(registration?.deployerAddress.toString()).toBe(runtime.account.address.toString());
         expect(registration?.deploymentSalt.toString()).toBe(new Fr(33n).toString());
     });
 
     it("fails with an actionable error when the registry is missing from PXE and cannot be reconstructed", async () => {
-        const address = AztecAddress.fromField(new Fr(41n));
+        const address = AztecAddress.fromFieldUnsafe(new Fr(41n));
         const originalEnv = { ...process.env };
         const runtime = {
             network: resolveNetworkConfig({ aztecEnv: "local-network" }),
@@ -354,7 +354,7 @@ describe("certificateRegistryClient", () => {
     });
 
     it("registers the certificate registry in PXE from contract metadata when missing", async () => {
-        const address = AztecAddress.fromField(new Fr(21n));
+        const address = AztecAddress.fromFieldUnsafe(new Fr(21n));
         const instance = { address } as unknown as Awaited<
             ReturnType<NonNullable<GuardianRuntime["wallet"]["getContractMetadata"]>>
         >["instance"];

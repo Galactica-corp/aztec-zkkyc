@@ -21,7 +21,7 @@ export const decodeCertificateNote = (dao: NoteDao): CertificateData | null => {
     // - [guardian, unique_id, revocation_id, content_type]
     // - [owner, guardian, unique_id, revocation_id, content_type]
     const owner = dao.owner.toString();
-    const guardian = AztecAddress.fromField(items[items.length - 4]).toString();
+    const guardian = AztecAddress.fromFieldUnsafe(items[items.length - 4]).toString();
     const uniqueId = normalizeFieldString(items[items.length - 3].toString());
     const revocationId = normalizeFieldString(
       items[items.length - 2].toString()

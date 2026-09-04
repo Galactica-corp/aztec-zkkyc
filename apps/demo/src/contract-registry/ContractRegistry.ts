@@ -223,7 +223,7 @@ export class ContractRegistry<T extends ContractConfigMap>
       }
 
       try {
-        const expectedAddress = AztecAddress.fromString(
+        const expectedAddress = AztecAddress.fromStringUnsafe(
           contractConfig.address(this.config)
         );
 
@@ -272,7 +272,7 @@ export class ContractRegistry<T extends ContractConfigMap>
     this.notifySubscribers();
 
     try {
-      const expectedAddress = AztecAddress.fromString(
+      const expectedAddress = AztecAddress.fromStringUnsafe(
         contractConfig.address(this.config)
       );
 
@@ -381,12 +381,10 @@ export class ContractRegistry<T extends ContractConfigMap>
       expectedAddress
     );
 
-    await queuePxeCall(() =>
-      this.pxe.registerContract({
-        instance,
-        artifact: contractConfig.artifact,
-      })
-    );
+    await queuePxeCall(async () => {
+      await this.pxe.registerContractClass(contractConfig.artifact);
+      await this.pxe.registerContract(instance);
+    });
 
     return instance;
   }

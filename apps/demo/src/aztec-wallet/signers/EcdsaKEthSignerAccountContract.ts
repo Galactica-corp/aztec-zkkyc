@@ -6,7 +6,7 @@ import { EcdsaKEthSignerAccountContractArtifact } from '../../../../../artifacts
 
 /**
  * Account contract for ECDSA K accounts that use MetaMask's personal_sign for authentication.
- * Extends DefaultAccountContract (v4 API); getAccount() is provided by the base class.
+ * Extends DefaultAccountContract; getAccount() is provided by the base class.
  *
  * Unlike standard ECDSA accounts, this does NOT store private keys. It takes the public key
  * coordinates (x, y) and delegates signing to an external AuthWitnessProvider (MetaMask).

@@ -1,4 +1,4 @@
-import type { AccountWithSecretKey } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec/aztec.js/account';
 import { Fr } from '@aztec/aztec.js/fields';
 import { AccountManager } from '@aztec/aztec.js/wallet';
 import { poseidon2Hash } from '@aztec/foundation/crypto/poseidon';
@@ -24,7 +24,7 @@ import type { ExternalSignerType } from '../../types/aztec';
 // ============================================================================
 
 export interface CreateExternalSignerAccountResult {
-  account: AccountWithSecretKey;
+  account: Account;
   pxeInstance: SharedPXEInstance;
   deployment: DeployAccountResult;
   signerType: ExternalSignerType;
@@ -107,7 +107,7 @@ export async function createExternalSignerAccount(
       wallet,
       secretKey,
       accountContract,
-      salt
+      { salt }
     );
 
     // Get account and register with PXE

@@ -8,7 +8,7 @@ async function main() {
     const node = createAztecNodeClient(nodeUrl);
     let block = await node.getBlock(BlockNumber(1));
     console.log(block)
-    console.log(await block?.hash())
+    console.log(block?.hash)
 }
 
 main();

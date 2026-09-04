@@ -254,7 +254,7 @@ export const CertificateRegistryCard: React.FC = () => {
         contract: CertificateRegistryContract,
         address: registryAddress,
         functionName: 'whitelist_guardian',
-        args: [AztecAddress.fromString(guardianAddress.trim())],
+        args: [AztecAddress.fromStringUnsafe(guardianAddress.trim())],
         feePaymentMethod,
       });
       if (result.success) {
@@ -285,7 +285,7 @@ export const CertificateRegistryCard: React.FC = () => {
         contract: CertificateRegistryContract,
         address: registryAddress,
         functionName: 'remove_guardian_from_whitelist',
-        args: [AztecAddress.fromString(guardianAddress.trim())],
+        args: [AztecAddress.fromStringUnsafe(guardianAddress.trim())],
         feePaymentMethod,
       });
       if (result.success) {
@@ -363,7 +363,6 @@ export const CertificateRegistryCard: React.FC = () => {
         await hashStringToField(kycCitizenship.trim()),
         verificationLevel,
         0n,
-        0n,
       ];
       const kycAddressData = [
         await hashStringToField(kycStreetAndNumber.trim()),
@@ -373,7 +372,6 @@ export const CertificateRegistryCard: React.FC = () => {
         await hashStringToField(kycCountry.trim()),
         0n,
         0n,
-        0n,
       ];
 
       const result = await writeContract({
@@ -381,7 +379,7 @@ export const CertificateRegistryCard: React.FC = () => {
         address: registryAddress,
         functionName: 'issue_certificate',
         args: [
-          AztecAddress.fromString(issueUser.trim()),
+          AztecAddress.fromStringUnsafe(issueUser.trim()),
           uniqueId,
           revocationId,
           CONTENT_TYPE_ZK_KYC,
@@ -497,7 +495,7 @@ export const CertificateRegistryCard: React.FC = () => {
         address: registryAddress,
         functionName: 'check_certificate',
         args: [
-          AztecAddress.fromString(connectedAddress),
+          AztecAddress.fromStringUnsafe(connectedAddress),
           0n,
           AztecAddress.ZERO,
           AztecAddress.ZERO,
@@ -551,11 +549,11 @@ export const CertificateRegistryCard: React.FC = () => {
         address: registryAddress,
         functionName: 'check_certificate',
         args: [
-          AztecAddress.fromString(connectedAddress),
+          AztecAddress.fromStringUnsafe(connectedAddress),
           0n,
-          AztecAddress.fromString(checkRequirementAddress.trim()),
+          AztecAddress.fromStringUnsafe(checkRequirementAddress.trim()),
           currentConfig?.basicDisclosureContractAddress
-            ? AztecAddress.fromString(
+            ? AztecAddress.fromStringUnsafe(
                 currentConfig.basicDisclosureContractAddress
               )
             : AztecAddress.ZERO,

@@ -1,4 +1,4 @@
-import type { AccountWithSecretKey } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec/aztec.js/account';
 import { createExternalSignerAccount } from '../../../services/wallet';
 import { WalletType } from '../../../types/aztec';
 import { getNetworkStore } from '../../network';
@@ -10,7 +10,7 @@ export const createExternalSignerActions = (set: SetState, get: GetState) => ({
   connectExternalSigner: async (
     signer: ExternalSigner,
     connectorId?: WalletConnectorId
-  ): Promise<AccountWithSecretKey> => {
+  ): Promise<Account> => {
     const connectWith = get()._connectWith;
     return connectWith(connectorId ?? signer.rdns ?? 'external', async () => {
       set({

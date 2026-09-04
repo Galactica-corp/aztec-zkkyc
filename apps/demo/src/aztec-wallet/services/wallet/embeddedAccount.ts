@@ -1,5 +1,5 @@
 import { EcdsaRAccountContract } from '@aztec/accounts/ecdsa/lazy';
-import type { AccountWithSecretKey } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec/aztec.js/account';
 import { Fr } from '@aztec/aztec.js/fields';
 import { AccountManager } from '@aztec/aztec.js/wallet';
 import { poseidon2Hash } from '@aztec/foundation/crypto/poseidon';
@@ -28,14 +28,14 @@ import type { AccountCredentials } from '../../types/aztec';
 // ============================================================================
 
 export interface CreateEmbeddedAccountResult {
-  account: AccountWithSecretKey;
+  account: Account;
   pxeInstance: SharedPXEInstance;
   deployment: DeployAccountResult;
   credentials: StoredAccountData;
 }
 
 export interface LoadEmbeddedAccountResult {
-  account: AccountWithSecretKey;
+  account: Account;
   pxeInstance: SharedPXEInstance;
 }
 
@@ -131,7 +131,7 @@ export async function createEmbeddedAccount(
       wallet,
       secretKey,
       accountContract,
-      salt
+      { salt }
     );
 
     // Get account and register with PXE
@@ -252,14 +252,14 @@ export async function loadExistingEmbeddedAccount(
 async function connectWithCredentials(
   credentials: AccountCredentials,
   pxeInstance: SharedPXEInstance
-): Promise<AccountWithSecretKey> {
+): Promise<Account> {
   const wallet = pxeInstance.wallet;
   const accountContract = new EcdsaRAccountContract(credentials.signingKey);
   const accountManager = await AccountManager.create(
     wallet,
     credentials.secretKey,
     accountContract,
-    credentials.salt
+    { salt: credentials.salt }
   );
 
   const account = await accountManager.getAccount();
