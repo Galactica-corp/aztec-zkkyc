@@ -88,7 +88,7 @@ jobs:
           script -e -c "yarn clear-store"
           TEMP_OUTPUT=$(mktemp)
 
-          if script -e -c "yarn deploy-account" > "$TEMP_OUTPUT" 2>&1; then
+          if script -e -c "yarn deploy-new-account" > "$TEMP_OUTPUT" 2>&1; then
             echo "✅ Deploy account script completed successfully"
           else
             echo "❌ Deploy account script failed"
@@ -119,7 +119,7 @@ jobs:
         run: |
           TEMP_OUTPUT=$(mktemp)
 
-          if script -e -c "yarn deploy" > "$TEMP_OUTPUT" 2>&1; then
+          if script -e -c "yarn deploy-contracts" > "$TEMP_OUTPUT" 2>&1; then
             echo "✅ Deploy script completed successfully"
           else
             cat "$TEMP_OUTPUT"
