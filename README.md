@@ -24,7 +24,7 @@ This repo is based on the [Aztec starter](https://github.com/AztecProtocol/aztec
 
 This repo connects to a locally running Aztec local network by default, but can be configured to use the public Aztec testnet by specifying `AZTEC_ENV=testnet` in a `.env` file or by prefixing a command (for example `AZTEC_ENV=testnet yarn deploy`).
 
-The demo app and scripts use the Aztec testnet RPC at `https://rpc.testnet.aztec-labs.com` (see [Networks](https://docs.aztec.network/networks)).
+The demo app and scripts use the Aztec testnet RPC at `https://v5.testnet.rpc.aztec-labs.com` (see [Networks](https://docs.aztec.network/networks)).
 
 
 ## 🚀 **Getting Started**
