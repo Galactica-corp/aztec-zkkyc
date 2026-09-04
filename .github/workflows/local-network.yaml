@@ -31,14 +31,20 @@ jobs:
 
       - name: Install Aztec CLI
         run: |
-          VERSION=${{ env.AZTEC_VERSION }} bash -i <(curl -sL https://install.aztec.network/${{ env.AZTEC_VERSION }})
+          INSTALL_URL="https://install.aztec.network/${{ env.AZTEC_VERSION }}/"
+          curl -sL $INSTALL_URL > tmp.sh
+          VERSION=${{ env.AZTEC_VERSION }} bash tmp.sh <<< yes "yes"
 
       - name: Update path
-        run: echo "/home/runner/.aztec/bin" >> $GITHUB_PATH
+        run: |
+          echo "$HOME/.aztec/current/bin" >> $GITHUB_PATH
+          echo "$HOME/.aztec/current/internal-bin" >> $GITHUB_PATH
+          echo "$HOME/.aztec/bin" >> $GITHUB_PATH
 
       - name: Set Aztec version
         run: |
           aztec-up use ${{ env.AZTEC_VERSION }}
+          command -v aztec
 
       - name: Start local Aztec network
         run: aztec start --local-network &
@@ -49,11 +55,13 @@ jobs:
           for i in {1..30}; do
             if curl -s http://localhost:8080/status >/dev/null 2>&1; then
               echo "✅ Local network is ready!"
-              break
+              exit 0
             fi
             echo "Waiting... ($i/30)"
             sleep 5
           done
+          echo "❌ Local network did not become ready"
+          exit 1
 
       - name: Install project dependencies
         run: yarn
