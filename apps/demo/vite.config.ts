@@ -1,8 +1,16 @@
+import { createRequire } from 'node:module';
+import path from 'node:path';
 import { defineConfig, Plugin, searchForWorkspaceRoot } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import wasm from 'vite-plugin-wasm';
 import topLevelAwait from 'vite-plugin-top-level-await';
+
+const require = createRequire(import.meta.url);
+const sqliteOpfsWorker = path.join(
+  path.dirname(require.resolve('@aztec/kv-store/sqlite-opfs')),
+  'worker.js'
+);
 
 /**
  * Plugin to strip sourcemap comments from @aztec/bb.js so Vite doesn't warn
@@ -62,6 +70,53 @@ const fixStaticFieldInit = (): Plugin => ({
 });
 
 /**
+ * kv-store browser code imports `#msgpackr` and constructs its OPFS worker via
+ * `new URL('./worker.js', import.meta.url)`. Vite's package-imports resolver
+ * maps `#msgpackr` to CJS `index-no-eval.cjs` (no named `Encoder` export), and
+ * dep prebundling 404s the worker. Rewrite both at transform time.
+ */
+const fixAztecSqliteOpfs = (): Plugin => ({
+  name: 'fix-aztec-sqlite-opfs',
+  enforce: 'pre',
+  resolveId(source) {
+    if (source === '#msgpackr' || source === 'msgpackr/index-no-eval') {
+      return this.resolve('msgpackr', undefined, { skipSelf: true });
+    }
+    return null;
+  },
+  transform(code, id) {
+    const normalized = id.split('?')[0].replace(/\\/g, '/');
+    if (normalized.endsWith('/msgpackr/dist/index-no-eval.cjs')) {
+      return {
+        code: "export { Encoder, Decoder, Packr, Unpackr, pack, unpack, encode, decode } from 'msgpackr';\n",
+        map: null,
+      };
+    }
+    if (!normalized.includes('/kv-store/') || !normalized.includes('/sqlite-opfs/')) {
+      return null;
+    }
+    let next = code;
+    if (next.includes('#msgpackr')) {
+      next = next.replace(/from ['"]#msgpackr['"]/g, "from 'msgpackr'");
+    }
+    if (normalized.endsWith('/sqlite-opfs/store.js') && next.includes('./worker.js')) {
+      const workerImport = `import AztecSqliteOpfsWorker from ${JSON.stringify(`${sqliteOpfsWorker}?worker`)};`;
+      const withCtor = next.replace(
+        /new Worker\(\s*new URL\(\s*['"]\.\/worker\.js['"]\s*,\s*import\.meta\.url\s*\)\s*,\s*\{\s*type:\s*['"]module['"]\s*\}\s*\)/,
+        'new AztecSqliteOpfsWorker()'
+      );
+      if (withCtor !== next) {
+        next = `${workerImport}\n${withCtor}`;
+      }
+    }
+    if (next === code) {
+      return null;
+    }
+    return { code: next, map: null };
+  },
+});
+
+/**
  * Plugin to shim Node.js built-in modules that shouldn't run in browser.
  * Must run before nodePolyfills to intercept fs/promises correctly.
  */
@@ -115,6 +170,7 @@ const nodeBuiltinsShim = (): Plugin => ({
 export default defineConfig({
   plugins: [
     stripBbJsSourcemaps(), // Strip @aztec/bb.js sourcemaps to avoid "missing source" warnings
+    fixAztecSqliteOpfs(),
     nodeBuiltinsShim(), // Must be first to intercept before nodePolyfills
     react(),
     wasm(),
@@ -243,6 +299,7 @@ export default defineConfig({
       'util',
       'path-browserify',
       '@tanstack/react-query',
+      'msgpackr',
     ],
     exclude: [
       '@aztec/bb.js',
@@ -256,6 +313,10 @@ export default defineConfig({
       '@aztec/aztec.js',
       '@aztec-foundation/aztec-standards',
       'noirc_abi_wasm',
+      // SQLite-OPFS uses `new Worker(new URL('./worker.js', import.meta.url))`.
+      // Prebundling rewrites import.meta.url to `.vite/deps/`, so the worker 404s.
+      '@aztec/kv-store',
+      '@aztec/sqlite3mc-wasm',
     ],
     esbuildOptions: {
       define: {
