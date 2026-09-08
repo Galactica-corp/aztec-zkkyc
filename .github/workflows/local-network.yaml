@@ -151,8 +151,8 @@ jobs:
           PK_OUTGOING=$(grep -o "Master Outgoing Viewing Hash: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Outgoing Viewing Hash: //' || echo "")
           PK_TAGGING=$(grep -o "Master Tagging Hash: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Tagging Hash: //' || echo "")
 
-          # Extract constructor args (JSON array), strip ANSI codes, and trim whitespace
-          CONSTRUCTOR_ARGS=$(grep "Constructor args:" "$TEMP_OUTPUT" | sed 's/.*Constructor args: //' | sed 's/\x1b\[[0-9;]*m//g' | tr -d '\n\r' | sed 's/[[:space:]]*$//' || echo "")
+          # First "Constructor args" line is Certificate Registry; later contracts also log this.
+          CONSTRUCTOR_ARGS=$(grep "Constructor args:" "$TEMP_OUTPUT" | head -1 | sed 's/.*Constructor args: //' | sed 's/\x1b\[[0-9;]*m//g' | tr -d '\n\r' | sed 's/[[:space:]]*$//' || echo "")
 
           rm "$TEMP_OUTPUT"
 
