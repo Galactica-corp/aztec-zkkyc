@@ -38,7 +38,7 @@ const defaultDependencies: PrepareZkKycDependencies = {
         return Fr.random();
     },
     parseAddress(value: string) {
-        return AztecAddress.fromString(value);
+        return AztecAddress.fromStringUnsafe(value);
     },
 };
 

@@ -34,13 +34,13 @@ export const parseAddressFromCaip = (caipAccount: string): AztecAddress => {
 
   // Handle Aztec address format (66 chars: 0x + 64 hex)
   if (addressStr.length === 66) {
-    return AztecAddress.fromString(addressStr);
+    return AztecAddress.fromStringUnsafe(addressStr);
   }
 
   // Handle Ethereum address format (42 chars: 0x + 40 hex) - pad to Aztec format
   if (addressStr.length === 42) {
     const paddedAddress = '0x' + addressStr.slice(2).padStart(64, '0');
-    return AztecAddress.fromString(paddedAddress);
+    return AztecAddress.fromStringUnsafe(paddedAddress);
   }
 
   throw new Error(`Unsupported account format: ${caipAccount}`);

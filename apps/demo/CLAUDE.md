@@ -263,7 +263,7 @@ This boilerplate uses **aztec-wallet** (`src/aztec-wallet/`) - a modular wallet 
 import { AztecWalletProvider, createAztecWalletConfig, ConnectButton } from './aztec-wallet';
 
 const config = createAztecWalletConfig({
-  networks: [{ name: 'testnet', nodeUrl: 'https://rpc.testnet.aztec-labs.com/' }],
+  networks: [{ name: 'testnet', nodeUrl: 'https://v5.testnet.rpc.aztec-labs.com/' }],
   walletGroups: {
     embedded: true,
     evmWallets: ['metamask', 'rabby'],
@@ -414,7 +414,7 @@ const balance = await token.methods.balance_of_public(address).simulate();
 **Available Networks** (`src/config/networks/`):
 
 - **Sandbox** (`http://localhost:8080`): Local development with Aztec node
-- **Testnet** (`https://rpc.testnet.aztec-labs.com/`): Public Aztec testnet (default)
+- **Testnet** (`https://v5.testnet.rpc.aztec-labs.com/`): Public Aztec testnet (default)
 
 **Network Config Structure**:
 

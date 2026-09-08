@@ -102,7 +102,6 @@ describe("ZK Certificate and UseCaseExample", () => {
       await hashStringToField(KYC_SAMPLE.personal.citizenship),
       new Fr(KYC_SAMPLE.personal.verificationLevel),
       new Fr(0),
-      new Fr(0),
     ];
     kycAddressData = [
       await hashStringToField(KYC_SAMPLE.address.streetAndNumber),
@@ -110,7 +109,6 @@ describe("ZK Certificate and UseCaseExample", () => {
       await hashStringToField(KYC_SAMPLE.address.town),
       await hashStringToField(KYC_SAMPLE.address.region),
       await hashStringToField(KYC_SAMPLE.address.country),
-      new Fr(0),
       new Fr(0),
       new Fr(0),
     ];

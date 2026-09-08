@@ -49,7 +49,7 @@ import type { Hex } from 'viem';
  * - `hasSavedAccount` - Whether there's a saved embedded account
  *
  * **Account Data**
- * - `account` - The connected AccountWithSecretKey (or null)
+ * - `account` - The connected Account (or null)
  * - `address` - The wallet address as string (or null)
  * - `walletType` - Current wallet type ('embedded' | 'external_signer' | 'browser_wallet')
  *

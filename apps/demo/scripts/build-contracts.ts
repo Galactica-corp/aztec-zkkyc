@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 // Run with: tsx scripts/build-contracts.ts [--force]
-// This script copies artifacts from @defi-wonderland/aztec-standards and compiles local contracts
+// This script copies artifacts from @aztec-foundation/aztec-standards and compiles local contracts
 
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -13,7 +13,7 @@ const TARGET_OUTPUT_DIR = 'src/target';
 // Local contracts directory
 const LOCAL_CONTRACTS_DIR = 'contracts';
 // NPM package path
-const NPM_PACKAGE_PATH = 'node_modules/@defi-wonderland/aztec-standards';
+const NPM_PACKAGE_PATH = 'node_modules/@aztec-foundation/aztec-standards';
 
 /**
  * Try to run a command
@@ -118,37 +118,41 @@ function stripAztecNrPrefix(targetDir: string): void {
 /**
  * Copy aztec-standards artifacts from node_modules
  */
-function copyAztecStandardsArtifacts(projectRoot: string, forceOverwrite: boolean): void {
+function copyAztecStandardsArtifacts(appRoot: string, forceOverwrite: boolean): void {
   console.log('\n📦 Copying aztec-standards artifacts from node_modules...');
 
-  const npmPackagePath = path.join(projectRoot, NPM_PACKAGE_PATH);
+  const npmPackagePath = [
+    path.join(appRoot, NPM_PACKAGE_PATH),
+    path.join(appRoot, '../..', NPM_PACKAGE_PATH),
+  ].find((candidate) => fs.existsSync(candidate));
 
-  if (!fs.existsSync(npmPackagePath)) {
-    console.error(`❌ Package @defi-wonderland/aztec-standards not found at ${npmPackagePath}`);
-    console.error('   Run: yarn add @defi-wonderland/aztec-standards');
+  if (!npmPackagePath) {
+    console.error(`❌ Package @aztec-foundation/aztec-standards not found under ${appRoot}`);
+    console.error('   Run: yarn add @aztec-foundation/aztec-standards');
     throw new Error('Missing aztec-standards package');
   }
 
   // Filter for Dripper and Token contracts only
   const contractFilter = (file: string) =>
-    (file.includes('Dripper') || file.includes('Token')) && !file.endsWith('.bak');
+    (file.includes('Dripper') || file.includes('Token')) &&
+    !file.includes('MultiToken') &&
+    !file.endsWith('.bak');
 
-  // Copy TypeScript wrappers from artifacts/
-  const artifactsDir = path.join(projectRoot, ARTIFACTS_OUTPUT_DIR);
+  // 5.0.1 package layout: dist/src/artifacts (JS wrappers) and dist/target (JSON)
+  const artifactsDir = path.join(appRoot, ARTIFACTS_OUTPUT_DIR);
 
   console.log(`\n   📁 Copying TypeScript wrappers to ${ARTIFACTS_OUTPUT_DIR}/`);
   copyFiles(
-    path.join(npmPackagePath, 'artifacts'),
+    path.join(npmPackagePath, 'dist/src/artifacts'),
     artifactsDir,
     forceOverwrite,
     contractFilter
   );
 
-  // Copy JSON artifacts from target/
-  const targetDir = path.join(projectRoot, TARGET_OUTPUT_DIR);
+  const targetDir = path.join(appRoot, TARGET_OUTPUT_DIR);
   console.log(`\n   📁 Copying JSON artifacts to ${TARGET_OUTPUT_DIR}/`);
   copyFiles(
-    path.join(npmPackagePath, 'target'),
+    path.join(npmPackagePath, 'dist/target'),
     targetDir,
     forceOverwrite,
     contractFilter
@@ -201,7 +205,7 @@ function compileLocalContracts(
   // Postprocess: transpile public bytecode (ACIR → AVM) and generate VKs (required by aztec codegen)
   console.log('   🔧 Postprocessing contracts (transpile + VK generation)...');
   const bbCmd = [
-    `cd "${projectRoot}"`,
+    `cd "${workspaceRoot}"`,
     `&& for f in target/*.json; do flags="$flags -i $f"; done;`,
     'bb aztec_process $flags',
   ].join(' ');
@@ -245,9 +249,9 @@ async function main() {
   try {
     // 1) Copy aztec-standards artifacts from node_modules
     console.log('='.repeat(60));
-    console.log('📦 Step 1: Copy aztec-standards artifacts (skipped)');
+    console.log('📦 Step 1: Copy aztec-standards artifacts');
     console.log('='.repeat(60));
-    // copyAztecStandardsArtifacts(projectRoot, forceOverwrite);
+    copyAztecStandardsArtifacts(appRoot, forceOverwrite);
 
     // 2) Compile local contracts (e.g., ECDSA account contract)
     console.log('\n' + '='.repeat(60));

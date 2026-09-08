@@ -36,7 +36,7 @@ export const DEPLOYMENT_JSON_PATHS = {
 
 export const NETWORK_NODE_URLS = {
   sandbox: 'http://localhost:8080',
-  testnet: 'https://rpc.testnet.aztec-labs.com/',
+  testnet: 'https://v5.testnet.rpc.aztec-labs.com/',
 } as const;
 
 export type DeploymentNetwork = keyof typeof DEPLOYMENT_JSON_PATHS;

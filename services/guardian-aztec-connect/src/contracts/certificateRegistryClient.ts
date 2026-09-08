@@ -63,7 +63,7 @@ export function resolveCertificateRegistryAddress(
   }
 
   return typeof configuredAddress === "string"
-    ? AztecAddress.fromString(configuredAddress)
+    ? AztecAddress.fromStringUnsafe(configuredAddress)
     : configuredAddress;
 }
 
@@ -116,9 +116,9 @@ export function resolveCertificateRegistryRegistration(
     runtime.account.address;
 
   return {
-    adminAddress: typeof adminAddress === "string" ? AztecAddress.fromString(adminAddress) : adminAddress,
+    adminAddress: typeof adminAddress === "string" ? AztecAddress.fromStringUnsafe(adminAddress) : adminAddress,
     deployerAddress:
-      typeof deployerAddress === "string" ? AztecAddress.fromString(deployerAddress) : deployerAddress,
+      typeof deployerAddress === "string" ? AztecAddress.fromStringUnsafe(deployerAddress) : deployerAddress,
     deploymentSalt: Fr.fromString(deploymentSalt),
   };
 }
@@ -189,7 +189,7 @@ export function isGuardianInWhitelist(
       return false;
     }
 
-    return AztecAddress.fromField(new Fr(guardianFieldBigInt)).toString() === guardianAddressString;
+    return AztecAddress.fromFieldUnsafe(new Fr(guardianFieldBigInt)).toString() === guardianAddressString;
   });
 }
 

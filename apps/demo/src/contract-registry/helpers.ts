@@ -40,7 +40,7 @@ export const getDeployerAddress = (config: NetworkConfig): AztecAddress => {
     return AztecAddress.ZERO;
   }
   return config.deployerAddress
-    ? AztecAddress.fromString(config.deployerAddress)
+    ? AztecAddress.fromStringUnsafe(config.deployerAddress)
     : AztecAddress.ZERO;
 };
 
@@ -48,7 +48,7 @@ export const getDeployerAddress = (config: NetworkConfig): AztecAddress => {
  * Helper to build token constructor args per network
  */
 export const getTokenConstructorArgs = (config: NetworkConfig) => {
-  const minterAddress = AztecAddress.fromString(config.dripperContractAddress);
+  const minterAddress = AztecAddress.fromStringUnsafe(config.dripperContractAddress);
   if (config.name === 'testnet') {
     return ['WETH', 'WETH', 18, minterAddress, AztecAddress.ZERO] as const;
   }

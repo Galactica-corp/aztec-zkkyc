@@ -93,7 +93,7 @@ export const useDynamicContractCaller = (
             return { success: false, error: 'Wallet instance not available' };
           }
 
-          const contractAddress = AztecAddress.fromString(address);
+          const contractAddress = AztecAddress.fromStringUnsafe(address);
           const contract = await Contract.at(contractAddress, artifact, wallet);
           const method = getContractMethod(contract, functionName);
 
@@ -193,7 +193,7 @@ export const useDynamicContractCaller = (
             return { success: false, error: 'Wallet instance not available' };
           }
 
-          const contractAddress = AztecAddress.fromString(address);
+          const contractAddress = AztecAddress.fromStringUnsafe(address);
           const contract = await Contract.at(contractAddress, artifact, wallet);
           const method = getContractMethod(contract, functionName);
 

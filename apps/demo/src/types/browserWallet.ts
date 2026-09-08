@@ -1,4 +1,4 @@
-import type { AccountWithSecretKey } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec/aztec.js/account';
 import type { ConnectionStatus } from './walletConnector';
 import type { AztecNetwork } from '../config/networks/constants';
 
@@ -133,7 +133,7 @@ export interface IBrowserWalletAdapter {
   executeOperations(
     ops: BrowserWalletOperation[]
   ): Promise<BrowserWalletOperationResult[]>;
-  toAccountWallet(accountId: string): Promise<AccountWithSecretKey>;
+  toAccountWallet(accountId: string): Promise<Account>;
 
   onAccountsChanged(cb: (accounts: string[]) => void): void;
   onDisconnected(cb: () => void): void;

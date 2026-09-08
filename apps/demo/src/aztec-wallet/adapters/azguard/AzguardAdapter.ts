@@ -6,7 +6,7 @@
  */
 
 import type { ContractArtifact } from '@aztec/aztec.js/abi';
-import type { AccountWithSecretKey } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec/aztec.js/account';
 import {
   getChainId,
   type AztecChainId,
@@ -177,9 +177,9 @@ export class AzguardAdapter implements IBrowserWalletAdapter {
     }
   }
 
-  async toAccountWallet(accountId: string): Promise<AccountWithSecretKey> {
+  async toAccountWallet(accountId: string): Promise<Account> {
     const address = parseAddressFromCaip(accountId);
-    return { getAddress: () => address } as unknown as AccountWithSecretKey;
+    return { getAddress: () => address } as unknown as Account;
   }
 
   onAccountsChanged(cb: (accounts: string[]) => void): void {

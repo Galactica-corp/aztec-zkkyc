@@ -91,7 +91,7 @@ export function useContractRegistration<K extends ContractName>(
       throw new Error('External wallet account not connected');
     }
 
-    const contractAddress = AztecAddress.fromString(
+    const contractAddress = AztecAddress.fromStringUnsafe(
       definition.address(currentConfig)
     );
 

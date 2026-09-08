@@ -1,5 +1,4 @@
 import {
-  type AccountWithSecretKey,
   type Account,
 } from '@aztec/aztec.js/account';
 import { AztecAddress } from '@aztec/aztec.js/addresses';
@@ -16,14 +15,14 @@ import { BaseWallet } from '@aztec/wallet-sdk/base-wallet';
  * provides the necessary interface to bootstrap the account creation process.
  */
 export class MinimalWallet extends BaseWallet {
-  private readonly addressToAccount = new Map<string, AccountWithSecretKey>();
+  private readonly addressToAccount = new Map<string, Account>();
 
   constructor(pxe: PXE, aztecNode: AztecNode) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     super(pxe as unknown as any, aztecNode);
   }
 
-  public addAccount(account: AccountWithSecretKey): void {
+  public addAccount(account: Account): void {
     this.addressToAccount.set(account.getAddress().toString(), account);
   }
 

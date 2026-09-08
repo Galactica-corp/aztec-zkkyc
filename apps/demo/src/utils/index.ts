@@ -203,7 +203,7 @@ export const isValidConfig = (config: {
     ];
     for (const addr of addresses) {
       if (isPlaceholderAddress(addr)) continue;
-      AztecAddress.fromString(addr);
+      AztecAddress.fromStringUnsafe(addr);
     }
   } catch {
     return false;

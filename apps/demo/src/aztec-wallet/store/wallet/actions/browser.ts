@@ -1,4 +1,4 @@
-import type { AccountWithSecretKey } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec/aztec.js/account';
 import { WalletType } from '../../../types/aztec';
 import type { AztecNetwork } from '../../../../config/networks/constants';
 import type { IBrowserWalletAdapter } from '../../../../types/browserWallet';
@@ -23,7 +23,7 @@ export const createBrowserActions = (set: SetState, get: GetState) => ({
       const selectedAccount = accounts.length > 0 ? accounts[0] : null;
       const state = adapter.getState();
 
-      let accountWallet: AccountWithSecretKey | null = null;
+      let accountWallet: Account | null = null;
       if (selectedAccount) {
         try {
           accountWallet = await adapter.toAccountWallet(selectedAccount);

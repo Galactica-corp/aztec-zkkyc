@@ -141,7 +141,7 @@ export const useReadContract = () => {
             return { success: false, error: errorMsg };
           }
 
-          const contractAddress = AztecAddress.fromString(address);
+          const contractAddress = AztecAddress.fromStringUnsafe(address);
           const contract = await queuePxeCall(() =>
             Contract.at(contractAddress, artifact, wallet)
           );

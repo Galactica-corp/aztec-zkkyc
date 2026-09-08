@@ -147,9 +147,9 @@ export const UseCaseExampleCard: React.FC = () => {
       const userAddress = account.getAddress();
       const certRegistryAddress =
         contractsConfig.certificateRegistry.address(currentConfig);
-      const useCaseExampleAddress = AztecAddress.fromString(contractAddress);
+      const useCaseExampleAddress = AztecAddress.fromStringUnsafe(contractAddress);
       const certRegistry = await Contract.at(
-        AztecAddress.fromString(certRegistryAddress),
+        AztecAddress.fromStringUnsafe(certRegistryAddress),
         CertificateRegistryContract.artifact,
         wallet
       );
@@ -168,8 +168,8 @@ export const UseCaseExampleCard: React.FC = () => {
       ).methods.check_certificate(
         userAddress,
         nonce,
-        AztecAddress.fromString(requirementCheckerAddress),
-        AztecAddress.fromString(disclosureAddress),
+        AztecAddress.fromStringUnsafe(requirementCheckerAddress),
+        AztecAddress.fromStringUnsafe(disclosureAddress),
         DISCLOSURE_CONTEXT
       );
       const intent = { caller: useCaseExampleAddress, action };
@@ -196,7 +196,7 @@ export const UseCaseExampleCard: React.FC = () => {
       const pxe = connector.getPXE();
       if (!pxe) return;
 
-      const expectedAddress = AztecAddress.fromString(address);
+      const expectedAddress = AztecAddress.fromStringUnsafe(address);
 
       try {
         const existing = await pxe.getContractInstance(expectedAddress);
@@ -221,7 +221,7 @@ export const UseCaseExampleCard: React.FC = () => {
         );
       }
 
-      const deployerAddress = AztecAddress.fromString(
+      const deployerAddress = AztecAddress.fromStringUnsafe(
         currentConfig.deployerAddress
       );
 
@@ -234,10 +234,10 @@ export const UseCaseExampleCard: React.FC = () => {
             constructorArgs.recipientCount,
             constructorArgs.threshold,
             ...constructorArgs.recipients.map((value) =>
-              AztecAddress.fromString(value)
+              AztecAddress.fromStringUnsafe(value)
             ),
             ...constructorArgs.participantAddresses.map((value) =>
-              AztecAddress.fromString(value)
+              AztecAddress.fromStringUnsafe(value)
             ),
           ],
           constructorArtifact: 'constructor',
@@ -250,10 +250,8 @@ export const UseCaseExampleCard: React.FC = () => {
         );
       }
 
-      await pxe.registerContract({
-        instance,
-        artifact: ShamirDisclosureContract.artifact,
-      });
+      await pxe.registerContractClass(ShamirDisclosureContract.artifact);
+      await pxe.registerContract(instance);
     },
     [connector, currentConfig]
   );

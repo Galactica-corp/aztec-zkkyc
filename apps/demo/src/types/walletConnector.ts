@@ -1,4 +1,4 @@
-import type { AccountWithSecretKey } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec/aztec.js/account';
 import type { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee';
 import type { Wallet } from '@aztec/aztec.js/wallet';
 import type { PXE } from '@aztec/pxe/server';
@@ -33,7 +33,7 @@ export interface WalletConnector {
   readonly type: WalletType;
 
   getStatus(): ConnectorStatus;
-  getAccount(): AccountWithSecretKey | null;
+  getAccount(): Account | null;
 
   connect(): Promise<void>;
   disconnect(): Promise<void>;

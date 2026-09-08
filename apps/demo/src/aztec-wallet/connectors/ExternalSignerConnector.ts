@@ -5,7 +5,7 @@
  * Self-contained: creates and manages its own signer internally.
  */
 
-import type { AccountWithSecretKey } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec/aztec.js/account';
 import type { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee';
 import type { Wallet } from '@aztec/aztec.js/wallet';
 import type { PXE } from '@aztec/pxe/server';
@@ -99,7 +99,7 @@ export class ExternalSignerConnector implements ExternalSignerWalletConnector {
     };
   }
 
-  getAccount(): AccountWithSecretKey | null {
+  getAccount(): Account | null {
     const state = getWalletStore();
     // Only return account if this connector's rdns matches the connected one
     if (

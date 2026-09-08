@@ -25,7 +25,7 @@ describe('FPC utility (env selection)', () => {
         process.env.PRIVATE_FPC_SALT =
             '0x0000000000000000000000000000000000000000000000000000000000000042';
 
-        const fpcAddress = AztecAddress.fromString(
+        const fpcAddress = AztecAddress.fromStringUnsafe(
             '0x1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f',
         );
 
@@ -34,7 +34,7 @@ describe('FPC utility (env selection)', () => {
             return { kind: 'FPCFeePaymentMethod' };
         }) as unknown as new (addr: AztecAddress) => unknown;
 
-        jest.unstable_mockModule('@wonderland/aztec-fee-payment', () => ({
+        jest.unstable_mockModule('@alejoamiras/private-fee-juice', () => ({
             registerPrivateContract,
             FPCFeePaymentMethod,
         }));

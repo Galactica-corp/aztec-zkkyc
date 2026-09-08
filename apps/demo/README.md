@@ -51,7 +51,7 @@ import { createAztecWalletConfig } from '../aztec-wallet';
 export const aztecWalletConfig = createAztecWalletConfig({
   // Networks to support
   networks: [
-    { name: 'testnet', nodeUrl: 'https://rpc.testnet.aztec-labs.com/' },
+    { name: 'testnet', nodeUrl: 'https://v5.testnet.rpc.aztec-labs.com/' },
     { name: 'sandbox', nodeUrl: 'http://localhost:8080' },
   ],
 
@@ -150,7 +150,7 @@ bash -i <(curl -s https://install.aztec.network)
 
 ```bash
 # Align the Aztec CLI with the SDK version used in this repo (see root package.json)
-aztec-up use 4.2.0-aztecnr-rc.2
+aztec-up use 5.0.1
 ```
 
 ### Start Sandbox
@@ -428,7 +428,7 @@ Make sure to properly export your adapter from:
 
 | Network | Node URL                         | Chain ID           |
 | ------- | -------------------------------- | ------------------ |
-| Testnet | `https://rpc.testnet.aztec-labs.com/` | `aztec:4127419662` |
+| Testnet | `https://v5.testnet.rpc.aztec-labs.com/` | `aztec:4127419662` |
 | Sandbox | `http://localhost:8080`          | `aztec:0`          |
 
 ---

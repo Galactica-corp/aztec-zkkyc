@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AZTEC_ENV: local-network
-      AZTEC_VERSION: 4.2.0-aztecnr-rc.2
+      AZTEC_VERSION: 5.0.1
 
     steps:
       - name: Checkout repository
@@ -31,14 +31,20 @@ jobs:
 
       - name: Install Aztec CLI
         run: |
-          VERSION=${{ env.AZTEC_VERSION }} bash -i <(curl -sL https://install.aztec.network/${{ env.AZTEC_VERSION }})
+          INSTALL_URL="https://install.aztec.network/${{ env.AZTEC_VERSION }}/"
+          curl -sL $INSTALL_URL > tmp.sh
+          VERSION=${{ env.AZTEC_VERSION }} bash tmp.sh <<< yes "yes"
 
       - name: Update path
-        run: echo "/home/runner/.aztec/bin" >> $GITHUB_PATH
+        run: |
+          echo "$HOME/.aztec/current/bin" >> $GITHUB_PATH
+          echo "$HOME/.aztec/current/internal-bin" >> $GITHUB_PATH
+          echo "$HOME/.aztec/bin" >> $GITHUB_PATH
 
       - name: Set Aztec version
         run: |
           aztec-up use ${{ env.AZTEC_VERSION }}
+          command -v aztec
 
       - name: Start local Aztec network
         run: aztec start --local-network &
@@ -49,38 +55,40 @@ jobs:
           for i in {1..30}; do
             if curl -s http://localhost:8080/status >/dev/null 2>&1; then
               echo "✅ Local network is ready!"
-              break
+              exit 0
             fi
             echo "Waiting... ($i/30)"
             sleep 5
           done
+          echo "❌ Local network did not become ready"
+          exit 1
 
       - name: Install project dependencies
         run: yarn
 
       - name: Compile contracts
-        run: script -e -c "aztec compile"
+        run: script -e -c "yarn compile"
 
       - name: Generate contract artifacts
-        run: script -e -c "aztec codegen target --outdir src/artifacts"
+        run: script -e -c "yarn codegen"
 
       - name: Change ownership for nargo files
         run: sudo chown -R $(whoami) ~/nargo && sudo chown -R $(whoami) ~/nargo/github.com
 
       - name: Run JavaScript tests
         run: |
-          script -e -c "rm -rf store/pxe"
+          script -e -c "rm -rf store/pxe store aztec-wallet-data *-stores pxe_data_* wallet_data_*"
           script -e -c "NODE_NO_WARNINGS=1 node --experimental-vm-modules $(yarn bin jest) --no-cache --runInBand --config jest.integration.config.json"
 
       - name: Run Aztec tests
-        run: script -e -c "aztec test"
+        run: script -e -c "yarn test:nr"
 
       - name: Deploy account and capture credentials
         run: |
           script -e -c "yarn clear-store"
           TEMP_OUTPUT=$(mktemp)
 
-          if script -e -c "yarn deploy-account" > "$TEMP_OUTPUT" 2>&1; then
+          if script -e -c "yarn deploy-new-account" > "$TEMP_OUTPUT" 2>&1; then
             echo "✅ Deploy account script completed successfully"
           else
             echo "❌ Deploy account script failed"
@@ -94,16 +102,23 @@ jobs:
           SECRET_KEY=$(grep -o "Secret key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Secret key generated: //' || echo "")
           SIGNING_KEY=$(grep -o "Signing key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Signing key generated: //' || echo "")
           SALT_VALUE=$(grep -o "Salt generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Salt generated: //' || echo "")
+          ACCOUNT_ADDRESS=$(grep -o "Account address will be: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Account address will be: //' || echo "")
 
           rm "$TEMP_OUTPUT"
 
-          if [ -n "$SECRET_KEY" ] && [ -n "$SIGNING_KEY" ] && [ -n "$SALT_VALUE" ]; then
+          if [ -n "$SECRET_KEY" ] && [ -n "$SIGNING_KEY" ] && [ -n "$SALT_VALUE" ] && [ -n "$ACCOUNT_ADDRESS" ]; then
             echo "SECRET=\"$SECRET_KEY\"" >> .env
             echo "SIGNING_KEY=\"$SIGNING_KEY\"" >> .env
             echo "SALT=\"$SALT_VALUE\"" >> .env
-            echo "📋 Saved credentials to .env file"
+            # deploy_contract.ts reads these from .env via dotenv; CI has no pre-existing .env.
+            # Use the freshly deployed account as admin/recipients so later scripts can act as admin.
+            echo "CERTIFICATE_REGISTRY_ADMIN_ADDRESS=\"$ACCOUNT_ADDRESS\"" >> .env
+            echo "SHAMIR_DISCLOSURE_RECIPIENT_0_ADDRESS=\"$ACCOUNT_ADDRESS\"" >> .env
+            echo "SHAMIR_DISCLOSURE_RECIPIENT_1_ADDRESS=\"$ACCOUNT_ADDRESS\"" >> .env
+            echo "SHAMIR_DISCLOSURE_RECIPIENT_2_ADDRESS=\"$ACCOUNT_ADDRESS\"" >> .env
+            echo "📋 Saved credentials and deployment addresses to .env file"
           else
-            echo "❌ Failed to extract SECRET, SIGNING_KEY, and/or SALT from deploy output"
+            echo "❌ Failed to extract SECRET, SIGNING_KEY, SALT, and/or account address from deploy output"
             exit 1
           fi
 
@@ -111,7 +126,7 @@ jobs:
         run: |
           TEMP_OUTPUT=$(mktemp)
 
-          if script -e -c "yarn deploy" > "$TEMP_OUTPUT" 2>&1; then
+          if script -e -c "yarn deploy-contracts" > "$TEMP_OUTPUT" 2>&1; then
             echo "✅ Deploy script completed successfully"
           else
             cat "$TEMP_OUTPUT"
@@ -131,13 +146,13 @@ jobs:
           CONTRACT_DEPLOYER=$(grep -o "Deployer: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Deployer: //' || echo "")
 
           # Extract public keys
-          PK_NULLIFIER=$(grep -o "Master Nullifier: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Nullifier: //' || echo "")
+          PK_NULLIFIER=$(grep -o "Master Nullifier Hash: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Nullifier Hash: //' || echo "")
           PK_INCOMING=$(grep -o "Master Incoming Viewing: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Incoming Viewing: //' || echo "")
-          PK_OUTGOING=$(grep -o "Master Outgoing Viewing: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Outgoing Viewing: //' || echo "")
-          PK_TAGGING=$(grep -o "Master Tagging: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Tagging: //' || echo "")
+          PK_OUTGOING=$(grep -o "Master Outgoing Viewing Hash: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Outgoing Viewing Hash: //' || echo "")
+          PK_TAGGING=$(grep -o "Master Tagging Hash: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Master Tagging Hash: //' || echo "")
 
-          # Extract constructor args (JSON array), strip ANSI codes, and trim whitespace
-          CONSTRUCTOR_ARGS=$(grep "Constructor args:" "$TEMP_OUTPUT" | sed 's/.*Constructor args: //' | sed 's/\x1b\[[0-9;]*m//g' | tr -d '\n\r' | sed 's/[[:space:]]*$//' || echo "")
+          # First "Constructor args" line is Certificate Registry; later contracts also log this.
+          CONSTRUCTOR_ARGS=$(grep "Constructor args:" "$TEMP_OUTPUT" | head -1 | sed 's/.*Constructor args: //' | sed 's/\x1b\[[0-9;]*m//g' | tr -d '\n\r' | sed 's/[[:space:]]*$//' || echo "")
 
           rm "$TEMP_OUTPUT"
 

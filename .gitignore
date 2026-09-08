@@ -14,3 +14,5 @@ codegenCache.json
 # ignore local testing data 
 pxe_data_*
 wallet_data_*
+aztec-wallet-data/
+*-stores/

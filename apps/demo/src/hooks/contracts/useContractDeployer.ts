@@ -92,13 +92,20 @@ export const useContractDeployer = () => {
         // Generate a random salt for unique deployment
         const salt = Fr.random();
 
-        const deployMethod = new DeployMethod(
-          PublicKeys.default(),
+        const deployMethod = DeployMethod.create(
           wallet,
-          artifact,
-          (instance, w) => Contract.at(instance.address, artifact, w),
-          args,
-          ctor.name
+          {
+            artifact,
+            postDeployCtor: (instance, w) =>
+              Contract.at(instance.address, artifact, w),
+            args,
+            constructorNameOrArtifact: ctor.name,
+          },
+          {
+            salt,
+            publicKeys: PublicKeys.default(),
+            universalDeploy: true,
+          }
         );
 
         // Get fee payment method from global store
@@ -110,9 +117,7 @@ export const useContractDeployer = () => {
 
         const receipt = await deployMethod.send({
           from: account.getAddress(),
-          contractAddressSalt: salt,
           fee: { paymentMethod },
-          universalDeploy: true,
           skipInitialization: false,
         });
 

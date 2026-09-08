@@ -21,7 +21,7 @@ export function getCertificateRegistryAdminAddress(): AztecAddress {
   }
 
   try {
-    return AztecAddress.fromString(value);
+    return AztecAddress.fromStringUnsafe(value);
   } catch (error) {
     throw new Error(
       `Invalid CERTIFICATE_REGISTRY_ADMIN_ADDRESS format. Please ensure it is a valid hex string (e.g. "0x..."). ${error}`
@@ -40,7 +40,7 @@ export function getBasicDisclosureRecipientAddress(
   if (!value) return fallback;
 
   try {
-    return AztecAddress.fromString(value);
+    return AztecAddress.fromStringUnsafe(value);
   } catch (error) {
     throw new Error(
       `Invalid BASIC_DISCLOSURE_RECIPIENT_ADDRESS format. Please ensure it is a valid hex string (e.g. "0x..."). ${error}`
@@ -63,7 +63,7 @@ export function getShamirDisclosureRecipientAddress(index: 0 | 1 | 2): AztecAddr
   }
 
   try {
-    return AztecAddress.fromString(value);
+    return AztecAddress.fromStringUnsafe(value);
   } catch (error) {
     throw new Error(
       `Invalid ${envKey} format. Please ensure it is a valid hex string (e.g. "0x..."). ${error}`
