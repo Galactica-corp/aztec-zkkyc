@@ -102,16 +102,23 @@ jobs:
           SECRET_KEY=$(grep -o "Secret key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Secret key generated: //' || echo "")
           SIGNING_KEY=$(grep -o "Signing key generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Signing key generated: //' || echo "")
           SALT_VALUE=$(grep -o "Salt generated: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Salt generated: //' || echo "")
+          ACCOUNT_ADDRESS=$(grep -o "Account address will be: 0x[a-fA-F0-9]*" "$TEMP_OUTPUT" | head -1 | sed 's/Account address will be: //' || echo "")
 
           rm "$TEMP_OUTPUT"
 
-          if [ -n "$SECRET_KEY" ] && [ -n "$SIGNING_KEY" ] && [ -n "$SALT_VALUE" ]; then
+          if [ -n "$SECRET_KEY" ] && [ -n "$SIGNING_KEY" ] && [ -n "$SALT_VALUE" ] && [ -n "$ACCOUNT_ADDRESS" ]; then
             echo "SECRET=\"$SECRET_KEY\"" >> .env
             echo "SIGNING_KEY=\"$SIGNING_KEY\"" >> .env
             echo "SALT=\"$SALT_VALUE\"" >> .env
-            echo "📋 Saved credentials to .env file"
+            # deploy_contract.ts reads these from .env via dotenv; CI has no pre-existing .env.
+            # Use the freshly deployed account as admin/recipients so later scripts can act as admin.
+            echo "CERTIFICATE_REGISTRY_ADMIN_ADDRESS=\"$ACCOUNT_ADDRESS\"" >> .env
+            echo "SHAMIR_DISCLOSURE_RECIPIENT_0_ADDRESS=\"$ACCOUNT_ADDRESS\"" >> .env
+            echo "SHAMIR_DISCLOSURE_RECIPIENT_1_ADDRESS=\"$ACCOUNT_ADDRESS\"" >> .env
+            echo "SHAMIR_DISCLOSURE_RECIPIENT_2_ADDRESS=\"$ACCOUNT_ADDRESS\"" >> .env
+            echo "📋 Saved credentials and deployment addresses to .env file"
           else
-            echo "❌ Failed to extract SECRET, SIGNING_KEY, and/or SALT from deploy output"
+            echo "❌ Failed to extract SECRET, SIGNING_KEY, SALT, and/or account address from deploy output"
             exit 1
           fi
 
