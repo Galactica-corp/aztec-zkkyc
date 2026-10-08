@@ -1,5 +1,5 @@
 // Re-export KYC layout constants from the shared content library.
-pub use dep::zk_certificate_content::{
+pub use zk_certificate_content::{
     KYC_ADDRESS_INDEX_COUNTRY,
     KYC_ADDRESS_INDEX_POSTCODE,
     KYC_ADDRESS_INDEX_REGION,

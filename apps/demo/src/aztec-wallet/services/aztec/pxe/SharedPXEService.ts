@@ -1,14 +1,14 @@
-import { AztecAddress } from '@aztec/aztec.js/addresses';
-import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee';
-import { Fr } from '@aztec/aztec.js/fields';
-import { createLogger } from '@aztec/aztec.js/log';
-import type { AztecNode } from '@aztec/aztec.js/node';
-import { SPONSORED_FPC_SALT } from '@aztec/constants';
-import { AztecSQLiteOPFSStore } from '@aztec/kv-store/sqlite-opfs';
-import { SponsoredFPCContractArtifact } from '@aztec/noir-contracts.js/SponsoredFPC';
-import { createPXE } from '@aztec/pxe/client/bundle';
-import { getPXEConfig } from '@aztec/pxe/config';
-import type { PXE } from '@aztec/pxe/server';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import { SponsoredFeePaymentMethod } from '@aztec-labs/aztec.js/fee';
+import { Fr } from '@aztec-labs/aztec.js/fields';
+import { createLogger } from '@aztec-labs/aztec.js/log';
+import type { AztecNode } from '@aztec-labs/aztec.js/node';
+import { SPONSORED_FPC_SALT } from '@aztec-labs/constants';
+import { AztecSQLiteOPFSStore } from '@aztec-labs/kv-store/sqlite-opfs';
+import { SponsoredFPCContractArtifact } from '@aztec-labs/noir-contracts.js/SponsoredFPC';
+import { createPXE } from '@aztec-labs/pxe/client/bundle';
+import { getPXEConfig } from '@aztec-labs/pxe/config';
+import type { PXE } from '@aztec-labs/pxe/server';
 import { AVAILABLE_NETWORKS } from '../../../../config/networks';
 import { FeePaymentRegister } from '../../../../services/aztec/feePayment/FeePaymentRegister';
 import { MinimalWallet } from '../../../../utils/MinimalWallet';
@@ -310,7 +310,7 @@ class SharedPXEServiceClass {
 
   private async getSponsoredPFCContract(_pxe: PXE) {
     const { getContractInstanceFromInstantiationParams } = await import(
-      '@aztec/aztec.js/contracts'
+      '@aztec-labs/aztec.js/contracts'
     );
 
     return await getContractInstanceFromInstantiationParams(

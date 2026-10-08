@@ -1,5 +1,5 @@
-import { createAztecNodeClient } from "@aztec/aztec.js/node";
-import { BlockNumber } from "@aztec/foundation/branded-types";
+import { createAztecNodeClient } from "@aztec-labs/aztec.js/node";
+import { BlockNumber } from "@aztec-labs/foundation/branded-types";
 import { getAztecNodeUrl } from "../config/config.js";
 
 async function main() {

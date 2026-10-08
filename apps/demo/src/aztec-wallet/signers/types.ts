@@ -5,8 +5,8 @@
  * app-managed PXE (External Signer wallet category).
  */
 
-import type { AuthWitnessProvider } from '@aztec/aztec.js/account';
-import type { CompleteAddress } from '@aztec/aztec.js/addresses';
+import type { AuthWitnessProvider } from '@aztec-labs/aztec.js/account';
+import type { CompleteAddress } from '@aztec-labs/aztec.js/addresses';
 import { ExternalSignerType } from '../types/aztec';
 
 // Re-export for convenience

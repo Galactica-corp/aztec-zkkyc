@@ -1,5 +1,5 @@
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
-import type { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { Fr, GrumpkinScalar } from "@aztec-labs/aztec.js/fields";
+import type { AztecAddress } from "@aztec-labs/stdlib/aztec-address";
 
 export function createGuardianEnv(overrides: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv {
     return {

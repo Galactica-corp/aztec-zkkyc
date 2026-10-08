@@ -6,20 +6,20 @@ import { AgeCheckRequirementContract } from "../../../../../artifacts/AgeCheckRe
 import { BasicDisclosureContract } from "../../../../../artifacts/BasicDisclosure.js";
 import { ShamirDisclosureContract } from "../../../../../artifacts/ShamirDisclosure.js";
 import { UseCaseExampleContract } from "../../../../../artifacts/UseCaseExample.js";
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
+import { SponsoredFeePaymentMethod } from "@aztec-labs/aztec.js/fee/testing";
 import { getSponsoredFPCInstance } from "../../../../zk_certificate/src/utils/sponsored_fpc.js";
 import { setupWallet } from "../../../../zk_certificate/src/utils/setup_wallet.js";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
-import { NO_FROM } from "@aztec/aztec.js/account";
-import { Logger, createLogger } from "@aztec/aztec.js/log";
-import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
-import { TxExecutionResult } from "@aztec/stdlib/tx";
-import { EmbeddedWallet } from "@aztec/wallets/embedded";
-import { AccountManager } from "@aztec/aztec.js/wallet";
-import { Fr as FoundationFr } from "@aztec/foundation/curves/bn254";
-import { poseidon2Hash } from "@aztec/foundation/crypto/poseidon";
+import { SponsoredFPCContract } from "@aztec-labs/noir-contracts.js/SponsoredFPC";
+import { AztecAddress } from "@aztec-labs/stdlib/aztec-address";
+import { NO_FROM } from "@aztec-labs/aztec.js/account";
+import { Logger, createLogger } from "@aztec-labs/aztec.js/log";
+import { ContractInstanceWithAddress } from "@aztec-labs/stdlib/contract";
+import { Fr, GrumpkinScalar } from "@aztec-labs/aztec.js/fields";
+import { TxExecutionResult } from "@aztec-labs/stdlib/tx";
+import { EmbeddedWallet } from "@aztec-labs/wallets/embedded";
+import { AccountManager } from "@aztec-labs/aztec.js/wallet";
+import { Fr as FoundationFr } from "@aztec-labs/foundation/curves/bn254";
+import { poseidon2Hash } from "@aztec-labs/foundation/crypto/poseidon";
 import { decryptShamirSecret } from "../../../../shamir_disclosure/utils/shamir_decrypt.js";
 
 // Test constants (aligned with Noir tests)

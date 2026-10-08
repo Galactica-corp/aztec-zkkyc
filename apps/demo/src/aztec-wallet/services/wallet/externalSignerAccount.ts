@@ -1,7 +1,7 @@
-import type { Account } from '@aztec/aztec.js/account';
-import { Fr } from '@aztec/aztec.js/fields';
-import { AccountManager } from '@aztec/aztec.js/wallet';
-import { poseidon2Hash } from '@aztec/foundation/crypto/poseidon';
+import type { Account } from '@aztec-labs/aztec.js/account';
+import { Fr } from '@aztec-labs/aztec.js/fields';
+import { AccountManager } from '@aztec-labs/aztec.js/wallet';
+import { poseidon2Hash } from '@aztec-labs/foundation/crypto/poseidon';
 import { EcdsaKEthSignerAccountContract } from '../../signers/EcdsaKEthSignerAccountContract';
 import { SharedPXEService, type SharedPXEInstance } from '../aztec/pxe';
 import { registerAddressAsSender } from '../aztec/pxe';

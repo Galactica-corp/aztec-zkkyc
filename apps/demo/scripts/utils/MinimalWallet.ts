@@ -1,10 +1,10 @@
 import {
   type Account,
-} from '@aztec/aztec.js/account';
-import { AztecAddress } from '@aztec/aztec.js/addresses';
-import type { AztecNode } from '@aztec/aztec.js/node';
-import type { PXE } from '@aztec/pxe/server';
-import { BaseWallet } from '@aztec/wallet-sdk/base-wallet';
+} from '@aztec-labs/aztec.js/account';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import type { AztecNode } from '@aztec-labs/aztec.js/node';
+import type { PXE } from '@aztec-labs/pxe/server';
+import { BaseWallet } from '@aztec-labs/wallet-sdk/base-wallet';
 
 export class MinimalWallet extends BaseWallet {
   private readonly addressToAccount = new Map<string, Account>();

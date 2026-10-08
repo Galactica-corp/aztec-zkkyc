@@ -18,7 +18,7 @@ pub contract BasicDisclosure {
         protocol::address::AztecAddress,
         state_vars::PublicImmutable,
     };
-    use dep::zk_certificate_content::CONTENT_TYPE_ZK_KYC;
+    use zk_certificate_content::CONTENT_TYPE_ZK_KYC;
 
     #[storage]
     struct Storage<Context> {

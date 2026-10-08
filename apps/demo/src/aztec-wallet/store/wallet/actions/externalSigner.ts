@@ -1,4 +1,4 @@
-import type { Account } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec-labs/aztec.js/account';
 import { createExternalSignerAccount } from '../../../services/wallet';
 import { WalletType } from '../../../types/aztec';
 import { getNetworkStore } from '../../network';

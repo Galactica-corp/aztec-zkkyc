@@ -1,6 +1,6 @@
 import path from "path";
-import type { AztecAddress } from "@aztec/stdlib/aztec-address";
-import { Fr } from "@aztec/aztec.js/fields";
+import type { AztecAddress } from "@aztec-labs/stdlib/aztec-address";
+import { Fr } from "@aztec-labs/aztec.js/fields";
 import { loadKycInputFromFile } from "../../src/cli/loadKycInput.js";
 import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
 import {

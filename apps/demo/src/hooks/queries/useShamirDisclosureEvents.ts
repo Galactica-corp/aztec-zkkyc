@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { AztecAddress } from '@aztec/aztec.js/addresses';
-import { Fr } from '@aztec/aztec.js/fields';
-import type { PrivateEvent } from '@aztec/aztec.js/wallet';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import { Fr } from '@aztec-labs/aztec.js/fields';
+import type { PrivateEvent } from '@aztec-labs/aztec.js/wallet';
 import { ShamirDisclosureContract } from '../../../../../artifacts/ShamirDisclosure';
 import { useAztecWallet, hasAppManagedPXE } from '../../aztec-wallet';
 import { queuePxeCall } from '../../utils';
@@ -75,7 +75,7 @@ const ensureShamirContractRegistered = async (
   }
 
   const { getContractInstanceFromInstantiationParams } = await import(
-    '@aztec/aztec.js/contracts'
+    '@aztec-labs/aztec.js/contracts'
   );
 
   const deployerAddress = AztecAddress.fromStringUnsafe(currentConfig.deployerAddress);

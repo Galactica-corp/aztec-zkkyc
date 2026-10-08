@@ -1,7 +1,7 @@
-import { AztecAddress } from '@aztec/aztec.js/addresses';
-import { ContractInstanceWithAddress } from '@aztec/aztec.js/contracts';
-import { createLogger } from '@aztec/foundation/log';
-import type { PXE } from '@aztec/pxe/server';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import { ContractInstanceWithAddress } from '@aztec-labs/aztec.js/contracts';
+import { createLogger } from '@aztec-labs/foundation/log';
+import type { PXE } from '@aztec-labs/pxe/server';
 import { queuePxeCall } from '../utils';
 import type {
   ContractConfigMap,
@@ -319,13 +319,13 @@ export class ContractRegistry<T extends ContractConfigMap>
     const {
       getContractInstanceFromInstantiationParams,
       getContractClassFromArtifact,
-    } = await import('@aztec/aztec.js/contracts');
+    } = await import('@aztec-labs/aztec.js/contracts');
 
     const contractClass = await getContractClassFromArtifact(
       contractConfig.artifact
     );
     const nodeUrl = this.config.nodeUrl.replace(/\/$/, '');
-    const { createAztecNodeClient } = await import('@aztec/aztec.js/node');
+    const { createAztecNodeClient } = await import('@aztec-labs/aztec.js/node');
     const node = createAztecNodeClient(nodeUrl);
     const chainInstance = await node.getContract(expectedAddress);
 

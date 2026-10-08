@@ -1,4 +1,4 @@
-import type { ContractFunctionInteraction } from '@aztec/aztec.js/contracts';
+import type { ContractFunctionInteraction } from '@aztec-labs/aztec.js/contracts';
 
 /**
  * Extract method names from a contract class.

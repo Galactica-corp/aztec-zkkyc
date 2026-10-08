@@ -1,10 +1,10 @@
 import { beforeEach, afterEach } from "@jest/globals";
-import { SponsoredFeePaymentMethod } from "@aztec/aztec.js/fee/testing";
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
-import { NO_FROM } from "@aztec/aztec.js/account";
-import type { AccountManager } from "@aztec/aztec.js/wallet";
-import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { SponsoredFeePaymentMethod } from "@aztec-labs/aztec.js/fee/testing";
+import { Fr, GrumpkinScalar } from "@aztec-labs/aztec.js/fields";
+import { NO_FROM } from "@aztec-labs/aztec.js/account";
+import type { AccountManager } from "@aztec-labs/aztec.js/wallet";
+import { SponsoredFPCContract } from "@aztec-labs/noir-contracts.js/SponsoredFPC";
+import { AztecAddress } from "@aztec-labs/stdlib/aztec-address";
 import { CertificateRegistryContract } from "../../../../artifacts/CertificateRegistry.js";
 import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
 import type { GuardianStatusOptions } from "../../src/types.js";

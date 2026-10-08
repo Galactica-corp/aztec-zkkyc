@@ -8,7 +8,7 @@
  */
 export const NETWORK_URLS = {
   sandbox: 'http://localhost:8080',
-  testnet: 'https://v5.testnet.rpc.aztec-labs.com',
+  testnet: 'https://lb.drpc.live/aztec-testnet/Ak_eT5HA2kbyqamqGTF702daoH37vEsR8YYxjmVXwXgc',
 } as const;
 
 /**
@@ -35,7 +35,7 @@ export const CHAIN_IDS: Record<AztecNetwork, AztecChainId> = {
   sandbox: 'aztec:0',
   // Rollup version / chain id must match the testnet network you connect to.
   // Keep in sync with Aztec's published network parameters.
-  testnet: 'aztec:4127419662',
+  testnet: 'aztec:2914217885',
 };
 
 /**
@@ -51,7 +51,7 @@ export const NETWORK_NAMES: Record<AztecNetwork, string> = {
  */
 export const CHAIN_ID_TO_NETWORK: Record<string, AztecNetwork> = {
   '0': 'sandbox',
-  '4127419662': 'testnet',
+  '2914217885': 'testnet',
 };
 
 /**

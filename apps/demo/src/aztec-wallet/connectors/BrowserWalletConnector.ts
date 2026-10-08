@@ -6,7 +6,7 @@
  * Self-contained: handles adapter initialization and event listeners internally.
  */
 
-import type { Account } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec-labs/aztec.js/account';
 import { getNetworkStore } from '../store/network';
 import { getWalletStore } from '../store/wallet';
 import { WalletType } from '../types/aztec';

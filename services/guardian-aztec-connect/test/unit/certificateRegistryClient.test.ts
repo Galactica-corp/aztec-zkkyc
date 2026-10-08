@@ -1,7 +1,7 @@
-import { Fr } from "@aztec/aztec.js/fields";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
-import type { ContractArtifact } from "@aztec/aztec.js/abi";
-import { ContractInitializationStatus } from "@aztec/aztec.js/wallet";
+import { Fr } from "@aztec-labs/aztec.js/fields";
+import { AztecAddress } from "@aztec-labs/stdlib/aztec-address";
+import type { ContractArtifact } from "@aztec-labs/aztec.js/abi";
+import { ContractInitializationStatus } from "@aztec-labs/aztec.js/wallet";
 import {
     createCertificateRegistryClientFromRuntime,
     ensureCertificateRegistryContractRegistered,

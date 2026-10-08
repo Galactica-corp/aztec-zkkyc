@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { readFieldCompressedString } from '@aztec/aztec.js/utils';
+import { readFieldCompressedString } from '@aztec-labs/aztec.js/utils';
 import { PRECONFIGURED_CONTRACTS } from '../../config/preconfiguredContracts';
 import {
   useContractTargetAddress,

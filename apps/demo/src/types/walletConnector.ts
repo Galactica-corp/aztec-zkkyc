@@ -1,7 +1,7 @@
-import type { Account } from '@aztec/aztec.js/account';
-import type { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee';
-import type { Wallet } from '@aztec/aztec.js/wallet';
-import type { PXE } from '@aztec/pxe/server';
+import type { Account } from '@aztec-labs/aztec.js/account';
+import type { SponsoredFeePaymentMethod } from '@aztec-labs/aztec.js/fee';
+import type { Wallet } from '@aztec-labs/aztec.js/wallet';
+import type { PXE } from '@aztec-labs/pxe/server';
 import { WalletType, ExternalSignerType } from './aztec';
 import type {
   BrowserWalletOperation,

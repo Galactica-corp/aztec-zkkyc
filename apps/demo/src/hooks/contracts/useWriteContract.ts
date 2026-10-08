@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
-import type { ContractArtifact } from '@aztec/aztec.js/abi';
-import { AztecAddress } from '@aztec/aztec.js/addresses';
-import { Contract, type ContractBase } from '@aztec/aztec.js/contracts';
-import type { AuthWitness } from '@aztec/stdlib/auth-witness';
+import type { ContractArtifact } from '@aztec-labs/aztec.js/abi';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import { Contract, type ContractBase } from '@aztec-labs/aztec.js/contracts';
+import type { AuthWitness } from '@aztec-labs/stdlib/auth-witness';
 import {
   useAztecWallet,
   isBrowserWalletConnector,

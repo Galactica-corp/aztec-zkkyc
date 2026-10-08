@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
-import { loadContractArtifact } from '@aztec/aztec.js/abi';
-import { Contract, DeployMethod } from '@aztec/aztec.js/contracts';
-import { Fr } from '@aztec/aztec.js/fields';
-import { PublicKeys } from '@aztec/aztec.js/keys';
+import { loadContractArtifact } from '@aztec-labs/aztec.js/abi';
+import { Contract, DeployMethod } from '@aztec-labs/aztec.js/contracts';
+import { Fr } from '@aztec-labs/aztec.js/fields';
+import { PublicKeys } from '@aztec-labs/aztec.js/keys';
 import {
   useAztecWallet,
   hasAppManagedPXE,

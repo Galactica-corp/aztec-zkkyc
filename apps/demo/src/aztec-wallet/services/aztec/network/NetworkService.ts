@@ -1,5 +1,5 @@
-import { createLogger } from '@aztec/aztec.js/log';
-import { createAztecNodeClient, type AztecNode } from '@aztec/aztec.js/node';
+import { createLogger } from '@aztec-labs/aztec.js/log';
+import { createAztecNodeClient, type AztecNode } from '@aztec-labs/aztec.js/node';
 
 const logger = createLogger('network-service');
 

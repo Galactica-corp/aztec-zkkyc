@@ -1,8 +1,8 @@
-import type { AztecAddress } from "@aztec/stdlib/aztec-address";
+import type { AztecAddress } from "@aztec-labs/stdlib/aztec-address";
 import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
 import { deployGuardianAccountIfNeededFromDependencies, type DeployMethodLike } from "../../src/wallet/deployAccount.js";
-import { ContractInitializationStatus } from "@aztec/aztec.js/wallet";
-import { NO_FROM } from "@aztec/aztec.js/account";
+import { ContractInitializationStatus } from "@aztec-labs/aztec.js/wallet";
+import { NO_FROM } from "@aztec-labs/aztec.js/account";
 import { createAddressStub, createRegisteredAddress } from "../support/fixtures.js";
 
 describe("deployGuardianAccountIfNeededFromDependencies", () => {

@@ -1,4 +1,4 @@
-import { AztecAddress } from '@aztec/stdlib/aztec-address';
+import { AztecAddress } from '@aztec-labs/stdlib/aztec-address';
 import { jest } from '@jest/globals';
 
 describe('FPC utility (env selection)', () => {

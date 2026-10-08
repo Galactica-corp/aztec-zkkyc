@@ -45,8 +45,8 @@ pub contract CertificateRegistry {
     use crate::content::CONTENT_TYPE_ZK_KYC;
     use crate::content_note::ContentNote;
     use crate::utility_returns::{GuardianCertificatesPage, UserCertificatesPage};
-    use dep::disclosure_interface::DisclosureInterface;
-    use dep::requirement_checker_interface::RequirementCheckerInterface;
+    use disclosure_interface::DisclosureInterface;
+    use requirement_checker_interface::RequirementCheckerInterface;
 
     global REVOCATION_DELAY: u64 = 12 * 60 * 60; // 12 hours
     global MAX_WHITELISTED_GUARDIANS: u32 = 20;

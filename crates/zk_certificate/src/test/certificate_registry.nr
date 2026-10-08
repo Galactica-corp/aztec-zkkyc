@@ -2,14 +2,14 @@ use crate::CertificateRegistry;
 use crate::content::CONTENT_TYPE_ZK_KYC;
 use crate::test::utils;
 use crate::utility_returns::{GuardianCertificatesPage, UserCertificatesPage};
-use dep::age_check_requirement::AgeCheckRequirement;
-use dep::basic_disclosure::BasicDisclosure;
+use age_check_requirement::AgeCheckRequirement;
+use basic_disclosure::BasicDisclosure;
 use ::aztec::protocol::address::AztecAddress;
 use ::aztec::protocol::storage::map::derive_storage_slot_in_map;
 use ::aztec::protocol::traits::FromField;
 use ::aztec::protocol::traits::ToField;
 use ::aztec::test::helpers::authwit::add_private_authwit_from_call;
-use dep::shamir_disclosure::ShamirDisclosure;
+use shamir_disclosure::ShamirDisclosure;
 global TEST_DISCLOSURE_CONTEXT: Field = 999;
 global MAX_SHAMIR_RECIPIENTS: u32 = 8;
 

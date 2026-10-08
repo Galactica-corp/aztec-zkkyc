@@ -1,10 +1,10 @@
-import { Logger, createLogger } from "@aztec/aztec.js/log";
-import { Fr } from "@aztec/aztec.js/fields";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { Logger, createLogger } from "@aztec-labs/aztec.js/log";
+import { Fr } from "@aztec-labs/aztec.js/fields";
+import { AztecAddress } from "@aztec-labs/stdlib/aztec-address";
 import { CertificateRegistryContract } from "../artifacts/CertificateRegistry.js";
 import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
 import { getAccountFromEnv } from "../crates/zk_certificate/src/utils/create_account_from_env.js";
-import { getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
+import { getContractInstanceFromInstantiationParams } from "@aztec-labs/aztec.js/contracts";
 
 async function main() {
     let logger: Logger;

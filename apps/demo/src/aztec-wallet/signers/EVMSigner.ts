@@ -7,8 +7,8 @@
  */
 
 import { type Hex, keccak256, toBytes } from 'viem';
-import type { AuthWitnessProvider } from '@aztec/aztec.js/account';
-import type { CompleteAddress } from '@aztec/aztec.js/addresses';
+import type { AuthWitnessProvider } from '@aztec-labs/aztec.js/account';
+import type { CompleteAddress } from '@aztec-labs/aztec.js/addresses';
 import { getEIP6963Service } from '../services/evm/EIP6963Service';
 import { MetaMaskAuthWitnessProvider } from './MetaMaskAuthWitnessProvider';
 import { ExternalSignerType } from './types';

@@ -1,4 +1,4 @@
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
+import { Fr, GrumpkinScalar } from "@aztec-labs/aztec.js/fields";
 import { createGuardianAccount } from "../../src/wallet/guardianAccount.js";
 import { getGuardianAccountStatus } from "../../src/wallet/accountStatus.js";
 import { deployGuardianAccountIfNeeded } from "../../src/wallet/deployAccount.js";

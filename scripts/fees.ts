@@ -4,23 +4,23 @@ import {
 } from 'viem';
 import { foundry } from 'viem/chains'
 import { mnemonicToAccount } from 'viem/accounts';
-import { FeeJuiceContract } from "@aztec/noir-contracts.js/FeeJuice";
-import { FPCContract } from "@aztec/noir-contracts.js/FPC";
-import { TokenContract } from "@aztec/noir-contracts.js/Token";
-import { createEthereumChain } from '@aztec/ethereum/chain';
-import { createExtendedL1Client } from '@aztec/ethereum/client';
+import { FeeJuiceContract } from "@aztec-labs/aztec.js/protocol";
+import { FPCContract } from "@aztec-labs/noir-contracts.js/FPC";
+import { TokenContract } from "@aztec-labs/noir-contracts.js/Token";
+import { createEthereumChain } from '@aztec-labs/ethereum/chain';
+import { createExtendedL1Client } from '@aztec-labs/ethereum/client';
 import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
 import { createAccountFromEnv } from "../crates/zk_certificate/src/utils/create_account_from_env.js";
-import { Logger, createLogger } from '@aztec/aztec.js/log';
-import { FeeJuicePaymentMethodWithClaim, PrivateFeePaymentMethod, PublicFeePaymentMethod } from '@aztec/aztec.js/fee';
-import { Fr, GrumpkinScalar } from '@aztec/aztec.js/fields';
-import { L1FeeJuicePortalManager } from '@aztec/aztec.js/ethereum';
-import { isL1ToL2MessageReady } from '@aztec/aztec.js/messaging';
-import { getCanonicalFeeJuice } from '@aztec/protocol-contracts/fee-juice';
-import { createAztecNodeClient } from '@aztec/aztec.js/node';
-import { NO_FROM } from "@aztec/aztec.js/account";
+import { Logger, createLogger } from '@aztec-labs/aztec.js/log';
+import { FeeJuicePaymentMethodWithClaim, PrivateFeePaymentMethod, PublicFeePaymentMethod } from '@aztec-labs/aztec.js/fee';
+import { Fr, GrumpkinScalar } from '@aztec-labs/aztec.js/fields';
+import { L1FeeJuicePortalManager } from '@aztec-labs/aztec.js/ethereum';
+import { isL1ToL2MessageReady } from '@aztec-labs/aztec.js/messaging';
+import { getCanonicalFeeJuice } from '@aztec-labs/protocol-contracts/fee-juice';
+import { createAztecNodeClient } from '@aztec-labs/aztec.js/node';
+import { NO_FROM } from "@aztec-labs/aztec.js/account";
 import { getAztecNodeUrl } from '../config/config.js';
-import { Gas, GasSettings } from '@aztec/stdlib/gas';
+import { Gas, GasSettings } from '@aztec-labs/stdlib/gas';
 import { getFeePaymentMethodForTxFees } from "../crates/zk_certificate/src/utils/fpc.js";
 
 const MNEMONIC = 'test test test test test test test test test test test junk';
@@ -151,8 +151,8 @@ async function main() {
     logger.info(`BananaCoin balance of newWallet is ${bananaBalance.result}`)
 
     const feeJuiceInstance = await getCanonicalFeeJuice();
-    await wallet.registerContract(feeJuiceInstance.instance, FeeJuiceContract.artifact)
-    const feeJuice = await FeeJuiceContract.at(feeJuiceInstance.address, wallet)
+    await wallet.registerContract(feeJuiceInstance.instance, feeJuiceInstance.artifact)
+    const feeJuice = FeeJuiceContract.withWallet(wallet)
 
     await feeJuice.methods.claim(fpc.address, fpcClaim.claimAmount, fpcClaim.claimSecret, fpcClaim.messageLeafIndex).send({ from: account2.address })
 

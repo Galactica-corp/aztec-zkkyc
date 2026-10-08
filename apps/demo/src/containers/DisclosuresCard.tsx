@@ -1,6 +1,6 @@
 import React from 'react';
 import { Eye, AlertTriangle } from 'lucide-react';
-import { Fr } from '@aztec/aztec.js/fields';
+import { Fr } from '@aztec-labs/aztec.js/fields';
 import { useAztecWallet, hasAppManagedPXE } from '../aztec-wallet';
 import {
   Card,

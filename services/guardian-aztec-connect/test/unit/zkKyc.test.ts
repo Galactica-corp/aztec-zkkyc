@@ -1,6 +1,6 @@
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
-import { Fr } from "@aztec/aztec.js/fields";
-import { poseidon2Hash } from "@aztec/foundation/crypto/poseidon";
+import { AztecAddress } from "@aztec-labs/stdlib/aztec-address";
+import { Fr } from "@aztec-labs/aztec.js/fields";
+import { poseidon2Hash } from "@aztec-labs/foundation/crypto/poseidon";
 import { prepareZkKycCertificateIssuance, parseBirthdayToUnixTimestamp } from "../../src/kyc/zkKyc.js";
 import { createZkKycInput } from "../support/fixtures.js";
 

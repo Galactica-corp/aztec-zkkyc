@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { Puzzle, AlertTriangle, CheckCircle } from 'lucide-react';
-import { AztecAddress } from '@aztec/aztec.js/addresses';
-import { Contract } from '@aztec/aztec.js/contracts';
-import { Fr } from '@aztec/aztec.js/fields';
-import type { AuthWitness } from '@aztec/stdlib/auth-witness';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import { Contract } from '@aztec-labs/aztec.js/contracts';
+import { Fr } from '@aztec-labs/aztec.js/fields';
+import type { AuthWitness } from '@aztec-labs/stdlib/auth-witness';
 import { CertificateRegistryContract } from '../../../../artifacts/CertificateRegistry';
 import { ShamirDisclosureContract } from '../../../../artifacts/ShamirDisclosure';
 import { UseCaseExampleContract } from '../../../../artifacts/UseCaseExample';
@@ -206,7 +206,7 @@ export const UseCaseExampleCard: React.FC = () => {
       }
 
       const { getContractInstanceFromInstantiationParams } = await import(
-        '@aztec/aztec.js/contracts'
+        '@aztec-labs/aztec.js/contracts'
       );
 
       const constructorArgs = currentConfig.shamirDisclosureConstructorArgs;

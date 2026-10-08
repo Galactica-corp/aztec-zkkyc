@@ -263,7 +263,7 @@ This boilerplate uses **aztec-wallet** (`src/aztec-wallet/`) - a modular wallet 
 import { AztecWalletProvider, createAztecWalletConfig, ConnectButton } from './aztec-wallet';
 
 const config = createAztecWalletConfig({
-  networks: [{ name: 'testnet', nodeUrl: 'https://v5.testnet.rpc.aztec-labs.com/' }],
+  networks: [{ name: 'testnet', nodeUrl: 'https://lb.drpc.live/aztec-testnet/Ak_eT5HA2kbyqamqGTF702daoH37vEsR8YYxjmVXwXgc/' }],
   walletGroups: {
     embedded: true,
     evmWallets: ['metamask', 'rabby'],
@@ -414,7 +414,7 @@ const balance = await token.methods.balance_of_public(address).simulate();
 **Available Networks** (`src/config/networks/`):
 
 - **Sandbox** (`http://localhost:8080`): Local development with Aztec node
-- **Testnet** (`https://v5.testnet.rpc.aztec-labs.com/`): Public Aztec testnet (default)
+- **Testnet** (`https://lb.drpc.live/aztec-testnet/Ak_eT5HA2kbyqamqGTF702daoH37vEsR8YYxjmVXwXgc/`): Public Aztec testnet (default)
 
 **Network Config Structure**:
 
@@ -491,7 +491,7 @@ Cross-Origin-Resource-Policy: cross-origin
 
 **Dependency Deduplication**:
 
-- `@aztec/foundation`, `@aztec/circuits.js`, `@noble/curves` are deduplicated
+- `@aztec-labs/foundation`, `@aztec-labs/circuits.js`, `@noble/curves` are deduplicated
 - Prevents multiple copies of crypto libraries
 
 ### Contract Development Workflow

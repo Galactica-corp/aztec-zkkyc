@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
-import type { ContractArtifact } from '@aztec/aztec.js/abi';
-import { AztecAddress } from '@aztec/aztec.js/addresses';
-import { Contract } from '@aztec/aztec.js/contracts';
+import type { ContractArtifact } from '@aztec-labs/aztec.js/abi';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import { Contract } from '@aztec-labs/aztec.js/contracts';
 import {
   useAztecWallet,
   hasAppManagedPXE,

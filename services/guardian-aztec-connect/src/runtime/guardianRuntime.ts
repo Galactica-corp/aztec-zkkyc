@@ -43,8 +43,8 @@ export async function loadGuardianRuntimeWithFees(
         return runtime;
     }
 
-    const { SponsoredFeePaymentMethod } = await import("@aztec/aztec.js/fee");
-    const { SponsoredFPCContract } = await import("@aztec/noir-contracts.js/SponsoredFPC");
+    const { SponsoredFeePaymentMethod } = await import("@aztec-labs/aztec.js/fee");
+    const { SponsoredFPCContract } = await import("@aztec-labs/noir-contracts.js/SponsoredFPC");
     const { getSponsoredFPCInstance } = await import("../wallet/sponsoredFee.js");
 
     const sponsoredFPC = await getSponsoredFPCInstance();

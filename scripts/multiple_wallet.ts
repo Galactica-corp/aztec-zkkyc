@@ -1,12 +1,12 @@
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
-import { getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
-import { ContractInstanceWithAddress } from "@aztec/stdlib/contract";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
-import { NO_FROM } from "@aztec/aztec.js/account";
-import { createAztecNodeClient } from "@aztec/aztec.js/node";
-import { TokenContract } from "@aztec/noir-contracts.js/Token"
+import { Fr, GrumpkinScalar } from "@aztec-labs/aztec.js/fields";
+import { getContractInstanceFromInstantiationParams } from "@aztec-labs/aztec.js/contracts";
+import { ContractInstanceWithAddress } from "@aztec-labs/stdlib/contract";
+import { AztecAddress } from "@aztec-labs/stdlib/aztec-address";
+import { NO_FROM } from "@aztec-labs/aztec.js/account";
+import { createAztecNodeClient } from "@aztec-labs/aztec.js/node";
+import { TokenContract } from "@aztec-labs/noir-contracts.js/Token"
 import { getAztecNodeUrl } from "../config/config.js";
-import { EmbeddedWallet } from "@aztec/wallets/embedded";
+import { EmbeddedWallet } from "@aztec-labs/wallets/embedded";
 import { getFeePaymentMethodForTxFees } from "../crates/zk_certificate/src/utils/fpc.js";
 
 const nodeUrl = getAztecNodeUrl();

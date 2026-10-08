@@ -1,4 +1,4 @@
-import type { Account } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec-labs/aztec.js/account';
 import { EMBEDDED_CONNECTOR_ID } from '../../../connectors';
 import {
   createEmbeddedAccount,

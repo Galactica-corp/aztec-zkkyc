@@ -1,8 +1,8 @@
-import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee';
-import { AztecAddress } from '@aztec/stdlib/aztec-address';
-import { Fr } from '@aztec/aztec.js/fields';
-import type { Wallet } from '@aztec/aztec.js/wallet';
-import { SponsoredFPCContractArtifact } from '@aztec/noir-contracts.js/SponsoredFPC';
+import { SponsoredFeePaymentMethod } from '@aztec-labs/aztec.js/fee';
+import { AztecAddress } from '@aztec-labs/stdlib/aztec-address';
+import { Fr } from '@aztec-labs/aztec.js/fields';
+import type { Wallet } from '@aztec-labs/aztec.js/wallet';
+import { SponsoredFPCContractArtifact } from '@aztec-labs/noir-contracts.js/SponsoredFPC';
 import { FPCFeePaymentMethod, registerPrivateContract } from '@alejoamiras/private-fee-juice';
 import { getSponsoredFPCInstance } from './sponsored_fpc.js';
 

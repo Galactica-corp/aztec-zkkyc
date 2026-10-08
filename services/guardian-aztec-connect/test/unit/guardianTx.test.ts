@@ -1,4 +1,4 @@
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { AztecAddress } from "@aztec-labs/stdlib/aztec-address";
 import { buildSponsoredSendOptions, requireTransactionHash } from "../../src/tx/guardianTx.js";
 import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
 

@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { AztecAddress } from '@aztec/stdlib/aztec-address';
+import { AztecAddress } from '@aztec-labs/stdlib/aztec-address';
 
 // Load environment variables
 dotenv.config();

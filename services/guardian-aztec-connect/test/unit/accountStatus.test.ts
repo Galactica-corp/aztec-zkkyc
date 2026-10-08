@@ -1,5 +1,5 @@
-import type { AztecAddress } from "@aztec/stdlib/aztec-address";
-import { ContractInitializationStatus } from "@aztec/aztec.js/wallet";
+import type { AztecAddress } from "@aztec-labs/stdlib/aztec-address";
+import { ContractInitializationStatus } from "@aztec-labs/aztec.js/wallet";
 import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
 import { getGuardianAccountStatusFromDependencies } from "../../src/wallet/accountStatus.js";
 import { createAddressStub, createRegisteredAddress } from "../support/fixtures.js";

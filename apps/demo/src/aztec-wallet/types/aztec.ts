@@ -1,5 +1,5 @@
-import type { Account } from '@aztec/aztec.js/account';
-import type { Fr } from '@aztec/aztec.js/fields';
+import type { Account } from '@aztec-labs/aztec.js/account';
+import type { Fr } from '@aztec-labs/aztec.js/fields';
 import type { CaipAccount } from '@azguardwallet/types';
 
 // ============================================================================

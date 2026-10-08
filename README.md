@@ -24,7 +24,7 @@ This repo is based on the [Aztec starter](https://github.com/AztecProtocol/aztec
 
 This repo connects to a locally running Aztec local network by default, but can be configured to use the public Aztec testnet by specifying `AZTEC_ENV=testnet` in a `.env` file or by prefixing a command (for example `AZTEC_ENV=testnet yarn deploy`).
 
-The demo app and scripts use the Aztec testnet RPC at `https://v5.testnet.rpc.aztec-labs.com` (see [Networks](https://docs.aztec.network/networks)).
+The demo app and scripts use the Aztec testnet RPC at `https://lb.drpc.live/aztec-testnet/Ak_eT5HA2kbyqamqGTF702daoH37vEsR8YYxjmVXwXgc` (see [Networks](https://docs.aztec.network/networks)).
 
 
 ## 🚀 **Getting Started**
@@ -42,8 +42,8 @@ bash -i <(curl -s https://install.aztec.network)
 Install the correct version of the toolkit with:
 
 ```bash
-VERSION=5.0.1 bash -i <(curl -sL https://install.aztec.network/5.0.1)
-aztec-up use 5.0.1
+VERSION=6.0.0-rc.1 bash -i <(curl -sL https://install.aztec.network/6.0.0-rc.1)
+aztec-up use 6.0.0-rc.1
 ```
 
 ### Environment Configuration

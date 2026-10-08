@@ -1,7 +1,7 @@
-import { AztecAddress } from '@aztec/aztec.js/addresses';
-import { NO_FROM } from '@aztec/aztec.js/account';
-import type { AccountManager } from '@aztec/aztec.js/wallet';
-import { ContractInitializationStatus } from '@aztec/aztec.js/wallet';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import { NO_FROM } from '@aztec-labs/aztec.js/account';
+import type { AccountManager } from '@aztec-labs/aztec.js/wallet';
+import { ContractInitializationStatus } from '@aztec-labs/aztec.js/wallet';
 import { AccountDeploymentError } from './errors';
 import type { SharedPXEInstance } from '../aztec/pxe';
 

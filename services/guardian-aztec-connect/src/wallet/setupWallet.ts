@@ -1,7 +1,7 @@
-import { createAztecNodeClient } from "@aztec/aztec.js/node";
-import { registerInitialLocalNetworkAccountsInWallet } from "@aztec/wallets/testing";
-import type { EmbeddedWallet } from "@aztec/wallets/embedded";
-import { EmbeddedWallet as EmbeddedWalletFactory } from "@aztec/wallets/embedded";
+import { createAztecNodeClient } from "@aztec-labs/aztec.js/node";
+import { registerInitialLocalNetworkAccountsInWallet } from "@aztec-labs/wallets/testing";
+import type { EmbeddedWallet } from "@aztec-labs/wallets/embedded";
+import { EmbeddedWallet as EmbeddedWalletFactory } from "@aztec-labs/wallets/embedded";
 import type { GuardianRuntimeOptions } from "../types.js";
 import { resolveNetworkConfig } from "../config/networkConfig.js";
 

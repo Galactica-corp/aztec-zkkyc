@@ -2,9 +2,9 @@ import {
   loadContractArtifact,
   type ContractArtifact,
   type NoirCompiledContract,
-} from '@aztec/aztec.js/abi';
-import { AztecAddress } from '@aztec/aztec.js/addresses';
-import { EthAddress } from '@aztec/aztec.js/addresses';
+} from '@aztec-labs/aztec.js/abi';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import { EthAddress } from '@aztec-labs/aztec.js/addresses';
 
 type RawParamType = {
   kind: string;

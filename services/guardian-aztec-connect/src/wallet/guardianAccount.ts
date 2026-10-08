@@ -1,6 +1,6 @@
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
-import type { AccountManager } from "@aztec/aztec.js/wallet";
-import type { EmbeddedWallet } from "@aztec/wallets/embedded";
+import { Fr, GrumpkinScalar } from "@aztec-labs/aztec.js/fields";
+import type { AccountManager } from "@aztec-labs/aztec.js/wallet";
+import type { EmbeddedWallet } from "@aztec-labs/wallets/embedded";
 import * as dotenv from "dotenv";
 import path from "path";
 

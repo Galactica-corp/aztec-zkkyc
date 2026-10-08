@@ -1,8 +1,8 @@
-import type { AztecAddress } from '@aztec/aztec.js/addresses';
-import type { ContractInstanceWithAddress } from '@aztec/aztec.js/contracts';
-import type { Fr } from '@aztec/aztec.js/fields';
-import type { Wallet } from '@aztec/aztec.js/wallet';
-import type { ContractArtifact, FunctionAbi } from '@aztec/stdlib/abi';
+import type { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import type { ContractInstanceWithAddress } from '@aztec-labs/aztec.js/contracts';
+import type { Fr } from '@aztec-labs/aztec.js/fields';
+import type { Wallet } from '@aztec-labs/aztec.js/wallet';
+import type { ContractArtifact, FunctionAbi } from '@aztec-labs/stdlib/abi';
 import type { NetworkConfig } from '../config/networks';
 
 /**
