@@ -80,7 +80,7 @@ export default tseslint.config(
               position: 'before',
             },
             {
-              pattern: '@aztec/**',
+              pattern: '@aztec-labs/**',
               group: 'external',
               position: 'after',
             },

@@ -1,5 +1,5 @@
-import { AztecAddress } from '@aztec/aztec.js/addresses';
-import type { NoteDao } from '@aztec/stdlib/note';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import type { NoteDao } from '@aztec-labs/stdlib/note';
 import type { CertificateData, ContentNoteData } from './types';
 
 const UNKNOWN_CONTENT_TYPE = '0';

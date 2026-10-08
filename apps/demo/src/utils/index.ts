@@ -1,6 +1,6 @@
-import { AztecAddress } from '@aztec/aztec.js/addresses';
-import { Fr } from '@aztec/aztec.js/fields';
-import { hasHexPrefix } from '@aztec/foundation/string';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import { Fr } from '@aztec-labs/aztec.js/fields';
+import { hasHexPrefix } from '@aztec-labs/foundation/string';
 import {
   PLACEHOLDER_ADDRESS,
   PLACEHOLDER_SALT,

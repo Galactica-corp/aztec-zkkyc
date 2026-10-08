@@ -1,8 +1,8 @@
 
-import { createAztecNodeClient } from '@aztec/aztec.js/node';
+import { createAztecNodeClient } from '@aztec-labs/aztec.js/node';
 import configManager, { getAztecNodeUrl, getEnv } from '../../../../config/config.js';
-import { EmbeddedWallet } from '@aztec/wallets/embedded';
-import { registerInitialLocalNetworkAccountsInWallet } from '@aztec/wallets/testing';
+import { EmbeddedWallet } from '@aztec-labs/wallets/embedded';
+import { registerInitialLocalNetworkAccountsInWallet } from '@aztec-labs/wallets/testing';
 
 interface SetupWalletOptions {
   ephemeral?: boolean;

@@ -4,7 +4,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import type { AztecAddress } from '@aztec/aztec.js/addresses';
+import type { AztecAddress } from '@aztec-labs/aztec.js/addresses';
 import { createFeePaymentMethod } from '../../services/aztec/feePayment';
 import { queryKeys } from './queryKeys';
 import type { FeePaymentMethodType } from '../../config/feePaymentContracts';

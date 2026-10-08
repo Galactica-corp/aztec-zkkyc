@@ -1,5 +1,5 @@
-import type { AccountManager } from "@aztec/aztec.js/wallet";
-import { ContractInitializationStatus } from "@aztec/aztec.js/wallet";
+import type { AccountManager } from "@aztec-labs/aztec.js/wallet";
+import { ContractInitializationStatus } from "@aztec-labs/aztec.js/wallet";
 import {
     createCertificateRegistryClientFromRuntime,
     getGuardianWhitelistStatus,

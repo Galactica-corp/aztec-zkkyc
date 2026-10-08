@@ -1,7 +1,7 @@
-import type { ContractArtifact } from "@aztec/aztec.js/abi";
-import { getContractInstanceFromInstantiationParams } from "@aztec/aztec.js/contracts";
-import { Fr } from "@aztec/aztec.js/fields";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import type { ContractArtifact } from "@aztec-labs/aztec.js/abi";
+import { getContractInstanceFromInstantiationParams } from "@aztec-labs/aztec.js/contracts";
+import { Fr } from "@aztec-labs/aztec.js/fields";
+import { AztecAddress } from "@aztec-labs/stdlib/aztec-address";
 import * as dotenv from "dotenv";
 import path from "path";
 import { CertificateRegistryContract } from "../../../../artifacts/CertificateRegistry.js";

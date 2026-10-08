@@ -2,7 +2,7 @@
  * Fee Payment Service
  */
 
-import type { FeePaymentMethod } from '@aztec/aztec.js/fee';
+import type { FeePaymentMethod } from '@aztec-labs/aztec.js/fee';
 import type { FeePaymentMethodType } from '../../../config/feePaymentContracts';
 import type { FeePaymentContractsConfig } from '../../../config/networks/types';
 

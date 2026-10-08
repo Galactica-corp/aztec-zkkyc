@@ -27,7 +27,7 @@ pub contract SanctionListRequirement {
         protocol::{address::AztecAddress, hash::poseidon2_hash_with_separator},
         state_vars::{DelayedPublicMutable, Map, PublicImmutable},
     };
-    use dep::zk_certificate_content::{
+    use zk_certificate_content::{
         CONTENT_TYPE_ZK_KYC, KYC_PERSONAL_INDEX_CITIZENSHIP, KYC_PERSONAL_INDEX_FORENAME,
         KYC_PERSONAL_INDEX_SURNAME,
     };

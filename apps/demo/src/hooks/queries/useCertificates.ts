@@ -1,10 +1,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { AztecAddress } from '@aztec/aztec.js/addresses';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
 import {
   Contract,
   type SimulationResult,
-} from '@aztec/aztec.js/contracts';
-import { Fr } from '@aztec/aztec.js/fields';
+} from '@aztec-labs/aztec.js/contracts';
+import { Fr } from '@aztec-labs/aztec.js/fields';
 import { CertificateRegistryContract } from '../../../../../artifacts/CertificateRegistry';
 import { useAztecWallet, hasAppManagedPXE } from '../../aztec-wallet';
 import { SharedPXEService } from '../../aztec-wallet/services/aztec/pxe/SharedPXEService';
@@ -142,7 +142,7 @@ export const useCertificates = (
           const deployParams =
             contractsConfig.certificateRegistry.deployParams(currentConfig);
           const { getContractInstanceFromInstantiationParams } = await import(
-            '@aztec/aztec.js/contracts'
+            '@aztec-labs/aztec.js/contracts'
           );
           const instance = await getContractInstanceFromInstantiationParams(
             CertificateRegistryContract.artifact,

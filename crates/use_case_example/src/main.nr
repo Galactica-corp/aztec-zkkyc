@@ -13,7 +13,7 @@ pub contract UseCaseExample {
         protocol::address::AztecAddress,
         state_vars::PublicImmutable,
     };
-    use dep::zk_certificate::CertificateRegistry;
+    use zk_certificate::CertificateRegistry;
 
     #[storage]
     struct Storage<Context> {

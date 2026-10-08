@@ -1,5 +1,5 @@
-import { AztecAddress, EthAddress } from '@aztec/aztec.js/addresses';
-import { Fr } from '@aztec/aztec.js/fields';
+import { AztecAddress, EthAddress } from '@aztec-labs/aztec.js/addresses';
+import { Fr } from '@aztec-labs/aztec.js/fields';
 import { AgeCheckRequirementContract } from '../../../../artifacts/AgeCheckRequirement';
 import { BasicDisclosureContract } from '../../../../artifacts/BasicDisclosure';
 import { CertificateRegistryContract } from '../../../../artifacts/CertificateRegistry';

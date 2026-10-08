@@ -1,27 +1,27 @@
 import 'dotenv/config';
-import { EcdsaRAccountContract } from '@aztec/accounts/ecdsa';
-import { type Account, NO_FROM } from '@aztec/aztec.js/account';
-import { AztecAddress } from '@aztec/aztec.js/addresses';
+import { EcdsaRAccountContract } from '@aztec-labs/accounts/ecdsa';
+import { type Account, NO_FROM } from '@aztec-labs/aztec.js/account';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
 import {
   getContractInstanceFromInstantiationParams,
   DeployMethod,
   Contract,
   type DeployOptions,
-} from '@aztec/aztec.js/contracts';
-import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee';
-import { Fr } from '@aztec/aztec.js/fields';
-import { PublicKeys } from '@aztec/aztec.js/keys';
-import { createAztecNodeClient, type AztecNode } from '@aztec/aztec.js/node';
-import { AccountManager, type Wallet } from '@aztec/aztec.js/wallet';
-import { ContractInitializationStatus } from '@aztec/aztec.js/wallet';
-import { SPONSORED_FPC_SALT } from '@aztec/constants';
-import { poseidon2Hash } from '@aztec/foundation/crypto/poseidon';
-import { createStore } from '@aztec/kv-store/lmdb';
-import { SponsoredFPCContractArtifact } from '@aztec/noir-contracts.js/SponsoredFPC';
-import { getPXEConfig } from '@aztec/pxe/config';
-import type { PXE } from '@aztec/pxe/server';
-import { createPXE } from '@aztec/pxe/server';
-import { BaseWallet } from '@aztec/wallet-sdk/base-wallet';
+} from '@aztec-labs/aztec.js/contracts';
+import { SponsoredFeePaymentMethod } from '@aztec-labs/aztec.js/fee';
+import { Fr } from '@aztec-labs/aztec.js/fields';
+import { PublicKeys } from '@aztec-labs/aztec.js/keys';
+import { createAztecNodeClient, type AztecNode } from '@aztec-labs/aztec.js/node';
+import { AccountManager, type Wallet } from '@aztec-labs/aztec.js/wallet';
+import { ContractInitializationStatus } from '@aztec-labs/aztec.js/wallet';
+import { SPONSORED_FPC_SALT } from '@aztec-labs/constants';
+import { poseidon2Hash } from '@aztec-labs/foundation/crypto/poseidon';
+import { createStore } from '@aztec-labs/kv-store/lmdb';
+import { SponsoredFPCContractArtifact } from '@aztec-labs/noir-contracts.js/SponsoredFPC';
+import { getPXEConfig } from '@aztec-labs/pxe/config';
+import type { PXE } from '@aztec-labs/pxe/server';
+import { createPXE } from '@aztec-labs/pxe/server';
+import { BaseWallet } from '@aztec-labs/wallet-sdk/base-wallet';
 import fs from 'fs';
 import path from 'path';
 import { DripperContractArtifact } from '../src/artifacts/Dripper';

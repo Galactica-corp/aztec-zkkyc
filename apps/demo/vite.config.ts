@@ -8,19 +8,19 @@ import topLevelAwait from 'vite-plugin-top-level-await';
 
 const require = createRequire(import.meta.url);
 const sqliteOpfsWorker = path.join(
-  path.dirname(require.resolve('@aztec/kv-store/sqlite-opfs')),
+  path.dirname(require.resolve('@aztec-labs/kv-store/sqlite-opfs')),
   'worker.js'
 );
 
 /**
- * Plugin to strip sourcemap comments from @aztec/bb.js so Vite doesn't warn
+ * Plugin to strip sourcemap comments from @aztec-foundation/bb.js so Vite doesn't warn
  * about "points to missing source files" (the package ships .js but not the .ts sources).
  */
 const stripBbJsSourcemaps = (): Plugin => ({
   name: 'strip-bbjs-sourcemaps',
   enforce: 'pre',
   transform(code, id) {
-    if (id.includes('@aztec/bb.js') && id.endsWith('.js')) {
+    if (id.includes('@aztec-foundation/bb.js') && id.endsWith('.js')) {
       return {
         code: code.replace(/\n?\s*\/\/# sourceMappingURL=.*$/m, ''),
         map: null,
@@ -169,7 +169,7 @@ const nodeBuiltinsShim = (): Plugin => ({
 
 export default defineConfig({
   plugins: [
-    stripBbJsSourcemaps(), // Strip @aztec/bb.js sourcemaps to avoid "missing source" warnings
+    stripBbJsSourcemaps(), // Strip @aztec-foundation/bb.js sourcemaps to avoid "missing source" warnings
     fixAztecSqliteOpfs(),
     nodeBuiltinsShim(), // Must be first to intercept before nodePolyfills
     react(),
@@ -227,9 +227,9 @@ export default defineConfig({
       'react',
       'react-dom',
       'react/jsx-runtime',
-      '@aztec/foundation',
-      '@aztec/stdlib',
-      '@aztec/aztec.js',
+      '@aztec-labs/foundation',
+      '@aztec-labs/stdlib',
+      '@aztec-labs/aztec.js',
       '@noble/curves',
     ],
   },
@@ -241,7 +241,7 @@ export default defineConfig({
       'Cross-Origin-Resource-Policy': 'cross-origin',
     },
     fs: {
-      // Allow serving from workspace root so @aztec/noir-acvm_js web/acvm_js_bg.wasm
+      // Allow serving from workspace root so @aztec-foundation/noir-acvm_js web/acvm_js_bg.wasm
       // (and other hoisted deps) can be resolved when dev server runs from apps/demo
       allow: ['..', searchForWorkspaceRoot(process.cwd())],
     },
@@ -262,15 +262,15 @@ export default defineConfig({
     commonjsOptions: {
       // Forces @aztec packages to be treated as ESM to prevent class identity errors
       defaultIsModuleExports: (id) => {
-        if (id.includes('@aztec/')) {
+        if (id.includes('@aztec-labs/') || id.includes('@aztec-foundation/')) {
           return false;
         }
         return 'auto';
       },
       exclude: [
-        '@aztec/stdlib/**',
-        '@aztec/foundation/**',
-        '@aztec/aztec.js/**',
+        '@aztec-labs/stdlib/**',
+        '@aztec-labs/foundation/**',
+        '@aztec-labs/aztec.js/**',
       ],
     },
     rollupOptions: {
@@ -302,21 +302,21 @@ export default defineConfig({
       'msgpackr',
     ],
     exclude: [
-      '@aztec/bb.js',
-      '@aztec/pxe',
-      '@aztec/pxe/client/lazy',
-      '@aztec/foundation',
-      '@aztec/noir-contracts.js',
-      '@aztec/ethereum',
-      '@aztec/accounts',
-      '@aztec/stdlib',
-      '@aztec/aztec.js',
+      '@aztec-foundation/bb.js',
+      '@aztec-labs/pxe',
+      '@aztec-labs/pxe/client/lazy',
+      '@aztec-labs/foundation',
+      '@aztec-labs/noir-contracts.js',
+      '@aztec-labs/ethereum',
+      '@aztec-labs/accounts',
+      '@aztec-labs/stdlib',
+      '@aztec-labs/aztec.js',
       '@aztec-foundation/aztec-standards',
       'noirc_abi_wasm',
       // SQLite-OPFS uses `new Worker(new URL('./worker.js', import.meta.url))`.
       // Prebundling rewrites import.meta.url to `.vite/deps/`, so the worker 404s.
-      '@aztec/kv-store',
-      '@aztec/sqlite3mc-wasm',
+      '@aztec-labs/kv-store',
+      '@aztec-labs/sqlite3mc-wasm',
     ],
     esbuildOptions: {
       define: {

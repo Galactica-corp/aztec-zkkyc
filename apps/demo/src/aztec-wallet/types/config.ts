@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import type { Account } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec-labs/aztec.js/account';
 import type { AztecNetwork } from '../../config/networks/constants';
 import type { IBrowserWalletAdapter } from '../../types/browserWallet';
 
@@ -170,7 +170,7 @@ export interface WalletGroupsConfig {
  * @example Simple config (recommended)
  * ```ts
  * const config = createAztecWalletConfig({
- *   networks: [{ name: 'testnet', nodeUrl: 'https://v5.testnet.rpc.aztec-labs.com' }],
+ *   networks: [{ name: 'testnet', nodeUrl: 'https://lb.drpc.live/aztec-testnet/Ak_eT5HA2kbyqamqGTF702daoH37vEsR8YYxjmVXwXgc' }],
  *   walletGroups: {
  *     embedded: true,
  *     evmWallets: ['metamask', 'rabby'],

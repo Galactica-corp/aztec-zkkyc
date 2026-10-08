@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import type { ContractInstanceWithAddress } from '@aztec/aztec.js/contracts';
+import type { ContractInstanceWithAddress } from '@aztec-labs/aztec.js/contracts';
 import {
   useContractRegistryStatus,
   useContractRegistryError,

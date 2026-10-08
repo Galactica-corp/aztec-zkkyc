@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { iso31661, iso31662 } from 'iso-3166';
 import { FileCheck, AlertTriangle, CheckCircle, Dice5 } from 'lucide-react';
-import { AztecAddress } from '@aztec/aztec.js/addresses';
-import { Fr } from '@aztec/aztec.js/fields';
-import { poseidon2Hash } from '@aztec/foundation/crypto/poseidon';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import { Fr } from '@aztec-labs/aztec.js/fields';
+import { poseidon2Hash } from '@aztec-labs/foundation/crypto/poseidon';
 import { CertificateRegistryContract } from '../../../../artifacts/CertificateRegistry';
 import { useAztecWallet, hasAppManagedPXE } from '../aztec-wallet';
 import {

@@ -1,6 +1,6 @@
 use crate::test::utils;
 use ::aztec::test::helpers::authwit::add_private_authwit_from_call;
-use dep::zk_certificate::{CertificateRegistry, content::CONTENT_TYPE_ZK_KYC, sample_kyc_content};
+use zk_certificate::{CertificateRegistry, content::CONTENT_TYPE_ZK_KYC, sample_kyc_content};
 
 use crate::UseCaseExample;
 

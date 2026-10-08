@@ -1,10 +1,10 @@
-import { Fr, GrumpkinScalar } from "@aztec/aztec.js/fields";
-import { Logger, createLogger } from "@aztec/aztec.js/log";
+import { Fr, GrumpkinScalar } from "@aztec-labs/aztec.js/fields";
+import { Logger, createLogger } from "@aztec-labs/aztec.js/log";
 import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
-import { NO_FROM } from "@aztec/aztec.js/account";
-import { AccountManager } from "@aztec/aztec.js/wallet";
-import { EmbeddedWallet } from "@aztec/wallets/embedded";
+import { AztecAddress } from "@aztec-labs/stdlib/aztec-address";
+import { NO_FROM } from "@aztec-labs/aztec.js/account";
+import { AccountManager } from "@aztec-labs/aztec.js/wallet";
+import { EmbeddedWallet } from "@aztec-labs/wallets/embedded";
 import { getTimeouts } from "../config/config.js";
 import { getFeePaymentMethodForTxFees } from "../crates/zk_certificate/src/utils/fpc.js";
 

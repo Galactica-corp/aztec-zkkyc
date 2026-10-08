@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
 import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
-import { ContractInitializationStatus } from "@aztec/aztec.js/wallet";
+import { ContractInitializationStatus } from "@aztec-labs/aztec.js/wallet";
 import { createAddressStub } from "../support/fixtures.js";
 
 const jestWithEsmMocks = jest as typeof jest & {

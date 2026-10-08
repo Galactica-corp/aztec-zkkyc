@@ -5,8 +5,8 @@
 
 import { useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { AztecAddress } from '@aztec/aztec.js/addresses';
-import { getFeeJuiceBalance } from '@aztec/aztec.js/utils';
+import type { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import { getFeeJuiceBalance } from '@aztec-labs/aztec.js/utils';
 import { NetworkService } from '../../aztec-wallet/services/aztec/network';
 import { queryKeys } from './queryKeys';
 import type { AztecNetwork } from '../../config/networks/constants';

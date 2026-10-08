@@ -1,5 +1,5 @@
 import { jest } from "@jest/globals";
-import { Fr } from "@aztec/aztec.js/fields";
+import { Fr } from "@aztec-labs/aztec.js/fields";
 import { resolveNetworkConfig } from "../../src/config/networkConfig.js";
 import { createAddressStub, createZkKycInput } from "../support/fixtures.js";
 

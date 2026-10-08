@@ -5,8 +5,8 @@
  * connection logic while keeping the hook wallet-agnostic.
  */
 
-import type { ContractArtifact } from '@aztec/aztec.js/abi';
-import type { Account } from '@aztec/aztec.js/account';
+import type { ContractArtifact } from '@aztec-labs/aztec.js/abi';
+import type { Account } from '@aztec-labs/aztec.js/account';
 import {
   getChainId,
   type AztecChainId,

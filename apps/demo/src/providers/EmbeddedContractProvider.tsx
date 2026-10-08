@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { Zap, RefreshCw } from 'lucide-react';
-import { AztecAddress } from '@aztec/aztec.js/addresses';
-import type { PXE } from '@aztec/pxe/server';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import type { PXE } from '@aztec-labs/pxe/server';
 import { useAztecWallet, hasAppManagedPXE } from '../aztec-wallet';
 import { contractsConfig } from '../config/contracts';
 import { getNetworkArtifacts } from '../config/networkArtifacts';

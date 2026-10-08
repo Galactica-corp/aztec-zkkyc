@@ -1,6 +1,6 @@
 {
   "network": "testnet",
-  "nodeUrl": "https://v5.testnet.rpc.aztec-labs.com",
+  "nodeUrl": "https://lb.drpc.live/aztec-testnet/Ak_eT5HA2kbyqamqGTF702daoH37vEsR8YYxjmVXwXgc",
   "dripperContract": {
     "address": "0x0000000000000000000000000000000000000000000000000000000000000000",
     "salt": "0x0000000000000000000000000000000000000000000000000000000000000000"

@@ -1,6 +1,6 @@
-import type { AuthWitnessProvider } from '@aztec/aztec.js/account';
-import { Fr } from '@aztec/aztec.js/fields';
-import { AuthWitness } from '@aztec/stdlib/auth-witness';
+import type { AuthWitnessProvider } from '@aztec-labs/aztec.js/account';
+import { Fr } from '@aztec-labs/aztec.js/fields';
+import { AuthWitness } from '@aztec-labs/stdlib/auth-witness';
 import type { Hex, WalletClient } from 'viem';
 
 /**

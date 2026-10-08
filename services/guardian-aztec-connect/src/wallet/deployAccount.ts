@@ -1,6 +1,6 @@
-import { NO_FROM } from "@aztec/aztec.js/account";
-import type { AccountManager } from "@aztec/aztec.js/wallet";
-import { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { NO_FROM } from "@aztec-labs/aztec.js/account";
+import type { AccountManager } from "@aztec-labs/aztec.js/wallet";
+import { AztecAddress } from "@aztec-labs/stdlib/aztec-address";
 import type {
     DeployGuardianAccountResult,
     GuardianNetworkConfig,

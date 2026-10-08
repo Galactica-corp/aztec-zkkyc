@@ -1,4 +1,4 @@
-import { Logger, createLogger } from "@aztec/aztec.js/log";
+import { Logger, createLogger } from "@aztec-labs/aztec.js/log";
 import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
 import { getAztecNodeUrl, getEnv, getTimeouts } from "../config/config.js";
 import { createAccountFromEnv } from "../crates/zk_certificate/src/utils/create_account_from_env.js";
@@ -15,7 +15,7 @@ import { SanctionListRequirementContract } from "../artifacts/SanctionListRequir
 import { BasicDisclosureContract } from "../artifacts/BasicDisclosure.js";
 import { ShamirDisclosureContract } from "../artifacts/ShamirDisclosure.js";
 import { UseCaseExampleContract } from "../artifacts/UseCaseExample.js";
-import { ContractBase, DeployMethod } from "@aztec/aztec.js/contracts";
+import { ContractBase, DeployMethod } from "@aztec-labs/aztec.js/contracts";
 import { updateDeploymentTargets } from "./utils/update-demo-sandbox.js";
 import { updateGuardianEnvFiles } from "./utils/update-guardian-aztec-connect-env.js";
 import { inspect } from "util";

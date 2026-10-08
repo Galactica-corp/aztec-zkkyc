@@ -5,13 +5,13 @@
  */
 
 // import { MeteredContractArtifact } from '@alejoamiras/private-fee-juice/artifacts';
-import type { ContractArtifact } from '@aztec/aztec.js/abi';
-import { AztecAddress } from '@aztec/aztec.js/addresses';
-import { Fr } from '@aztec/aztec.js/fields';
-import { createLogger } from '@aztec/aztec.js/log';
-import { SPONSORED_FPC_SALT } from '@aztec/constants';
-import { SponsoredFPCContractArtifact } from '@aztec/noir-contracts.js/SponsoredFPC';
-import type { PXE } from '@aztec/pxe/server';
+import type { ContractArtifact } from '@aztec-labs/aztec.js/abi';
+import { AztecAddress } from '@aztec-labs/aztec.js/addresses';
+import { Fr } from '@aztec-labs/aztec.js/fields';
+import { createLogger } from '@aztec-labs/aztec.js/log';
+import { SPONSORED_FPC_SALT } from '@aztec-labs/constants';
+import { SponsoredFPCContractArtifact } from '@aztec-labs/noir-contracts.js/SponsoredFPC';
+import type { PXE } from '@aztec-labs/pxe/server';
 import type { FeePaymentContractsConfig } from '../../../config/networks/types';
 
 const logger = createLogger('fee-payment-register');
@@ -81,7 +81,7 @@ export class FeePaymentRegister {
 
   private async registerFPC(pxe: PXE, config: FPCConfig): Promise<void> {
     const { getContractInstanceFromInstantiationParams } = await import(
-      '@aztec/aztec.js/contracts'
+      '@aztec-labs/aztec.js/contracts'
     );
 
     const instance = await getContractInstanceFromInstantiationParams(

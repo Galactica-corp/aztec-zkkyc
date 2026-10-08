@@ -1,5 +1,5 @@
 import { CertificateRegistryContract } from "../artifacts/CertificateRegistry.js"
-import { Logger, createLogger } from "@aztec/aztec.js/log";
+import { Logger, createLogger } from "@aztec-labs/aztec.js/log";
 import { setupWallet } from "../crates/zk_certificate/src/utils/setup_wallet.js";
 import { getFeePaymentMethodForTxFees } from "../crates/zk_certificate/src/utils/fpc.js";
 import { createAccountFromEnv } from "../crates/zk_certificate/src/utils/create_account_from_env.js";

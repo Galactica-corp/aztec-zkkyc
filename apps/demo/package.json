@@ -30,17 +30,17 @@
   "dependencies": {
     "@azguardwallet/client": "0.7.0",
     "@azguardwallet/types": "0.7.0",
-    "@aztec/accounts": "5.0.1",
-    "@aztec/aztec.js": "5.0.1",
-    "@aztec/constants": "5.0.1",
-    "@aztec/foundation": "5.0.1",
-    "@aztec/kv-store": "5.0.1",
-    "@aztec/noir-contracts.js": "5.0.1",
-    "@aztec/pxe": "5.0.1",
-    "@aztec/stdlib": "5.0.1",
-    "@aztec/wallet-sdk": "5.0.1",
-    "@alejoamiras/private-fee-juice": "5.0.1",
-    "@aztec-foundation/aztec-standards": "5.0.1",
+    "@aztec-labs/accounts": "6.0.0-rc.1",
+    "@aztec-labs/aztec.js": "6.0.0-rc.1",
+    "@aztec-labs/constants": "6.0.0-rc.1",
+    "@aztec-labs/foundation": "6.0.0-rc.1",
+    "@aztec-labs/kv-store": "6.0.0-rc.1",
+    "@aztec-labs/noir-contracts.js": "6.0.0-rc.1",
+    "@aztec-labs/pxe": "6.0.0-rc.1",
+    "@aztec-labs/stdlib": "6.0.0-rc.1",
+    "@aztec-labs/wallet-sdk": "6.0.0-rc.1",
+    "@alejoamiras/private-fee-juice": "6.0.0-rc.1",
+    "@aztec-foundation/aztec-standards": "6.0.0-rc.1",
     "@radix-ui/react-dialog": "1.1.15",
     "@radix-ui/react-select": "2.2.6",
     "@radix-ui/react-slot": "1.2.4",
@@ -106,7 +106,7 @@
     "trailingComma": "es5"
   },
   "config": {
-    "aztecVersion": "5.0.1"
+    "aztecVersion": "6.0.0-rc.1"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
   "resolutions": {

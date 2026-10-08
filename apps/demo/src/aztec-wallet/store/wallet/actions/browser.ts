@@ -1,4 +1,4 @@
-import type { Account } from '@aztec/aztec.js/account';
+import type { Account } from '@aztec-labs/aztec.js/account';
 import { WalletType } from '../../../types/aztec';
 import type { AztecNetwork } from '../../../../config/networks/constants';
 import type { IBrowserWalletAdapter } from '../../../../types/browserWallet';

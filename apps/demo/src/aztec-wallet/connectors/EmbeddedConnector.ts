@@ -5,9 +5,9 @@
  * Keys are stored locally in the browser.
  */
 
-import type { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee';
-import type { Wallet } from '@aztec/aztec.js/wallet';
-import type { PXE } from '@aztec/pxe/server';
+import type { SponsoredFeePaymentMethod } from '@aztec-labs/aztec.js/fee';
+import type { Wallet } from '@aztec-labs/aztec.js/wallet';
+import type { PXE } from '@aztec-labs/pxe/server';
 import { SharedPXEService } from '../services/aztec/pxe';
 import { getNetworkStore } from '../store/network';
 import { getWalletStore, clearSavedAccount } from '../store/wallet';

@@ -1,5 +1,5 @@
-import { NO_FROM } from "@aztec/aztec.js/account";
-import type { AztecAddress } from "@aztec/stdlib/aztec-address";
+import { NO_FROM } from "@aztec-labs/aztec.js/account";
+import type { AztecAddress } from "@aztec-labs/stdlib/aztec-address";
 import type { GuardianNetworkConfig } from "../types.js";
 
 export interface GuardianSendOptions {

@@ -1,4 +1,4 @@
-import type { ContractArtifact } from '@aztec/aztec.js/abi';
+import type { ContractArtifact } from '@aztec-labs/aztec.js/abi';
 
 /**
  * Network-specific artifact overrides.

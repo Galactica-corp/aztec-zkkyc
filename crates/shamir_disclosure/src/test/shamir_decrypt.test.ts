@@ -1,4 +1,4 @@
-import { Fr } from "@aztec/aztec.js/fields";
+import { Fr } from "@aztec-labs/aztec.js/fields";
 import { decryptShamirSecret } from "../../utils/shamir_decrypt.js";
 
 describe("decryptShamirSecret", () => {

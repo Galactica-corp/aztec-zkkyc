@@ -2,10 +2,10 @@ use ::aztec::{
     protocol::address::AztecAddress, test::helpers::test_environment::TestEnvironment,
 };
 
-use dep::age_check_requirement::AgeCheckRequirement;
-use dep::basic_disclosure::BasicDisclosure;
-use dep::shamir_disclosure::ShamirDisclosure;
-use dep::zk_certificate::CertificateRegistry;
+use age_check_requirement::AgeCheckRequirement;
+use basic_disclosure::BasicDisclosure;
+use shamir_disclosure::ShamirDisclosure;
+use zk_certificate::CertificateRegistry;
 
 use crate::UseCaseExample;
 
